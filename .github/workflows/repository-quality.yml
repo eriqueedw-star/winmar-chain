@@ -70,6 +70,14 @@ jobs:
             shellcheck "${scripts[@]}"
           fi
 
+      - name: Smoke test release manifest
+        shell: bash
+        run: |
+          bash scripts/generate-release-manifest.sh ci /tmp/SHA256SUMS-ci.txt
+          test -s /tmp/SHA256SUMS-ci.txt
+          grep -q '^# Source commit: ' /tmp/SHA256SUMS-ci.txt
+          grep -q '  config/network.json$' /tmp/SHA256SUMS-ci.txt
+
       - name: Lint Markdown
         shell: bash
         run: npx --yes markdownlint-cli2@0.23.3 "**/*.md"

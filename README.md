@@ -24,7 +24,7 @@ The machine-readable public metadata lives in [`config/network.json`](config/net
 - `config/` — canonical public chain metadata.
 - `docs/` — architecture, operating procedures, audit status, and project history.
 - `ops/` — non-secret operational recovery material.
-- `scripts/` — health and maintenance utilities.
+- `scripts/` — health, verification, and release utilities.
 - `assets/` — branding guidance and asset provenance.
 - `chainlist/` — references for the upstream Chainlist registration.
 - `checksums/` — immutable checksum manifests for release artifacts.
@@ -37,11 +37,15 @@ The repository includes explicit controls for material that is not yet safe to i
 - [Validator membership procedure](docs/VALIDATOR_MEMBERSHIP.md)
 - [Bootnode and peer-discovery policy](docs/BOOTNODE_POLICY.md)
 - [Bridge trust model and production gate](docs/BRIDGE_TRUST_MODEL.md)
+- [Privacy/publication review](docs/PRIVACY_REVIEW.md)
+- [Current publication findings](docs/PUBLICATION_FINDINGS.md)
 - [Release checklist](RELEASE_CHECKLIST.md)
 
 Unverified production consensus parameters must not be invented or copied into the repository.
 
-## Quick health check
+## Verification
+
+`scripts/public-network-probe.sh` verifies public website and explorer reachability and checks `eth_chainId` and `eth_blockNumber` through the public RPC. The GitHub Actions public-network workflow runs this check from an external GitHub-hosted runner.
 
 On a validator host:
 

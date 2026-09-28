@@ -16,7 +16,9 @@ Use this checklist for the first public baseline and subsequent signed releases.
 - [ ] JSON files parse successfully.
 - [ ] Markdown lint passes.
 - [ ] Shell scripts pass syntax and ShellCheck validation.
+- [ ] Release-manifest smoke test passes.
 - [ ] Secret scan reports no unresolved findings.
+- [ ] Public-network probe passes on the release commit.
 
 ## Network and service evidence
 
@@ -28,13 +30,15 @@ Use this checklist for the first public baseline and subsequent signed releases.
 
 ## Integrity and signing
 
-- [ ] Generate SHA-256 checksums for release artifacts.
+- [ ] Generate SHA-256 checksums with `scripts/generate-release-manifest.sh`.
 - [ ] Store the immutable checksum manifest under `checksums/`.
 - [ ] Create a signed Git tag using an approved signing identity held outside the repository.
 - [ ] Record the tag, commit SHA, checksum manifest, date, and release notes.
 
 ## Publication decision
 
+- [ ] Complete `docs/PRIVACY_REVIEW.md`.
+- [ ] Resolve or explicitly accept all items in `docs/PUBLICATION_FINDINGS.md`.
 - [ ] Independent or second-party security review scope and limitations are documented.
 - [ ] Open high-severity findings are resolved or explicitly block publication.
 - [ ] Repository visibility change is separately approved.

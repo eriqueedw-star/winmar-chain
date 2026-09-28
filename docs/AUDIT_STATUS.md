@@ -4,7 +4,7 @@
 
 **No independent third-party security audit report is recorded in this repository.** Do not claim that Winmar Chain, its bridge, smart contracts, validators, explorer, or website are audited until a verifiable report is added here.
 
-Phase-one repository hardening now includes documented genesis/QBFT publication controls, validator-membership procedures, bootnode policy, bridge trust-model requirements, release readiness controls, and automated repository checks. These controls improve audit readiness but do not constitute an independent audit.
+Repository hardening includes documented genesis/QBFT publication controls, validator-membership procedures, bootnode policy, bridge trust-model requirements, release readiness controls, supply-chain controls, automated repository checks, and a separate privacy/publication gate. These controls improve audit readiness but do not constitute an independent audit.
 
 ## Completed evidence
 
@@ -12,7 +12,11 @@ Phase-one repository hardening now includes documented genesis/QBFT publication 
 - Public metadata identifies chain ID `12142816`, RPC `rpc.winmarchain.io`, and explorer `scan.winmarchain.io`.
 - The project includes a local validator health script for service, height, peers, sync state, and validator-set checks.
 - Repository hardening documents explicitly prohibit inventing or publishing unverified production genesis parameters.
-- A GitHub Actions workflow is configured to validate JSON, lint Markdown and shell scripts, and scan Git history for secrets.
+- GitHub Actions validate JSON, lint Markdown and shell scripts, and scan Git history for secrets.
+- CI dependencies are pinned and reviewed through repository supply-chain controls.
+- A public-network probe independently checks website and explorer reachability and verifies `eth_chainId` and `eth_blockNumber` through the public RPC.
+- A release-manifest script generates SHA-256 checksums from tracked repository files.
+- A second privacy/publication review is required before any repository visibility change.
 
 Automated checks are configuration and repository-quality controls, not a security audit. Their execution status must be verified on the relevant commit or pull request.
 
