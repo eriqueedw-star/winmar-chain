@@ -1,0 +1,23 @@
+{
+  "name": "Winmar Chain",
+  "chainId": 12142816,
+  "chainIdHex": "0xB948E0",
+  "nativeCurrency": {
+    "name": "Winmar Coin",
+    "symbol": "WMC",
+    "decimals": 18
+  },
+  "consensus": "QBFT Proof of Authority",
+  "rpc": [
+    "https://rpc.winmarchain.io"
+  ],
+  "explorers": [
+    {
+      "name": "Winmar Chain Explorer",
+      "url": "https://scan.winmarchain.io"
+    }
+  ],
+  "website": "https://winmarchain.io",
+  "bridge": "https://bridge.winmarchain.io"
+}
+
