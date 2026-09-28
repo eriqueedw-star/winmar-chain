@@ -1,0 +1,9 @@
+# Default repository owner
+* @eriqueedw-star
+
+# Security-sensitive operational material
+/.github/ @eriqueedw-star
+/config/ @eriqueedw-star
+/docs/ @eriqueedw-star
+/ops/ @eriqueedw-star
+/scripts/ @eriqueedw-star

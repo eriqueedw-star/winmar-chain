@@ -13,3 +13,5 @@ All notable project changes should be recorded here.
 - Added a bridge trust-model and production-readiness gate.
 - Added release/checksum readiness documentation.
 - Added repository CI for JSON, Markdown, shell, and secret scanning.
+- Pinned CI actions and Markdown lint tooling to immutable or exact versions.
+- Added GitHub Actions dependency updates, CODEOWNERS, and a security-focused pull request checklist.

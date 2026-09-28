@@ -24,3 +24,12 @@ Until a dedicated security mailbox is published, do not disclose exploitable det
 - Prefer key-based SSH, disable password authentication, and limit root login.
 - Back up genesis, node keys, permissioning configuration, and validator membership records separately and securely.
 - Monitor block production, peer count, disk usage, clock synchronization, and certificate expiry.
+
+## Repository supply chain
+
+- Pin third-party GitHub Actions to immutable commit SHAs and retain the corresponding release tag in a comment for reviewability.
+- Pin downloaded CI tooling to an exact version when practical.
+- Use automated dependency updates to propose upstream action changes through reviewed pull requests.
+- Keep workflow permissions at the minimum required level.
+- Require repository quality and secret-scanning checks before accepting material hardening changes.
+- Review dependency updates for provenance and release notes rather than merging them solely because automated checks pass.
