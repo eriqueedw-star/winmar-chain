@@ -19,6 +19,7 @@ Use this checklist for the first public baseline and subsequent signed releases.
 - [ ] Release-manifest smoke test passes.
 - [ ] Secret scan reports no unresolved findings.
 - [ ] Public-network probe passes on the release commit.
+- [ ] Public-network evidence artifact is retained for the release review.
 
 ## Network and service evidence
 
@@ -33,6 +34,7 @@ Use this checklist for the first public baseline and subsequent signed releases.
 - [ ] Generate SHA-256 checksums with `scripts/generate-release-manifest.sh`.
 - [ ] Store the immutable checksum manifest under `checksums/`.
 - [ ] Create a signed Git tag using an approved signing identity held outside the repository.
+- [ ] Confirm the tag-triggered release-evidence workflow succeeds.
 - [ ] Record the tag, commit SHA, checksum manifest, date, and release notes.
 
 ## Publication decision
@@ -42,5 +44,7 @@ Use this checklist for the first public baseline and subsequent signed releases.
 - [ ] Independent or second-party security review scope and limitations are documented.
 - [ ] Open high-severity findings are resolved or explicitly block publication.
 - [ ] Repository visibility change is separately approved.
+
+Follow `docs/RELEASE_PROCESS.md` for the signed-tag and evidence-bundle workflow.
 
 Passing this checklist is a release-control record, not a substitute for an independent security audit.

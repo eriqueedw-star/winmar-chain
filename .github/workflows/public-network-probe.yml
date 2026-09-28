@@ -7,6 +7,8 @@ on:
       - "hardening/**"
   pull_request:
   workflow_dispatch:
+  schedule:
+    - cron: "17 3 * * *"
 
 permissions:
   contents: read
@@ -21,4 +23,16 @@ jobs:
 
       - name: Verify Winmar Chain public network
         shell: bash
-        run: bash scripts/public-network-probe.sh
+        run: |
+          set -o pipefail
+          printf 'source_commit=%s\n' "$GITHUB_SHA" | tee public-network-evidence.txt
+          bash scripts/public-network-probe.sh | tee -a public-network-evidence.txt
+
+      - name: Upload public-network evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: public-network-evidence-${{ github.run_id }}
+          path: public-network-evidence.txt
+          if-no-files-found: error
+          retention-days: 30

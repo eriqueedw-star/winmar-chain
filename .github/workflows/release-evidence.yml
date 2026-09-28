@@ -1,0 +1,71 @@
+name: Release evidence
+
+on:
+  push:
+    tags:
+      - "v*"
+  pull_request:
+    paths:
+      - ".github/workflows/release-evidence.yml"
+      - "scripts/generate-release-manifest.sh"
+      - "docs/RELEASE_PROCESS.md"
+      - "config/network.json"
+      - "docs/AUDIT_STATUS.md"
+      - "docs/PUBLICATION_FINDINGS.md"
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Release version label used for evidence generation"
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  evidence:
+    name: Build release evidence bundle
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          fetch-depth: 0
+
+      - name: Resolve release version
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ "$GITHUB_EVENT_NAME" == "workflow_dispatch" ]]; then
+            VERSION="${{ inputs.version }}"
+          elif [[ "$GITHUB_EVENT_NAME" == "pull_request" ]]; then
+            VERSION="pr-${{ github.event.pull_request.number }}"
+          else
+            VERSION="$GITHUB_REF_NAME"
+          fi
+          test -n "$VERSION"
+          printf 'VERSION=%s\n' "$VERSION" >> "$GITHUB_ENV"
+
+      - name: Build evidence bundle
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p release-evidence
+          bash scripts/generate-release-manifest.sh "$VERSION" "release-evidence/SHA256SUMS-${VERSION}.txt"
+          cp config/network.json release-evidence/network.json
+          cp docs/AUDIT_STATUS.md release-evidence/AUDIT_STATUS.md
+          cp docs/PUBLICATION_FINDINGS.md release-evidence/PUBLICATION_FINDINGS.md
+          {
+            printf 'release_version=%s\n' "$VERSION"
+            printf 'source_commit=%s\n' "$GITHUB_SHA"
+            printf 'source_ref=%s\n' "$GITHUB_REF"
+            printf 'generated_utc=%s\n' "$(date -u +'%Y-%m-%dT%H:%M:%SZ')"
+          } > release-evidence/RELEASE_METADATA.txt
+
+      - name: Upload release evidence
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: winmar-chain-release-evidence-${{ github.run_id }}
+          path: release-evidence/
+          if-no-files-found: error
+          retention-days: 90

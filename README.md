@@ -39,13 +39,14 @@ The repository includes explicit controls for material that is not yet safe to i
 - [Bridge trust model and production gate](docs/BRIDGE_TRUST_MODEL.md)
 - [Privacy/publication review](docs/PRIVACY_REVIEW.md)
 - [Current publication findings](docs/PUBLICATION_FINDINGS.md)
+- [Release process](docs/RELEASE_PROCESS.md)
 - [Release checklist](RELEASE_CHECKLIST.md)
 
 Unverified production consensus parameters must not be invented or copied into the repository.
 
 ## Verification
 
-`scripts/public-network-probe.sh` verifies public website and explorer reachability and checks `eth_chainId` and `eth_blockNumber` through the public RPC. The GitHub Actions public-network workflow runs this check from an external GitHub-hosted runner.
+`scripts/public-network-probe.sh` verifies public website and explorer reachability and checks `eth_chainId` and `eth_blockNumber` through the public RPC. The GitHub Actions public-network workflow runs this check from an external GitHub-hosted runner, retains evidence artifacts, and also runs on a daily schedule.
 
 On a validator host:
 
