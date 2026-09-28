@@ -10,4 +10,3 @@ Winmar Chain is tracked in the upstream `ethereum-lists/chains` repository.
 - Icon CID: `bafkreidusntleelv3wx2pswfo5gc4hwis44ig4ume4l6jftu74pysp2lem`
 
 At the time this repository structure was created, the PR checks for action linting, JSON schema, formatting, and build had passed. Merge and publication remain controlled by upstream maintainers.
-

@@ -60,4 +60,3 @@ Maintain one canonical, auditable project for Winmar Chain public network inform
 ## Instructions for a new chat
 
 Treat this repository and `HANDOFF.md` as the current canonical project record. Do not request or store private keys, passwords, seed phrases, or unrestricted cloud credentials. Verify live infrastructure state before making claims because validator membership, endpoint health, DNS, and upstream PR status can change.
-

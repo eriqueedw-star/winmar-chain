@@ -13,4 +13,3 @@ The Winmar Chain name, visual identity, original documentation, original website
 - Do not describe the software as independently audited unless a signed report from the named auditor is available.
 
 This notice is an ownership record, not legal advice and not a substitute for formal IP registration.
-

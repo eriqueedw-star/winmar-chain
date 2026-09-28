@@ -10,4 +10,3 @@ This document provides a human-readable chronology. Git commits remain the prima
 - Canonical repository organization was introduced for easier review, audit preparation, and authorship tracking.
 
 Future entries should include dates, responsible contributors, affected systems, relevant commit IDs, deployment evidence, and rollback references.
-

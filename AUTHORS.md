@@ -13,4 +13,3 @@ Winmar Chain project team.
 Every substantive change should be committed with an attributable Git identity and a clear message. Contributors must only submit material they are authorized to contribute.
 
 This file records attribution; it does not replace Git history, contracts, trademark registrations, or copyright registrations.
-

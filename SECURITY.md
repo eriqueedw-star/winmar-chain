@@ -24,4 +24,3 @@ Until a dedicated security mailbox is published, do not disclose exploitable det
 - Prefer key-based SSH, disable password authentication, and limit root login.
 - Back up genesis, node keys, permissioning configuration, and validator membership records separately and securely.
 - Monitor block production, peer count, disk usage, clock synchronization, and certificate expiry.
-

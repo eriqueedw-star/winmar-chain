@@ -18,4 +18,3 @@ Before changing consensus, validator membership, genesis, bootnodes, DNS, firewa
 ## Recovery material
 
 `ops/static-nodes-recovery.json` contains public enode addresses used for recovery. Validate every address before deployment because IP addresses and topology may change.
-

@@ -17,4 +17,3 @@ Validator keys and administrative RPC methods are private. Public endpoints must
 ## Canonical values
 
 Machine-readable network identity and public endpoints are maintained in `config/network.json`. Genesis data and permissioning files should be added only after being sanitized and cross-checked against production.
-

@@ -1,0 +1,89 @@
+name: Repository quality
+
+on:
+  push:
+    branches:
+      - main
+      - "hardening/**"
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pull-requests: read
+
+jobs:
+  validate:
+    name: JSON, Markdown and shell
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Validate JSON
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import json
+          import pathlib
+          import sys
+
+          failures = []
+          for path in pathlib.Path('.').rglob('*.json'):
+              if '.git' in path.parts:
+                  continue
+              try:
+                  with path.open('r', encoding='utf-8') as handle:
+                      json.load(handle)
+              except Exception as exc:
+                  failures.append(f'{path}: {exc}')
+
+          if failures:
+              print('\n'.join(failures))
+              sys.exit(1)
+
+          print('JSON validation passed')
+          PY
+
+      - name: Check shell syntax
+        shell: bash
+        run: |
+          set -euo pipefail
+          while IFS= read -r -d '' script; do
+            bash -n "$script"
+          done < <(find scripts -type f -name '*.sh' -print0)
+
+      - name: Install ShellCheck
+        shell: bash
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y shellcheck
+
+      - name: Run ShellCheck
+        shell: bash
+        run: |
+          set -euo pipefail
+          mapfile -d '' scripts < <(find scripts -type f -name '*.sh' -print0)
+          if ((${#scripts[@]})); then
+            shellcheck "${scripts[@]}"
+          fi
+
+      - name: Lint Markdown
+        shell: bash
+        run: npx --yes markdownlint-cli2@latest "**/*.md"
+
+  secrets:
+    name: Secret scan
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out full history
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Run Gitleaks
+        uses: gitleaks/gitleaks-action@v3
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

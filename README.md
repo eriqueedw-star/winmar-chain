@@ -27,6 +27,19 @@ The machine-readable public metadata lives in [`config/network.json`](config/net
 - `scripts/` — health and maintenance utilities.
 - `assets/` — branding guidance and asset provenance.
 - `chainlist/` — references for the upstream Chainlist registration.
+- `checksums/` — immutable checksum manifests for release artifacts.
+
+## Operational hardening
+
+The repository includes explicit controls for material that is not yet safe to infer or publish:
+
+- [Genesis and QBFT baseline](docs/GENESIS_QBFT_BASELINE.md)
+- [Validator membership procedure](docs/VALIDATOR_MEMBERSHIP.md)
+- [Bootnode and peer-discovery policy](docs/BOOTNODE_POLICY.md)
+- [Bridge trust model and production gate](docs/BRIDGE_TRUST_MODEL.md)
+- [Release checklist](RELEASE_CHECKLIST.md)
+
+Unverified production consensus parameters must not be invented or copied into the repository.
 
 ## Quick health check
 
@@ -49,4 +62,3 @@ Repository organization and automated checks are not an independent security aud
 ## Intellectual property and attribution
 
 Project authorship and asset provenance are recorded in [`AUTHORS.md`](AUTHORS.md), [`COPYRIGHT.md`](COPYRIGHT.md), and [`assets/README.md`](assets/README.md). Third-party components retain their own licenses.
-

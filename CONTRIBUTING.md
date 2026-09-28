@@ -8,4 +8,3 @@
 6. Verify JSON files parse and shell scripts pass `shellcheck` when available.
 
 Changes to genesis, validator membership, consensus settings, DNS, RPC routing, or production firewall rules require peer review and a rollback plan.
-
