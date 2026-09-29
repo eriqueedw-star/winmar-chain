@@ -70,6 +70,10 @@ jobs:
             shellcheck "${scripts[@]}"
           fi
 
+      - name: Audit publication privacy
+        shell: bash
+        run: python3 scripts/audit-publication.py
+
       - name: Smoke test release manifest
         shell: bash
         run: |
