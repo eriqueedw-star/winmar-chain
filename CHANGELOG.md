@@ -21,6 +21,6 @@ All notable project changes should be recorded here.
 - Added scheduled public-network evidence retention and tag-triggered release evidence bundles.
 - Added a signed-release runbook that keeps signing keys outside GitHub.
 - Reconciled repository documentation with the current public visibility state.
-- Added an automated publication audit for recovery topology, PNG metadata, and personal-email history regression.
-- Recorded the historical personal-email-domain baseline while preventing new occurrences.
+- Added an automated publication audit for recovery topology, PNG metadata, and informational Git email-domain reporting.
+- Documented historical personal-email commit metadata and the need for a public or GitHub no-reply commit identity.
 - Verified the current logo contains no `tEXt`, `zTXt`, `iTXt`, or `eXIf` metadata chunks.
