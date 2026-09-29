@@ -18,16 +18,18 @@ These controls improve audit readiness but do not constitute an independent secu
 - Release evidence bundles can be generated for `v*` tags.
 - The former public recovery-topology JSON is absent from the current public tree.
 - Automated logo inspection reports zero `tEXt`, `zTXt`, `iTXt`, and `eXIf` metadata chunks.
-- The publication audit records the historical personal-email-domain baseline and prevents new occurrences above that baseline.
+- The publication audit reports personal-email-domain history without exposing complete email addresses.
 - Chainlist PR #8740 has passed its recorded upstream CI baseline and remains open and mergeable at the latest recorded review.
 
 Automated checks are repository-quality and verification controls, not a security audit. Their execution status must be verified on the relevant commit or pull request.
 
-## Known limitation
+## Known privacy limitation
 
-The public Git history contains four historical `gmail.com` occurrences in commit metadata. They are recorded as historical privacy debt in `config/publication-audit-baseline.json`.
+The public Git history contains personal-email-domain metadata. The pre-Phase-5 main baseline measured four `gmail.com` occurrences, and Phase 5 confirmed that the current GitHub connector commit identity can add more.
 
-A controlled history rewrite is required to reduce or remove them from the canonical branch history. External copies may retain historical objects even after a rewrite.
+This finding is informational rather than a hard CI failure because the same identity is currently used for repository maintenance.
+
+Recommended remediation is to configure a public or GitHub no-reply commit identity for future commits and, if required, perform a controlled history rewrite. External copies may retain historical objects even after a rewrite.
 
 ## Recommended independent audit scope
 
