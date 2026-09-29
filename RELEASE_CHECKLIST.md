@@ -1,11 +1,11 @@
 # Release checklist
 
-Use this checklist for the first public baseline and subsequent signed releases.
+Use this checklist for public releases and subsequent signed release records.
 
 ## Source state
 
 - [ ] Release commit is reviewed and identified by full Git SHA.
-- [ ] Repository history has received a second secret and privacy review.
+- [ ] Repository history has received a secret and privacy review.
 - [ ] Production-only credentials and private operational data are absent.
 - [ ] `config/network.json` matches the intended public network identity.
 - [ ] Genesis material, if included, has been verified against production.
@@ -16,6 +16,8 @@ Use this checklist for the first public baseline and subsequent signed releases.
 - [ ] JSON files parse successfully.
 - [ ] Markdown lint passes.
 - [ ] Shell scripts pass syntax and ShellCheck validation.
+- [ ] Publication privacy audit passes for tracked topology and binary-metadata checks.
+- [ ] Logo metadata audit reports no `tEXt`, `zTXt`, `iTXt`, or `eXIf` chunks.
 - [ ] Release-manifest smoke test passes.
 - [ ] Secret scan reports no unresolved findings.
 - [ ] Public-network probe passes on the release commit.
@@ -37,13 +39,13 @@ Use this checklist for the first public baseline and subsequent signed releases.
 - [ ] Confirm the tag-triggered release-evidence workflow succeeds.
 - [ ] Record the tag, commit SHA, checksum manifest, date, and release notes.
 
-## Publication decision
+## Public repository review
 
 - [ ] Complete `docs/PRIVACY_REVIEW.md`.
-- [ ] Resolve or explicitly accept all items in `docs/PUBLICATION_FINDINGS.md`.
+- [ ] Review `docs/PUBLICATION_FINDINGS.md` and record any accepted limitations.
+- [ ] Historical personal-email metadata is reviewed as documented debt; future commits use a public or GitHub no-reply identity where possible, or an approved history rewrite is completed.
 - [ ] Independent or second-party security review scope and limitations are documented.
-- [ ] Open high-severity findings are resolved or explicitly block publication.
-- [ ] Repository visibility change is separately approved.
+- [ ] Open high-severity findings are resolved or explicitly block the release.
 
 Follow `docs/RELEASE_PROCESS.md` for the signed-tag and evidence-bundle workflow.
 

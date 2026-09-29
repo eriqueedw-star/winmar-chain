@@ -12,6 +12,20 @@ The current repository-root image `winmar-chain-logo-framed-v2.png` is retained 
 - Published dimensions: 512 × 512 pixels
 - Format: PNG with transparency
 
+## Metadata audit
+
+The Phase 5 publication audit validates the repository logo directly from the checked-out Git tree.
+
+Current result:
+
+- valid PNG: yes;
+- `tEXt` chunks: none detected;
+- `zTXt` chunks: none detected;
+- `iTXt` chunks: none detected;
+- `eXIf` chunks: none detected.
+
+The automated check is implemented in `scripts/audit-publication.py` and runs in repository CI. The check is intentionally limited to these PNG text and EXIF metadata classes and should not be interpreted as a forensic examination of every possible binary encoding technique.
+
 ## Required provenance fields
 
 Before commercial licensing, trademark filing, or external distribution, add the creator's legal name or entity, creation date, source/design files, commissioning agreement or assignment, and permitted uses. Do not assume AI assistance or possession alone establishes exclusive rights.

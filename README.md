@@ -2,7 +2,7 @@
 
 Official technical repository for **Winmar Chain**, an EVM-compatible network using QBFT Proof of Authority.
 
-This repository is the canonical project index for public network information, operational documentation, branding references, audit evidence, and deployment runbooks. Secrets, validator private keys, wallet keys, passwords, and production `.env` files must never be committed.
+This public repository is the canonical project index for public network information, operational documentation, branding references, audit evidence, and deployment runbooks. Secrets, validator private keys, wallet keys, passwords, and production `.env` files must never be committed.
 
 ## Public network
 
@@ -23,7 +23,6 @@ The machine-readable public metadata lives in [`config/network.json`](config/net
 
 - `config/` — canonical public chain metadata.
 - `docs/` — architecture, operating procedures, audit status, and project history.
-- `ops/` — non-secret operational recovery material.
 - `scripts/` — health, verification, and release utilities.
 - `assets/` — branding guidance and asset provenance.
 - `chainlist/` — references for the upstream Chainlist registration.
@@ -48,6 +47,8 @@ Unverified production consensus parameters must not be invented or copied into t
 
 `scripts/public-network-probe.sh` verifies public website and explorer reachability and checks `eth_chainId` and `eth_blockNumber` through the public RPC. The GitHub Actions public-network workflow runs this check from an external GitHub-hosted runner, retains evidence artifacts, and also runs on a daily schedule.
 
+`scripts/audit-publication.py` checks the public tree for recovery-topology exposure, audits the logo for PNG text/EXIF metadata chunks, and reports personal-email domains present in Git history without printing complete addresses.
+
 On a validator host:
 
 ```bash
@@ -58,7 +59,7 @@ The script checks the Besu service, block height, peer count, sync state, and cu
 
 ## Security boundary
 
-Only public and sanitized material belongs here. Before every commit, verify that no private key, mnemonic, keystore password, cloud credential, access token, account recovery information, or unrestricted internal endpoint is included. See [`SECURITY.md`](SECURITY.md).
+Only public and sanitized material belongs here. Before every commit, verify that no private key, mnemonic, keystore password, cloud credential, access token, account recovery information, or unrestricted internal endpoint is included. Historical personal-email commit metadata remains a documented privacy finding; use a public or GitHub no-reply commit identity for future maintenance where possible. See [`SECURITY.md`](SECURITY.md).
 
 ## Audit status
 

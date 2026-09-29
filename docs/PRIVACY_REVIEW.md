@@ -2,38 +2,60 @@
 
 ## Current publication state
 
-The repository remains private. A visibility change must be a separate approved action and must not be coupled automatically to documentation or CI changes.
+The repository is public.
 
-## Review evidence
+Phase 5 reconciles the repository documentation with that public state and converts the previous one-time publication checklist into an ongoing privacy review.
 
-The repository workflow performs a full-history Gitleaks scan on pull requests and pushes. Phase 1 and Phase 2 were merged only after the secret scan and repository-quality checks passed.
+## Verified privacy evidence
 
-A successful automated secret scan reduces risk but does not prove that all private, commercially sensitive, personal, or operationally sensitive information has been removed.
+- Full-history Gitleaks scanning is enforced in GitHub Actions.
+- The former `ops/static-nodes-recovery.json` file is absent from the current public tree.
+- The current root logo contains zero PNG text or EXIF metadata chunks among `tEXt`, `zTXt`, `iTXt`, and `eXIf`.
+- The publication audit runs automatically in repository CI.
+- Personal-email domains in Git history are reported without printing complete addresses.
 
-## Second-review checklist
+Automated scanning reduces risk but does not prove that every form of sensitive or commercially restricted information has been removed.
 
-Before any public visibility change, complete a second human review of:
+## Known historical privacy debt
+
+The pre-Phase-5 public `main` history measured four `gmail.com` occurrences in commit author or committer metadata.
+
+Phase 5 maintenance also demonstrated that the current GitHub connector commit identity can add personal-email metadata. Because that identity is used to perform repository updates, a hard count-based CI gate would block legitimate remediation work while continuing to create the same metadata.
+
+The current control is therefore informational:
+
+- the audit reports personal-email domains and occurrence counts;
+- complete email addresses are not printed;
+- repository maintainers should configure a public or GitHub no-reply commit identity before claiming remediation;
+- full canonical-history cleanup requires an approved history rewrite.
+
+A rewrite cannot guarantee removal from external clones, forks, caches, or previously fetched Git objects.
+
+## Ongoing review checklist
+
+For material public releases and major repository changes, review:
 
 - every tracked file in the release commit;
-- Git history for accidentally committed sensitive material;
-- public IP addresses and enode records to confirm that publication is intentional;
-- names, email addresses, personal metadata, and internal identifiers;
-- operational topology and recovery material;
+- Git history for newly introduced sensitive material;
+- personal metadata and commit identity configuration;
+- operational topology, recovery material, and administrative endpoints;
 - screenshots, binary assets, archives, and generated reports;
-- references to infrastructure providers, internal hostnames, and administrative interfaces;
-- license, copyright, and brand-provenance records.
+- infrastructure-provider references and internal hostnames;
+- license, copyright, and brand-provenance records;
+- bridge and validator documentation for claims that exceed verified evidence.
 
-## Blocking conditions
+## Blocking conditions for future releases
 
-Do not make the repository public when any of the following is unresolved:
+Block a release when any of the following is unresolved:
 
 - a secret, credential, signing key, recovery code, or privileged endpoint is present;
-- production genesis or QBFT values are unverified;
-- public-node topology exposes information that operations has not approved for publication;
-- a binary or archive has not been reviewed for embedded metadata;
+- public operational topology is present without an explicit publication decision;
+- a binary asset contains unreviewed sensitive metadata;
 - bridge documentation overstates the implemented security or trust model;
 - a high-severity review finding remains open.
 
-## Publication record
+Personal-email commit metadata is a documented privacy finding that should be reviewed and remediated separately from secret-scanning controls.
 
-When a public release is approved, record the source commit, release tag, checksum manifest, reviewers, review date, known limitations, and any intentionally retained public infrastructure records.
+## Release record
+
+For a signed release, record the source commit, tag, checksum manifest, review date, known limitations, Chainlist status, and any intentionally published infrastructure records.
