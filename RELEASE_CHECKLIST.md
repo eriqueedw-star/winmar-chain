@@ -16,7 +16,7 @@ Use this checklist for public releases and subsequent signed release records.
 - [ ] JSON files parse successfully.
 - [ ] Markdown lint passes.
 - [ ] Shell scripts pass syntax and ShellCheck validation.
-- [ ] Publication privacy audit passes with no regression above the historical baseline.
+- [ ] Publication privacy audit passes for tracked topology and binary-metadata checks.
 - [ ] Logo metadata audit reports no `tEXt`, `zTXt`, `iTXt`, or `eXIf` chunks.
 - [ ] Release-manifest smoke test passes.
 - [ ] Secret scan reports no unresolved findings.
@@ -43,7 +43,7 @@ Use this checklist for public releases and subsequent signed release records.
 
 - [ ] Complete `docs/PRIVACY_REVIEW.md`.
 - [ ] Review `docs/PUBLICATION_FINDINGS.md` and record any accepted limitations.
-- [ ] Historical personal-email metadata is either explicitly accepted as documented debt or removed through an approved history rewrite.
+- [ ] Historical personal-email metadata is reviewed as documented debt; future commits use a public or GitHub no-reply identity where possible, or an approved history rewrite is completed.
 - [ ] Independent or second-party security review scope and limitations are documented.
 - [ ] Open high-severity findings are resolved or explicitly block the release.
 
