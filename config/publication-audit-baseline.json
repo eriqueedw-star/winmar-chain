@@ -1,0 +1,7 @@
+{
+  "version": 1,
+  "personalEmailDomainOccurrences": {
+    "gmail.com": 4
+  },
+  "note": "Known historical commit metadata present before Phase 5 public-repository reconciliation. Counts may decrease after an approved history rewrite but must not increase."
+}
