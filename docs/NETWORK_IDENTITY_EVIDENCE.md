@@ -19,9 +19,11 @@ The public-network probe queries `eth_getBlockByNumber("0x0", false)` and record
 
 The fingerprint does **not** prove that a repository genesis file matches production. It does not verify QBFT timing, epoch length, validator extra-data, allocations, fork configuration, or any other genesis field.
 
-The observed fingerprint is retained in GitHub Actions evidence artifacts. A stable value may be recorded here only after it has been observed from the external probe and reviewed.
+**Current reviewed fingerprint:**
 
-**Current reviewed fingerprint:** pending Phase 6 external observation.
+`0x82f43cfcd8c9152bae9bde20af3e790451ad1d778707f506b5794335c065c2fd`
+
+This value was observed on 2026-09-29 from an external GitHub-hosted runner through the canonical public RPC. The probe now compares future observations against this reviewed value and fails if the fingerprint changes.
 
 ## Evidence rules
 
