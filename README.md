@@ -33,6 +33,8 @@ The machine-readable public metadata lives in [`config/network.json`](config/net
 The repository includes explicit controls for material that is not yet safe to infer or publish:
 
 - [Genesis and QBFT baseline](docs/GENESIS_QBFT_BASELINE.md)
+- [Network identity evidence](docs/NETWORK_IDENTITY_EVIDENCE.md)
+- [Public RPC exposure policy](docs/RPC_EXPOSURE_POLICY.md)
 - [Validator membership procedure](docs/VALIDATOR_MEMBERSHIP.md)
 - [Bootnode and peer-discovery policy](docs/BOOTNODE_POLICY.md)
 - [Bridge trust model and production gate](docs/BRIDGE_TRUST_MODEL.md)
@@ -45,7 +47,9 @@ Unverified production consensus parameters must not be invented or copied into t
 
 ## Verification
 
-`scripts/public-network-probe.sh` verifies public website and explorer reachability and checks `eth_chainId` and `eth_blockNumber` through the public RPC. The GitHub Actions public-network workflow runs this check from an external GitHub-hosted runner, retains evidence artifacts, and also runs on a daily schedule.
+`scripts/public-network-probe.sh` verifies public website and explorer reachability, checks `eth_chainId` and `eth_blockNumber`, records the genesis block hash as a network fingerprint, and checks selected privileged JSON-RPC methods without printing their payloads. The GitHub Actions public-network workflow runs this check from an external GitHub-hosted runner, retains evidence artifacts, and also runs on a daily schedule.
+
+The genesis block hash is an identity fingerprint only. It is not a substitute for verifying the production genesis file or QBFT parameters.
 
 `scripts/audit-publication.py` checks the public tree for recovery-topology exposure, audits the logo for PNG text/EXIF metadata chunks, and reports personal-email domains present in Git history without printing complete addresses.
 
