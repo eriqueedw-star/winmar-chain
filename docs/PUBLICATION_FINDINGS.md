@@ -1,47 +1,47 @@
-# Public release findings
+# Public repository findings
 
-## Review status
+## Current state
 
-Phase 3 has completed automated repository-quality, full-history secret scanning, and external public-network verification. This document records remaining issues that should block a repository visibility change until explicitly resolved or accepted.
+The Winmar Chain repository is public. This document records the current privacy, publication, and release-readiness findings for the public repository.
 
-## Verified
+Public visibility does not mean that Winmar Chain, its bridge, validators, smart contracts, explorer, or website have received an independent third-party security audit.
 
-- Repository-quality checks pass on the Phase 3 branch.
-- Full-history Gitleaks scanning passes.
-- The public website and explorer respond successfully from an external GitHub-hosted runner.
-- The public RPC returns chain ID `12142816` (`0xB948E0`) and a valid advancing block number.
-- The bridge endpoint is reachable, but reachability is not evidence of bridge production readiness or audit status.
+## Verified controls
 
-## Publication blockers
+- Repository-quality checks and full-history Gitleaks scanning are enforced by GitHub Actions.
+- The public-network workflow verifies website and explorer reachability and checks `eth_chainId` and `eth_blockNumber` through the public RPC.
+- The canonical public chain ID remains `12142816` (`0xB948E0`).
+- The former recovery-topology file `ops/static-nodes-recovery.json` is absent from the current public tree.
+- The repository-root logo is a valid PNG.
+- Automated PNG inspection found zero `tEXt`, `zTXt`, `iTXt`, or `eXIf` metadata chunks in the current logo.
+- `scripts/audit-publication.py` now runs in repository CI.
 
-### Public recovery topology
+## Historical privacy debt
 
-`ops/static-nodes-recovery.json` contains public enode records and Internet-routable IP addresses.
+The public Git history still contains commit metadata using a common personal-email domain.
 
-Before publication, operations must explicitly confirm that every listed enode and IP address is intended to be permanently public. If any entry is recovery-only, retired, sensitive, or not intended for public discovery, remove or replace it before changing repository visibility.
+Phase 5 measured four historical `gmail.com` occurrences. The approved baseline is recorded in `config/publication-audit-baseline.json`.
 
-### Git author metadata
+CI now enforces a no-regression rule:
 
-Repository history contains personal author-email metadata in Git commits.
+- the historical count may decrease;
+- new personal-email occurrences must not increase the approved baseline;
+- email values are not printed by the audit script.
 
-Before publication, the repository owner should explicitly decide whether that metadata is acceptable for permanent public exposure. If not, rewrite the affected Git history before publication and configure a suitable public or no-reply commit identity for subsequent commits.
+Complete removal of already published historical commit metadata requires a separately approved history rewrite and force-update procedure. Public clones, forks, caches, and previously fetched objects may retain historical data even after a rewrite.
 
-### Binary asset metadata
+## Remaining release-readiness items
 
-The root logo file `winmar-chain-logo-framed-v2.png` is a binary asset. Its checksum and branding provenance are documented, but embedded image metadata has not been independently inspected as part of this repository review.
+The following are not privacy blockers for the current public tree, but remain material security or release-readiness items:
 
-Before publication, inspect the image for EXIF, software, author, path, location, or other embedded metadata and replace it with a sanitized copy if necessary.
+- production genesis and QBFT parameters must be independently verified before publication if they are ever added;
+- validator membership evidence must be captured through authorized private or local RPC access;
+- bridge contracts, authority model, upgrade controls, and trust assumptions must be documented before production-readiness claims;
+- no independent third-party security audit report is currently recorded;
+- Chainlist PR #8740 remains open and mergeable at the latest recorded review and must be tracked to its actual upstream state.
 
-## Additional release gates
+## Decision record
 
-The following remain separate release requirements:
+The repository is public and is protected by ongoing repository-quality, secret-scanning, public-network, and publication-privacy controls.
 
-- production genesis and QBFT parameters must be independently verified before publication if they are added;
-- validator membership evidence must be captured through authorized private/local RPC access;
-- bridge contracts and trust model must be documented before production-readiness claims;
-- Chainlist PR #8740 must be recorded according to its actual upstream status at release time;
-- the public repository decision must be made separately from code/documentation merges.
-
-## Decision
-
-The Phase 3 hardening changes may be merged while the repository remains private. Do not change repository visibility until the publication blockers above are resolved or explicitly accepted in a documented review.
+Do not describe the repository as independently audited solely because these controls pass.
