@@ -24,3 +24,6 @@ All notable project changes should be recorded here.
 - Added an automated publication audit for recovery topology, PNG metadata, and informational Git email-domain reporting.
 - Documented historical personal-email commit metadata and the need for a public or GitHub no-reply commit identity.
 - Verified the current logo contains no `tEXt`, `zTXt`, `iTXt`, or `eXIf` metadata chunks.
+- Added genesis block hash collection as a public network fingerprint without publishing unverified production genesis or QBFT parameters.
+- Added public RPC privileged-method exposure checks that suppress returned payloads.
+- Added network identity and RPC exposure policy documents to release evidence bundles and release gates.

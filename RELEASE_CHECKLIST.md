@@ -27,6 +27,8 @@ Use this checklist for public releases and subsequent signed release records.
 
 - [ ] Chain ID resolves as `12142816` (`0xB948E0`).
 - [ ] Public RPC and explorer are reachable and consistent with the active chain.
+- [ ] Genesis block fingerprint matches the reviewed network-identity record.
+- [ ] Public RPC privileged-method exposure review is complete; unexpected administrative or account-management exposure blocks release until remediated or explicitly approved.
 - [ ] Validator-set evidence has been captured through authorized RPC access.
 - [ ] Bridge status and user-facing language match `docs/BRIDGE_TRUST_MODEL.md`.
 - [ ] Chainlist status is recorded accurately at release time.
