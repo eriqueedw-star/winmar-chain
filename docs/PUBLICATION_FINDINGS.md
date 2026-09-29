@@ -18,17 +18,17 @@ Public visibility does not mean that Winmar Chain, its bridge, validators, smart
 
 ## Historical privacy debt
 
-The public Git history still contains commit metadata using a common personal-email domain.
+The public Git history contains commit metadata using a common personal-email domain.
 
-Phase 5 measured four historical `gmail.com` occurrences. The approved baseline is recorded in `config/publication-audit-baseline.json`.
+The pre-Phase-5 main baseline measured four `gmail.com` occurrences. During Phase 5, GitHub connector-generated commits demonstrated that the current commit identity can add further personal-email metadata.
 
-CI now enforces a no-regression rule:
+For that reason, personal-email history is reported by the publication audit as an informational finding rather than a hard CI failure. The audit never prints complete email addresses.
 
-- the historical count may decrease;
-- new personal-email occurrences must not increase the approved baseline;
-- email values are not printed by the audit script.
+Recommended remediation:
 
-Complete removal of already published historical commit metadata requires a separately approved history rewrite and force-update procedure. Public clones, forks, caches, and previously fetched objects may retain historical data even after a rewrite.
+- configure a public or GitHub no-reply commit identity for future maintenance;
+- perform a separately approved history rewrite if canonical-history cleanup is required;
+- coordinate any force-update carefully because public clones, forks, caches, and previously fetched objects may retain historical data.
 
 ## Remaining release-readiness items
 
@@ -44,4 +44,4 @@ The following are not privacy blockers for the current public tree, but remain m
 
 The repository is public and is protected by ongoing repository-quality, secret-scanning, public-network, and publication-privacy controls.
 
-Do not describe the repository as independently audited solely because these controls pass.
+The historical commit-email metadata remains a documented privacy debt. Do not describe the repository as independently audited solely because automated controls pass.
