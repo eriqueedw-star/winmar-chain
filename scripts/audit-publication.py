@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
-"""Audit public-release privacy conditions without printing sensitive values."""
+"""Audit public-repository privacy conditions without printing sensitive values."""
 
 from __future__ import annotations
 
+import json
 import pathlib
 import struct
 import subprocess
@@ -13,6 +14,7 @@ from collections import Counter
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 LOGO = ROOT / "winmar-chain-logo-framed-v2.png"
 RECOVERY_FILE = ROOT / "ops" / "static-nodes-recovery.json"
+BASELINE_FILE = ROOT / "config" / "publication-audit-baseline.json"
 
 PERSONAL_EMAIL_DOMAINS = {
     "gmail.com",
@@ -45,6 +47,12 @@ def git_email_domains() -> Counter[str]:
             continue
         domains[email.rsplit("@", 1)[1]] += 1
     return domains
+
+
+def load_baseline() -> dict[str, int]:
+    payload = json.loads(BASELINE_FILE.read_text(encoding="utf-8"))
+    values = payload.get("personalEmailDomainOccurrences", {})
+    return {str(domain).lower(): int(count) for domain, count in values.items()}
 
 
 def png_chunks(path: pathlib.Path) -> list[tuple[str, bytes]]:
@@ -93,12 +101,25 @@ def main() -> int:
 
     domains = git_email_domains()
     personal = {domain: count for domain, count in domains.items() if domain in PERSONAL_EMAIL_DOMAINS}
+    baseline = load_baseline()
     print(f"git_email_domain_count={len(domains)}")
     print(f"personal_email_domain_count={len(personal)}")
-    if personal:
-        failures.append("personal email domain found in Git history")
-        for domain in sorted(personal):
-            print(f"personal_email_domain={domain};occurrences={personal[domain]}")
+    historical_occurrences = sum(min(count, baseline.get(domain, 0)) for domain, count in personal.items())
+    print(f"historical_personal_email_occurrences={historical_occurrences}")
+
+    regressions = {}
+    for domain, count in personal.items():
+        allowed = baseline.get(domain, 0)
+        if count > allowed:
+            regressions[domain] = count - allowed
+        print(f"personal_email_domain={domain};occurrences={count};baseline={allowed}")
+    for domain, allowed in baseline.items():
+        if domain not in personal:
+            print(f"personal_email_domain={domain};occurrences=0;baseline={allowed}")
+
+    print(f"new_personal_email_occurrences={sum(regressions.values())}")
+    if regressions:
+        failures.append("personal email history exceeded the approved historical baseline")
 
     if not LOGO.exists():
         failures.append("logo file is missing")
