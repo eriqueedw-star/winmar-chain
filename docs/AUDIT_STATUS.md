@@ -14,8 +14,8 @@ These controls improve audit readiness but do not constitute an independent secu
 - Repository CI validates JSON, lints Markdown and shell scripts, and performs full-history Gitleaks scanning.
 - CI dependencies are pinned and reviewed through repository supply-chain controls.
 - The public-network probe checks website and explorer reachability and verifies `eth_chainId` and `eth_blockNumber` through the public RPC.
-- The public-network probe records the genesis block hash returned by `eth_getBlockByNumber("0x0", false)` as a network fingerprint without publishing or inferring production genesis/QBFT parameters.
-- The public-network probe checks `admin_nodeInfo` and `personal_listAccounts` exposure without writing successful response payloads to logs. Initial Phase 6 results are informational until externally observed and reviewed.
+- The public-network probe records and enforces the reviewed genesis block fingerprint `0x82f43cfcd8c9152bae9bde20af3e790451ad1d778707f506b5794335c065c2fd` without publishing or inferring production genesis/QBFT parameters.
+- The public-network probe enforces that `admin_nodeInfo` and `personal_listAccounts` are unavailable through the public RPC, without writing successful response payloads to logs. Both methods were observed as unavailable from an external GitHub-hosted runner on 2026-09-29.
 - Public-network evidence artifacts are retained by GitHub Actions.
 - Release evidence bundles can be generated for `v*` tags and include the current public-network evidence and network-identity/RPC-policy documents.
 - The former public recovery-topology JSON is absent from the current public tree.
