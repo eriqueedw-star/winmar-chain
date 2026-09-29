@@ -8,10 +8,13 @@ on:
     paths:
       - ".github/workflows/release-evidence.yml"
       - "scripts/generate-release-manifest.sh"
+      - "scripts/public-network-probe.sh"
       - "docs/RELEASE_PROCESS.md"
       - "config/network.json"
       - "docs/AUDIT_STATUS.md"
       - "docs/PUBLICATION_FINDINGS.md"
+      - "docs/NETWORK_IDENTITY_EVIDENCE.md"
+      - "docs/RPC_EXPOSURE_POLICY.md"
   workflow_dispatch:
     inputs:
       version:
@@ -52,9 +55,12 @@ jobs:
           set -euo pipefail
           mkdir -p release-evidence
           bash scripts/generate-release-manifest.sh "$VERSION" "release-evidence/SHA256SUMS-${VERSION}.txt"
+          bash scripts/public-network-probe.sh > release-evidence/PUBLIC_NETWORK_EVIDENCE.txt
           cp config/network.json release-evidence/network.json
           cp docs/AUDIT_STATUS.md release-evidence/AUDIT_STATUS.md
           cp docs/PUBLICATION_FINDINGS.md release-evidence/PUBLICATION_FINDINGS.md
+          cp docs/NETWORK_IDENTITY_EVIDENCE.md release-evidence/NETWORK_IDENTITY_EVIDENCE.md
+          cp docs/RPC_EXPOSURE_POLICY.md release-evidence/RPC_EXPOSURE_POLICY.md
           {
             printf 'release_version=%s\n' "$VERSION"
             printf 'source_commit=%s\n' "$GITHUB_SHA"
