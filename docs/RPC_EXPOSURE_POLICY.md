@@ -25,7 +25,7 @@ The external probe checks the following methods without printing their returned 
 
 A JSON-RPC error is treated as the method being unavailable through the public endpoint. A successful JSON-RPC result is reported only as `exposed=true`; the result body is not written to CI logs or evidence artifacts.
 
-During initial Phase 6 observation these checks are informational. After the public endpoint is confirmed to return both methods as unavailable, the repository may promote the checks to a release gate.
+On 2026-09-29, an external GitHub-hosted runner observed both methods as unavailable through the canonical public RPC. The checks are therefore enforced: unexpected exposure or an indeterminate response fails the public-network probe.
 
 ## Operational boundary
 
