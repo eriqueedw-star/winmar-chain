@@ -2,9 +2,9 @@
 
 ## Current status
 
-**No independent third-party security audit report is recorded in this repository.** Do not claim that Winmar Chain, its bridge, smart contracts, validators, explorer, or website are independently audited until a verifiable report is added here.
+**No independent third-party security audit report is recorded in this repository.** Do not claim that Winmar Chain, its bridge, smart contracts, validators, explorer, website, or public RPC are independently audited until a verifiable report is added here.
 
-The repository is public and includes documented genesis/QBFT publication controls, validator-membership procedures, bootnode policy, bridge trust-model requirements, release controls, supply-chain controls, automated repository checks, external public-network verification, and publication-privacy checks.
+The repository is public and includes documented genesis/QBFT publication controls, network-identity evidence, public-RPC exposure policy, validator-membership procedures, bootnode policy, bridge trust-model requirements, release controls, supply-chain controls, automated repository checks, external public-network verification, and publication-privacy checks.
 
 These controls improve audit readiness but do not constitute an independent security audit.
 
@@ -14,12 +14,14 @@ These controls improve audit readiness but do not constitute an independent secu
 - Repository CI validates JSON, lints Markdown and shell scripts, and performs full-history Gitleaks scanning.
 - CI dependencies are pinned and reviewed through repository supply-chain controls.
 - The public-network probe checks website and explorer reachability and verifies `eth_chainId` and `eth_blockNumber` through the public RPC.
+- The public-network probe records the genesis block hash returned by `eth_getBlockByNumber("0x0", false)` as a network fingerprint without publishing or inferring production genesis/QBFT parameters.
+- The public-network probe checks `admin_nodeInfo` and `personal_listAccounts` exposure without writing successful response payloads to logs. Initial Phase 6 results are informational until externally observed and reviewed.
 - Public-network evidence artifacts are retained by GitHub Actions.
-- Release evidence bundles can be generated for `v*` tags.
+- Release evidence bundles can be generated for `v*` tags and include the current public-network evidence and network-identity/RPC-policy documents.
 - The former public recovery-topology JSON is absent from the current public tree.
 - Automated logo inspection reports zero `tEXt`, `zTXt`, `iTXt`, and `eXIf` metadata chunks.
 - The publication audit reports personal-email-domain history without exposing complete email addresses.
-- Chainlist PR #8740 has passed its recorded upstream CI baseline and remains open and mergeable at the latest recorded review.
+- Chainlist integration status is tracked separately and must be rechecked at release time.
 
 Automated checks are repository-quality and verification controls, not a security audit. Their execution status must be verified on the relevant commit or pull request.
 
@@ -35,7 +37,7 @@ Recommended remediation is to configure a public or GitHub no-reply commit ident
 
 - Genesis and QBFT parameters.
 - Validator key custody, quorum resilience, and membership-change procedure.
-- RPC method exposure, rate limits, CORS, TLS, and denial-of-service controls.
+- RPC method exposure, rate limits, CORS, TLS, request-size limits, batch behavior, WebSocket exposure, and denial-of-service controls.
 - Explorer and website dependency/security scanning.
 - Bridge contracts, relayer/operator model, upgrade authority, pause controls, and asset accounting.
 - Backup restoration and disaster-recovery exercise.
