@@ -3,6 +3,7 @@ set -euo pipefail
 
 CHAIN_ID_DECIMAL="12142816"
 CHAIN_ID_HEX="0xB948E0"
+EXPECTED_GENESIS_BLOCK_HASH="0x82f43cfcd8c9152bae9bde20af3e790451ad1d778707f506b5794335c065c2fd"
 WEBSITE_URL="https://winmarchain.io"
 RPC_URL="https://rpc.winmarchain.io"
 EXPLORER_URL="https://scan.winmarchain.io"
@@ -59,17 +60,19 @@ try:
 except Exception:
     print(f"rpc_{label}_check=indeterminate")
     print(f"rpc_{label}_exposed=unknown")
-    raise SystemExit(0)
+    raise SystemExit(1)
 
 if "result" in payload and "error" not in payload:
     print(f"rpc_{label}_check=success")
     print(f"rpc_{label}_exposed=true")
+    raise SystemExit(1)
 elif "error" in payload:
     print(f"rpc_{label}_check=success")
     print(f"rpc_{label}_exposed=false")
 else:
     print(f"rpc_{label}_check=indeterminate")
     print(f"rpc_{label}_exposed=unknown")
+    raise SystemExit(1)
 PY
 }
 
@@ -152,12 +155,13 @@ PY
 
 genesis_response="$(rpc_post '{"jsonrpc":"2.0","method":"eth_getBlockByNumber","params":["0x0",false],"id":3}')"
 
-GENESIS_RESPONSE="$genesis_response" python3 - <<'PY'
+GENESIS_RESPONSE="$genesis_response" EXPECTED_GENESIS_BLOCK_HASH="$EXPECTED_GENESIS_BLOCK_HASH" python3 - <<'PY'
 import json
 import os
 import sys
 
 raw = os.environ["GENESIS_RESPONSE"]
+expected_hash = os.environ["EXPECTED_GENESIS_BLOCK_HASH"]
 try:
     payload = json.loads(raw)
     result = payload.get("result")
@@ -177,9 +181,12 @@ except Exception as exc:
 print("rpc_genesis_block_valid=true")
 print("rpc_genesis_block_number=0")
 print(f"rpc_genesis_block_hash={block_hash}")
+print(f"rpc_genesis_block_hash_matches_expected={'true' if block_hash.lower() == expected_hash.lower() else 'false'}")
 print("rpc_genesis_fingerprint_scope=block_hash_only")
+if block_hash.lower() != expected_hash.lower():
+    sys.exit(1)
 PY
 
-printf 'rpc_privileged_method_gate=informational_only\n'
+printf 'rpc_privileged_method_gate=enforced\n'
 check_method_exposure "admin_nodeinfo" "admin_nodeInfo" "[]"
 check_method_exposure "personal_listaccounts" "personal_listAccounts" "[]"
