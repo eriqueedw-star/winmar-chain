@@ -2,25 +2,34 @@
 
 ## Current status
 
-**No independent third-party security audit report is recorded in this repository.** Do not claim that Winmar Chain, its bridge, smart contracts, validators, explorer, or website are audited until a verifiable report is added here.
+**No independent third-party security audit report is recorded in this repository.** Do not claim that Winmar Chain, its bridge, smart contracts, validators, explorer, or website are independently audited until a verifiable report is added here.
 
-Repository hardening includes documented genesis/QBFT publication controls, validator-membership procedures, bootnode policy, bridge trust-model requirements, release readiness controls, supply-chain controls, automated repository checks, and a separate privacy/publication gate. These controls improve audit readiness but do not constitute an independent audit.
+The repository is public and includes documented genesis/QBFT publication controls, validator-membership procedures, bootnode policy, bridge trust-model requirements, release controls, supply-chain controls, automated repository checks, external public-network verification, and publication-privacy checks.
+
+These controls improve audit readiness but do not constitute an independent security audit.
 
 ## Completed evidence
 
-- Chainlist contribution JSON schema, formatting, lint, and build checks passed for PR #8740 at the recorded project baseline.
 - Public metadata identifies chain ID `12142816`, RPC `rpc.winmarchain.io`, and explorer `scan.winmarchain.io`.
-- The project includes a local validator health script for service, height, peers, sync state, and validator-set checks.
-- Repository hardening documents explicitly prohibit inventing or publishing unverified production genesis parameters.
-- GitHub Actions validate JSON, lint Markdown and shell scripts, and scan Git history for secrets.
+- Repository CI validates JSON, lints Markdown and shell scripts, and performs full-history Gitleaks scanning.
 - CI dependencies are pinned and reviewed through repository supply-chain controls.
-- A public-network probe independently checks website and explorer reachability and verifies `eth_chainId` and `eth_blockNumber` through the public RPC.
-- A release-manifest script generates SHA-256 checksums from tracked repository files.
-- A second privacy/publication review is required before any repository visibility change.
+- The public-network probe checks website and explorer reachability and verifies `eth_chainId` and `eth_blockNumber` through the public RPC.
+- Public-network evidence artifacts are retained by GitHub Actions.
+- Release evidence bundles can be generated for `v*` tags.
+- The former public recovery-topology JSON is absent from the current public tree.
+- Automated logo inspection reports zero `tEXt`, `zTXt`, `iTXt`, and `eXIf` metadata chunks.
+- The publication audit records the historical personal-email-domain baseline and prevents new occurrences above that baseline.
+- Chainlist PR #8740 has passed its recorded upstream CI baseline and remains open and mergeable at the latest recorded review.
 
-Automated checks are configuration and repository-quality controls, not a security audit. Their execution status must be verified on the relevant commit or pull request.
+Automated checks are repository-quality and verification controls, not a security audit. Their execution status must be verified on the relevant commit or pull request.
 
-## Recommended audit scope
+## Known limitation
+
+The public Git history contains four historical `gmail.com` occurrences in commit metadata. They are recorded as historical privacy debt in `config/publication-audit-baseline.json`.
+
+A controlled history rewrite is required to reduce or remove them from the canonical branch history. External copies may retain historical objects even after a rewrite.
+
+## Recommended independent audit scope
 
 - Genesis and QBFT parameters.
 - Validator key custody, quorum resilience, and membership-change procedure.
@@ -32,4 +41,4 @@ Automated checks are configuration and repository-quality controls, not a securi
 
 ## Evidence format
 
-For each completed review, record the auditor, scope, version or commit, dates, findings, remediation status, report hash, and public report URL where permitted.
+For each completed independent or second-party review, record the auditor, scope, version or commit, dates, findings, remediation status, report hash, and public report URL where permitted.
