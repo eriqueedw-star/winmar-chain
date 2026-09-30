@@ -16,7 +16,7 @@ This runbook deploys the Winmar Token Factory and native WMC Faucet to Winmar Ch
 
 The workflow requires an explicit `DEPLOY_MAINNET` confirmation and references the GitHub `production` environment.
 
-Store the deployer private key only as the `WINMAR_MAINNET_DEPLOYER_PRIVATE_KEY` environment secret. Never paste it into chat, source files, workflow YAML, or logs. GitHub recommends using encrypted secrets and environment protection for sensitive deployment credentials. citeturn0search0turn0search3
+Store the deployer private key only as the `WINMAR_MAINNET_DEPLOYER_PRIVATE_KEY` environment secret. Never paste it into chat, source files, workflow YAML, or logs. GitHub recommends using encrypted secrets and environment protection for sensitive deployment credentials.
 
 The script verifies that the RPC actually reports Chain ID `12142816` before sending any deployment transaction.
 
@@ -42,7 +42,7 @@ Create the environment named `production` and add:
 
 Do not use a validator signing key as the deployment key.
 
-Where possible, configure required reviewers for the production environment so the deployment job cannot access the private key until the deployment is approved. GitHub environment secrets are only exposed to jobs that reference the environment and can be gated by required reviewers. citeturn0search3turn0search5
+Where possible, configure required reviewers for the production environment so the deployment job cannot access the private key until the deployment is approved. GitHub environment secrets are only exposed to jobs that reference the environment and can be gated by required reviewers.
 
 ## Deploy
 
@@ -54,4 +54,4 @@ Where possible, configure required reviewers for the production environment so t
 6. Review the deployment artifact for factory and faucet addresses and transaction hashes.
 7. Verify both contracts on the explorer before publishing their addresses in `config/developer-tools.json`.
 
-Mainnet deployment creates real on-chain contracts and consumes gas. Smart-contract deployments should be reviewed and source-verified before being treated as production-ready. citeturn0search10
+Mainnet deployment creates real on-chain contracts and consumes gas. Smart-contract deployments should be reviewed and source-verified before being treated as production-ready.
