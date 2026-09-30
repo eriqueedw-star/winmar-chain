@@ -82,6 +82,10 @@ jobs:
           grep -q '^# Source commit: ' /tmp/SHA256SUMS-ci.txt
           grep -q '  config/network.json$' /tmp/SHA256SUMS-ci.txt
 
+      - name: Check JavaScript deployment script
+        shell: bash
+        run: node --check scripts/deploy-developer-tools.mjs
+
       - name: Lint Markdown
         shell: bash
         run: npx --yes markdownlint-cli2@0.23.3 "**/*.md"
