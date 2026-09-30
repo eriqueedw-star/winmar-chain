@@ -1,0 +1,25 @@
+{
+  "network": {
+    "name": "Winmar Chain",
+    "chainId": 12142816,
+    "chainIdHex": "0xB948E0",
+    "nativeCurrency": {
+      "name": "Winmar Coin",
+      "symbol": "WMC",
+      "decimals": 18
+    },
+    "rpc": "https://rpc.winmarchain.io",
+    "explorer": "https://scan.winmarchain.io"
+  },
+  "faucet": {
+    "environment": "testnet-devnet-only",
+    "configured": false,
+    "contractAddress": null,
+    "claimAmount": null,
+    "cooldownSeconds": null
+  },
+  "tokenMaker": {
+    "configured": false,
+    "factoryAddress": null
+  }
+}
