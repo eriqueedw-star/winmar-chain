@@ -13,7 +13,7 @@ Winmar Token Maker creates standard ERC-20-compatible tokens using the first-par
 - Mintable
 - Burnable
 - Pausable
-- Creator salt
+- Creator salt (duplicate-deployment guard)
 
 ## Token behavior
 
@@ -62,6 +62,6 @@ After deployment, record:
 
 ## User flow
 
-Connect Wallet -> Configure Token -> Preview Powers -> Predict Address -> Deploy -> Verify -> Show Explorer
+Connect Wallet -> Configure Token -> Preview Powers -> Deploy -> Verify -> Show Explorer
 
 The UI must never request a private key or seed phrase.
