@@ -69,8 +69,8 @@ const RPC_URL = 'https://rpc.winmarchain.io';
 const EXPLORER = 'https://scan.winmarchain.io';
 const FAUCET_ABI = ['function claim()','function claimAmount() view returns (uint256)'];
 const FACTORY_ABI = [
-  'function createToken(string,string,uint8,uint256,address,bool,bool,bool,bytes32) returns (address)',
-  'function predictTokenAddress(address,bytes32,string,string,uint8,uint256,address,bool,bool,bool) view returns (address)'
+  'function createToken((string,string,uint8,uint256,address,bool,bool,bool),bytes32) returns (address)',
+  'function predictTokenAddress(address,(string,string,uint8,uint256,address,bool,bool,bool),bytes32) view returns (address)'
 ];
 let config = null;
 let provider = null;
@@ -126,14 +126,16 @@ function tokenArgs(){
 async function predict(){
   const args=tokenArgs();
   const factory=new ethers.Contract(config.tokenMaker.factoryAddress,FACTORY_ABI,provider);
-  const predicted=await factory.predictTokenAddress(account,args[8],args[0],args[1],args[2],args[3],args[4],args[5],args[6],args[7]);
+  const tokenConfig=[args[0],args[1],args[2],args[3],args[4],args[5],args[6],args[7]];
+  const predicted=await factory.predictTokenAddress(account,tokenConfig,args[8]);
   document.getElementById('tokenStatus').textContent='Predicted address: '+predicted;
 }
 
 async function deploy(){
   const args=tokenArgs();
   const factory=new ethers.Contract(config.tokenMaker.factoryAddress,FACTORY_ABI,signer);
-  const tx=await factory.createToken(...args);
+  const tokenConfig=[args[0],args[1],args[2],args[3],args[4],args[5],args[6],args[7]];
+  const tx=await factory.createToken(tokenConfig,args[8]);
   document.getElementById('tokenStatus').textContent='Submitted: '+tx.hash+'\n'+EXPLORER+'/tx/'+tx.hash;
   const receipt=await tx.wait();
   document.getElementById('tokenStatus').textContent += '\nConfirmed in block '+receipt.blockNumber+'.';
