@@ -25,7 +25,9 @@ The machine-readable public metadata lives in [`config/network.json`](config/net
 - `docs/` — architecture, operating procedures, audit status, and project history.
 - `scripts/` — health, verification, and release utilities.
 - `assets/` — branding guidance and asset provenance.
+- `apps/` — static developer-tools UI for the faucet and token maker.
 - `chainlist/` — references for the upstream Chainlist registration.
+- `contracts/` — Winmar Faucet and Token Maker smart contracts.
 - `checksums/` — immutable checksum manifests for release artifacts.
 
 ## Operational hardening
@@ -42,6 +44,8 @@ The repository includes explicit controls for material that is not yet safe to i
 - [Current publication findings](docs/PUBLICATION_FINDINGS.md)
 - [Release process](docs/RELEASE_PROCESS.md)
 - [Release checklist](RELEASE_CHECKLIST.md)
+- [Winmar Faucet](docs/FAUCET.md)
+- [Winmar Token Maker](docs/TOKEN_MAKER.md)
 
 Unverified production consensus parameters must not be invented or copied into the repository.
 
