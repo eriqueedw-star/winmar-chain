@@ -1,0 +1,46 @@
+name: Smart contract quality
+
+on:
+  push:
+    branches:
+      - main
+      - "feature/**"
+      - "hardening/**"
+    paths:
+      - "contracts/**"
+      - ".github/workflows/smart-contract-quality.yml"
+  pull_request:
+    paths:
+      - "contracts/**"
+      - ".github/workflows/smart-contract-quality.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  compile:
+    name: Compile Winmar contracts
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          fetch-depth: 1
+
+      - name: Set up Node.js
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 24
+
+      - name: Compile Solidity
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf /tmp/winmar-solc
+          mkdir -p /tmp/winmar-solc
+          npx --yes solc@0.8.30 --base-path . --include-path contracts --bin --abi contracts/WinmarToken.sol contracts/WinmarTokenFactory.sol contracts/WinmarFaucet.sol -o /tmp/winmar-solc
+          test -s /tmp/winmar-solc/WinmarToken_sol_WinmarToken.bin
+          test -s /tmp/winmar-solc/WinmarTokenFactory_sol_WinmarTokenFactory.bin
+          test -s /tmp/winmar-solc/WinmarFaucet_sol_WinmarFaucet.bin
+          echo "Solidity compilation passed"
