@@ -7,6 +7,7 @@ This static page provides the wallet-facing UI for the Winmar Faucet and Token M
 The UI is intentionally shipped with both contract addresses unset in config/developer-tools.json.
 
 That means:
+
 - Faucet claims remain disabled until a dedicated testnet/devnet faucet is deployed and configured.
 - Token deployment remains disabled until the WinmarTokenFactory is deployed and its address is reviewed.
 
