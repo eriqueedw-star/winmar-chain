@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Winmar Developer Tools</title>
+  <style>
+    :root{color-scheme:dark;font-family:Inter,system-ui,sans-serif;background:#07111f;color:#e9f0f7}
+    body{margin:0;background:linear-gradient(180deg,#07111f,#0b1626);min-height:100vh}
+    main{max-width:960px;margin:0 auto;padding:40px 20px}
+    .card{background:#101d2e;border:1px solid #24364d;border-radius:18px;padding:24px;margin:16px 0}
+    h1,h2{margin-top:0}
+    .muted{color:#9eb0c4}
+    .row{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+    label{display:block;font-size:13px;color:#a9bbce;margin-bottom:6px}
+    input{width:100%;box-sizing:border-box;background:#0a1524;border:1px solid #2a405a;color:#fff;border-radius:10px;padding:11px}
+    button{border:0;border-radius:10px;padding:11px 16px;background:#2d7ff9;color:#fff;font-weight:700;cursor:pointer}
+    button:disabled{opacity:.45;cursor:not-allowed}
+    .tabs{display:flex;gap:8px;margin:20px 0}
+    .status{padding:12px;border-radius:10px;background:#0a1524;color:#b9c9da;white-space:pre-wrap}
+    @media(max-width:700px){.row{grid-template-columns:1fr}}
+  </style>
+</head>
+<body>
+<main>
+  <div class="card">
+    <p class="muted">WINMAR CHAIN · DEVELOPER TOOLS</p>
+    <h1>Faucet + Token Maker</h1>
+    <p class="muted">Canonical network: Chain ID 12142816 · WMC · rpc.winmarchain.io</p>
+    <button id="connect">Connect Wallet</button>
+    <span id="account" class="muted"></span>
+  </div>
+
+  <div class="tabs">
+    <button id="tabFaucet">Faucet</button>
+    <button id="tabToken">Token Maker</button>
+  </div>
+
+  <section id="faucetPanel" class="card">
+    <h2>Developer Faucet</h2>
+    <p class="muted">Testnet/devnet only. The faucet distributes funded native WMC; it does not mint WMC.</p>
+    <button id="claim" disabled>Claim WMC</button>
+    <div id="faucetStatus" class="status">Faucet contract is not configured yet.</div>
+  </section>
+
+  <section id="tokenPanel" class="card" hidden>
+    <h2>Token Maker</h2>
+    <div class="row">
+      <div><label>Name</label><input id="name" value="My Winmar Token"></div>
+      <div><label>Symbol</label><input id="symbol" value="MWT"></div>
+      <div><label>Decimals</label><input id="decimals" type="number" min="0" max="18" value="18"></div>
+      <div><label>Initial supply</label><input id="supply" value="1000000"></div>
+      <div><label>Initial holder</label><input id="holder" placeholder="Connect wallet first"></div>
+      <div><label>Creator salt</label><input id="salt" value="winmar-token-1"></div>
+    </div>
+    <p><label><input id="mintable" type="checkbox"> Mintable</label></p>
+    <p><label><input id="burnable" type="checkbox" checked> Burnable</label></p>
+    <p><label><input id="pausable" type="checkbox"> Pausable</label></p>
+    <button id="predict" disabled>Preview Address</button>
+    <button id="deploy" disabled>Deploy Token</button>
+    <div id="tokenStatus" class="status">Token factory is not configured yet.</div>
+  </section>
+</main>
+<script src="https://cdn.jsdelivr.net/npm/ethers@6.15.0/dist/ethers.umd.min.js"></script>
+<script>
+const CHAIN_ID = 12142816n;
+const CHAIN_HEX = '0xB948E0';
+const RPC_URL = 'https://rpc.winmarchain.io';
+const EXPLORER = 'https://scan.winmarchain.io';
+const FAUCET_ABI = ['function claim()','function claimAmount() view returns (uint256)'];
+const FACTORY_ABI = [
+  'function createToken(string,string,uint8,uint256,address,bool,bool,bool,bytes32) returns (address)',
+  'function predictTokenAddress(address,bytes32,string,string,uint8,uint256,address,bool,bool,bool) view returns (address)'
+];
+let config = null;
+let provider = null;
+let signer = null;
+let account = null;
+
+async function loadConfig(){
+  const response = await fetch('../../config/developer-tools.json',{cache:'no-store'});
+  config = await response.json();
+  document.getElementById('claim').disabled = !config.faucet.configured;
+  document.getElementById('predict').disabled = !config.tokenMaker.configured;
+  document.getElementById('deploy').disabled = !config.tokenMaker.configured;
+}
+
+async function connect(){
+  if(!window.ethereum){ alert('Install an EVM wallet such as MetaMask.'); return; }
+  provider = new ethers.BrowserProvider(window.ethereum);
+  await provider.send('eth_requestAccounts',[]);
+  await provider.send('wallet_switchEthereumChain',[{chainId:CHAIN_HEX}]).catch(async err=>{
+    if(err.code !== 4902) throw err;
+    await provider.send('wallet_addEthereumChain',[{
+      chainId:CHAIN_HEX,chainName:'Winmar Chain',nativeCurrency:{name:'Winmar Coin',symbol:'WMC',decimals:18},
+      rpcUrls:[RPC_URL],blockExplorerUrls:[EXPLORER]
+    }]);
+  });
+  signer = await provider.getSigner();
+  account = await signer.getAddress();
+  document.getElementById('account').textContent = account;
+  document.getElementById('holder').value = account;
+  document.getElementById('predict').disabled = !config.tokenMaker.configured;
+  document.getElementById('deploy').disabled = !config.tokenMaker.configured;
+  document.getElementById('claim').disabled = !config.faucet.configured;
+}
+
+async function claim(){
+  const faucet = new ethers.Contract(config.faucet.contractAddress,FAUCET_ABI,signer);
+  const tx = await faucet.claim();
+  document.getElementById('faucetStatus').textContent = 'Submitted: '+tx.hash+'\n'+EXPLORER+'/tx/'+tx.hash;
+  await tx.wait();
+  document.getElementById('faucetStatus').textContent += '\nConfirmed.';
+}
+
+function tokenArgs(){
+  const decimals = Number(document.getElementById('decimals').value);
+  if(!Number.isInteger(decimals)||decimals<0||decimals>18) throw new Error('Decimals must be 0-18.');
+  const supply = ethers.parseUnits(document.getElementById('supply').value,decimals);
+  const holder = document.getElementById('holder').value || account;
+  if(!ethers.isAddress(holder)) throw new Error('Initial holder is not a valid address.');
+  const salt = ethers.id(document.getElementById('salt').value);
+  return [document.getElementById('name').value,document.getElementById('symbol').value,decimals,supply,holder,document.getElementById('mintable').checked,document.getElementById('burnable').checked,document.getElementById('pausable').checked,salt];
+}
+
+async function predict(){
+  const args=tokenArgs();
+  const factory=new ethers.Contract(config.tokenMaker.factoryAddress,FACTORY_ABI,provider);
+  const predicted=await factory.predictTokenAddress(account,args[8],args[0],args[1],args[2],args[3],args[4],args[5],args[6],args[7]);
+  document.getElementById('tokenStatus').textContent='Predicted address: '+predicted;
+}
+
+async function deploy(){
+  const args=tokenArgs();
+  const factory=new ethers.Contract(config.tokenMaker.factoryAddress,FACTORY_ABI,signer);
+  const tx=await factory.createToken(...args);
+  document.getElementById('tokenStatus').textContent='Submitted: '+tx.hash+'\n'+EXPLORER+'/tx/'+tx.hash;
+  const receipt=await tx.wait();
+  document.getElementById('tokenStatus').textContent += '\nConfirmed in block '+receipt.blockNumber+'.';
+}
+
+document.getElementById('connect').onclick=connect;
+document.getElementById('claim').onclick=()=>claim().catch(e=>document.getElementById('faucetStatus').textContent=e.shortMessage||e.message);
+document.getElementById('predict').onclick=()=>predict().catch(e=>document.getElementById('tokenStatus').textContent=e.shortMessage||e.message);
+document.getElementById('deploy').onclick=()=>deploy().catch(e=>document.getElementById('tokenStatus').textContent=e.shortMessage||e.message);
+document.getElementById('tabFaucet').onclick=()=>{document.getElementById('faucetPanel').hidden=false;document.getElementById('tokenPanel').hidden=true;};
+document.getElementById('tabToken').onclick=()=>{document.getElementById('faucetPanel').hidden=true;document.getElementById('tokenPanel').hidden=false;};
+loadConfig().catch(e=>document.getElementById('faucetStatus').textContent='Config load failed: '+e.message);
+</script>
+</body>
+</html>
