@@ -5,6 +5,7 @@
 Winmar Token Maker creates standard ERC-20-compatible tokens using the first-party WinmarTokenFactory.
 
 ## Creation fields
+
 - Token name
 - Symbol
 - Decimals
@@ -18,6 +19,7 @@ Winmar Token Maker creates standard ERC-20-compatible tokens using the first-par
 ## Token behavior
 
 The generated token has:
+
 - standard transfer;
 - allowance/approval;
 - transferFrom;
@@ -27,6 +29,7 @@ The generated token has:
 - ownership transfer/renounce.
 
 It intentionally does not include:
+
 - transfer tax;
 - blacklist;
 - hidden mint;
@@ -47,11 +50,13 @@ The UI must display these powers clearly before deployment.
 The factory address is intentionally unset until a reviewed deployment exists.
 
 Current state:
+
 - network: Winmar Chain;
 - chain ID: 12142816;
 - factory deployed: no deployment recorded yet.
 
 After deployment, record:
+
 - factory address;
 - deployment transaction;
 - compiler version;
