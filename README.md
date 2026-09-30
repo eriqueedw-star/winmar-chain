@@ -25,6 +25,7 @@ The machine-readable public metadata lives in [`config/network.json`](config/net
 - `docs/` — architecture, operating procedures, audit status, and project history.
 - `scripts/` — health, verification, and release utilities.
 - `assets/` — branding guidance and asset provenance.
+- `apps/` — static developer-tools UI for the faucet and token maker.
 - `chainlist/` — references for the upstream Chainlist registration.
 - `contracts/` — Winmar Faucet and Token Maker smart contracts.
 - `checksums/` — immutable checksum manifests for release artifacts.
