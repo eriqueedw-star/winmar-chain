@@ -9,6 +9,7 @@ This directory contains the first-party smart-contract layer for the Winmar deve
 A transparent ERC-20-compatible token template.
 
 Supported options are explicit constructor flags:
+
 - mintable;
 - burnable;
 - pausable.
@@ -18,10 +19,11 @@ The template intentionally has no transfer tax, blacklist, hidden mint path, ref
 ### WinmarTokenFactory.sol
 
 Permissionless factory for WinmarToken.
+
 - no protocol fee;
 - no factory owner;
 - creator becomes token owner;
-- creator token index;
+- standard contract deployment;
 - creator-scoped salt registry to prevent accidental duplicate deployments.
 
 The factory cannot mint, pause, or seize tokens after deployment.
@@ -29,6 +31,7 @@ The factory cannot mint, pause, or seize tokens after deployment.
 ### WinmarFaucet.sol
 
 Native WMC faucet for a dedicated developer testnet/devnet treasury.
+
 - does not mint WMC;
 - must be funded with native WMC;
 - per-wallet cooldown;
