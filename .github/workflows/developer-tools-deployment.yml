@@ -1,0 +1,54 @@
+name: Developer tools deployment
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirm:
+        description: 'Type DEPLOY_TESTNET to confirm a testnet/devnet deployment'
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    name: Deploy Faucet and Token Factory
+    if: ${{ inputs.confirm == 'DEPLOY_TESTNET' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          fetch-depth: 1
+
+      - name: Set up Node.js
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 24
+
+      - name: Install deployment dependency
+        run: npm install --no-save --ignore-scripts ethers@6.15.0
+
+      - name: Build contract artifacts
+        run: bash scripts/build-developer-tools.sh build/developer-tools
+
+      - name: Deploy to dedicated testnet/devnet
+        env:
+          WINMAR_TESTNET_RPC_URL: ${{ secrets.WINMAR_TESTNET_RPC_URL }}
+          WINMAR_TESTNET_CHAIN_ID: ${{ secrets.WINMAR_TESTNET_CHAIN_ID }}
+          WINMAR_TESTNET_PRIVATE_KEY: ${{ secrets.WINMAR_TESTNET_PRIVATE_KEY }}
+          WINMAR_FAUCET_CLAIM_AMOUNT: '0.1'
+          WINMAR_FAUCET_COOLDOWN_SECONDS: '86400'
+          WINMAR_FAUCET_DAILY_CAP: '100'
+          WINMAR_ARTIFACT_DIR: build/developer-tools
+          WINMAR_DEPLOYMENT_OUTPUT: deployments/developer-tools.json
+        run: node scripts/deploy-developer-tools.mjs
+
+      - name: Upload deployment manifest
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: winmar-developer-tools-deployment-${{ github.run_id }}
+          path: deployments/developer-tools.json
+          if-no-files-found: error
+          retention-days: 30
