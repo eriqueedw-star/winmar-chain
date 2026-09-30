@@ -7,7 +7,7 @@ import "./WinmarToken.sol";
  * @title WinmarTokenFactory
  * @notice Permissionless factory for the transparent WinmarToken template.
  *
- * Each creator gets an independent CREATE2 namespace. The factory has no
+ * Each creator gets an independent salt namespace. The factory has no
  * admin minting authority over created tokens and charges no protocol fee.
  */
 contract WinmarTokenFactory {
@@ -50,7 +50,7 @@ contract WinmarTokenFactory {
         bytes32 salt = keccak256(abi.encode(msg.sender, userSalt));
         if (tokenBySalt[salt] != address(0)) revert SaltAlreadyUsed();
 
-        token = address(new WinmarToken{salt: salt}(
+        token = address(new WinmarToken(
             config.name,
             config.symbol,
             config.decimals,
@@ -77,35 +77,6 @@ contract WinmarTokenFactory {
             config.pausable,
             salt
         );
-    }
-
-    function predictTokenAddress(
-        address creator,
-        TokenConfig calldata config,
-        bytes32 userSalt
-    ) external view returns (address predicted) {
-        bytes32 salt = keccak256(abi.encode(creator, userSalt));
-        bytes memory initCode = abi.encodePacked(
-            type(WinmarToken).creationCode,
-            abi.encode(
-                config.name,
-                config.symbol,
-                config.decimals,
-                config.initialSupply,
-                config.initialHolder,
-                config.mintable,
-                config.burnable,
-                config.pausable,
-                creator
-            )
-        );
-        bytes32 initCodeHash = keccak256(initCode);
-        predicted = address(uint160(uint256(keccak256(abi.encodePacked(
-            bytes1(0xff),
-            address(this),
-            salt,
-            initCodeHash
-        )))));
     }
 
     function tokensOf(address creator) external view returns (address[] memory) {
