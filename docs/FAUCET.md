@@ -7,6 +7,7 @@ The Winmar Faucet distributes native WMC from a funded faucet treasury to develo
 The faucet contract does not mint WMC. It only transfers the native currency already deposited into the faucet.
 
 ## Safety controls
+
 - per-wallet cooldown;
 - global daily distribution cap;
 - pause control;
@@ -16,6 +17,7 @@ The faucet contract does not mint WMC. It only transfers the native currency alr
 - no unrestricted RPC administration.
 
 The web UI should additionally use:
+
 - CAPTCHA or equivalent bot protection;
 - IP/request rate limiting;
 - wallet abuse detection;
@@ -26,11 +28,12 @@ These off-chain controls are intentionally not embedded in the contract.
 
 ## Deployment policy
 
-Testnet/devnet only.
+**Testnet/devnet only.**
 
 Do not deploy or fund this faucet from a production/mainnet validator or treasury wallet.
 
 Before deployment:
+
 1. compile with the pinned Solidity compiler;
 2. review constructor parameters;
 3. deploy from a dedicated faucet-admin account;
@@ -43,6 +46,7 @@ Before deployment:
 ## Suggested initial testnet configuration
 
 These are examples, not production defaults:
+
 - claim amount: 0.1 WMC;
 - cooldown: 24 hours;
 - daily cap: 100 WMC.
