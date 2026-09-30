@@ -27,3 +27,6 @@ All notable project changes should be recorded here.
 - Added genesis block hash collection as a public network fingerprint without publishing unverified production genesis or QBFT parameters.
 - Added public RPC privileged-method exposure checks that suppress returned payloads.
 - Added network identity and RPC exposure policy documents to release evidence bundles and release gates.
+- Added WinmarToken, WinmarTokenFactory, and the testnet/devnet-only WinmarFaucet source contracts.
+- Added Solidity compilation CI and a static developer-tools UI for the faucet and token maker.
+- Added deployment-safe configuration with contract addresses unset until reviewed deployments exist.
