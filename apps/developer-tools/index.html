@@ -56,7 +56,6 @@
     <p><label><input id="mintable" type="checkbox"> Mintable</label></p>
     <p><label><input id="burnable" type="checkbox" checked> Burnable</label></p>
     <p><label><input id="pausable" type="checkbox"> Pausable</label></p>
-    <button id="predict" disabled>Preview Address</button>
     <button id="deploy" disabled>Deploy Token</button>
     <div id="tokenStatus" class="status">Token factory is not configured yet.</div>
   </section>
@@ -81,8 +80,7 @@ async function loadConfig(){
   const response = await fetch('../../config/developer-tools.json',{cache:'no-store'});
   config = await response.json();
   document.getElementById('claim').disabled = !config.faucet.configured;
-  document.getElementById('predict').disabled = !config.tokenMaker.configured;
-  document.getElementById('deploy').disabled = !config.tokenMaker.configured;
+    document.getElementById('deploy').disabled = !config.tokenMaker.configured;
 }
 
 async function connect(){
@@ -100,7 +98,6 @@ async function connect(){
   account = await signer.getAddress();
   document.getElementById('account').textContent = account;
   document.getElementById('holder').value = account;
-  document.getElementById('predict').disabled = !config.tokenMaker.configured;
   document.getElementById('deploy').disabled = !config.tokenMaker.configured;
   document.getElementById('claim').disabled = !config.faucet.configured;
 }
@@ -123,14 +120,6 @@ function tokenArgs(){
   return [document.getElementById('name').value,document.getElementById('symbol').value,decimals,supply,holder,document.getElementById('mintable').checked,document.getElementById('burnable').checked,document.getElementById('pausable').checked,salt];
 }
 
-async function predict(){
-  const args=tokenArgs();
-  const factory=new ethers.Contract(config.tokenMaker.factoryAddress,FACTORY_ABI,provider);
-  const tokenConfig=[args[0],args[1],args[2],args[3],args[4],args[5],args[6],args[7]];
-  const predicted=await factory.predictTokenAddress(account,tokenConfig,args[8]);
-  document.getElementById('tokenStatus').textContent='Predicted address: '+predicted;
-}
-
 async function deploy(){
   const args=tokenArgs();
   const factory=new ethers.Contract(config.tokenMaker.factoryAddress,FACTORY_ABI,signer);
@@ -138,12 +127,19 @@ async function deploy(){
   const tx=await factory.createToken(tokenConfig,args[8]);
   document.getElementById('tokenStatus').textContent='Submitted: '+tx.hash+'\n'+EXPLORER+'/tx/'+tx.hash;
   const receipt=await tx.wait();
-  document.getElementById('tokenStatus').textContent += '\nConfirmed in block '+receipt.blockNumber+'.';
+  const iface=new ethers.Interface(FACTORY_ABI);
+  let tokenAddress='';
+  for(const log of receipt.logs){
+    try{
+      const parsed=iface.parseLog(log);
+      if(parsed && parsed.name==='TokenCreated'){ tokenAddress=parsed.args.token; break; }
+    }catch(_){ }
+  }
+  document.getElementById('tokenStatus').textContent += '\nConfirmed in block '+receipt.blockNumber+'.' + (tokenAddress ? '\\nToken: '+tokenAddress+'\\n'+EXPLORER+'/address/'+tokenAddress : '');
 }
 
 document.getElementById('connect').onclick=connect;
 document.getElementById('claim').onclick=()=>claim().catch(e=>document.getElementById('faucetStatus').textContent=e.shortMessage||e.message);
-document.getElementById('predict').onclick=()=>predict().catch(e=>document.getElementById('tokenStatus').textContent=e.shortMessage||e.message);
 document.getElementById('deploy').onclick=()=>deploy().catch(e=>document.getElementById('tokenStatus').textContent=e.shortMessage||e.message);
 document.getElementById('tabFaucet').onclick=()=>{document.getElementById('faucetPanel').hidden=false;document.getElementById('tokenPanel').hidden=true;};
 document.getElementById('tabToken').onclick=()=>{document.getElementById('faucetPanel').hidden=true;document.getElementById('tokenPanel').hidden=false;};
