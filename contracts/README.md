@@ -21,9 +21,8 @@ Permissionless factory for WinmarToken.
 - no protocol fee;
 - no factory owner;
 - creator becomes token owner;
-- CREATE2 addresses;
 - creator token index;
-- deterministic address prediction.
+- creator-scoped salt registry to prevent accidental duplicate deployments.
 
 The factory cannot mint, pause, or seize tokens after deployment.
 
