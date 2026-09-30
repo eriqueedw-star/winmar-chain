@@ -3,28 +3,37 @@ import path from 'node:path';
 import { JsonRpcProvider, Wallet, ContractFactory, parseEther } from 'ethers';
 
 const MAINNET_CHAIN_ID = 12142816n;
-const rpcUrl = process.env.WINMAR_TESTNET_RPC_URL;
-const expectedChainId = BigInt(process.env.WINMAR_TESTNET_CHAIN_ID || '0');
-const privateKey = process.env.WINMAR_TESTNET_PRIVATE_KEY;
+const target = process.env.WINMAR_DEPLOY_TARGET || 'mainnet';
+const rpcUrl = process.env.WINMAR_DEPLOY_RPC_URL;
+const expectedChainId = BigInt(process.env.WINMAR_DEPLOY_CHAIN_ID || '0');
+const privateKey = process.env.WINMAR_DEPLOY_PRIVATE_KEY;
 const artifactDir = process.env.WINMAR_ARTIFACT_DIR || 'build/developer-tools';
 const outputFile = process.env.WINMAR_DEPLOYMENT_OUTPUT || 'deployments/developer-tools.json';
 
 if (!rpcUrl || !privateKey || expectedChainId === 0n) {
-  throw new Error('WINMAR_TESTNET_RPC_URL, WINMAR_TESTNET_CHAIN_ID, and WINMAR_TESTNET_PRIVATE_KEY are required.');
+  throw new Error('WINMAR_DEPLOY_RPC_URL, WINMAR_DEPLOY_CHAIN_ID, and WINMAR_DEPLOY_PRIVATE_KEY are required.');
 }
 
-if (expectedChainId === MAINNET_CHAIN_ID) {
-  throw new Error('Refusing deployment to Winmar Chain mainnet (12142816). Use a dedicated testnet/devnet chain ID.');
+if (target !== 'mainnet') {
+  throw new Error('This deployment workflow is mainnet-only.');
+}
+
+if (expectedChainId !== MAINNET_CHAIN_ID) {
+  throw new Error(`Mainnet deployment requires Chain ID ${MAINNET_CHAIN_ID}. Received ${expectedChainId}.`);
 }
 
 const provider = new JsonRpcProvider(rpcUrl, Number(expectedChainId), { staticNetwork: true });
 const network = await provider.getNetwork();
 if (network.chainId !== expectedChainId) {
-  throw new Error(`RPC chain ID ${network.chainId} does not match WINMAR_TESTNET_CHAIN_ID ${expectedChainId}.`);
+  throw new Error(`RPC chain ID ${network.chainId} does not match expected mainnet Chain ID ${expectedChainId}.`);
 }
 
 const wallet = new Wallet(privateKey, provider);
 const deployer = await wallet.getAddress();
+const balance = await provider.getBalance(deployer);
+if (balance === 0n) {
+  throw new Error(`Deployment wallet ${deployer} has zero WMC balance and cannot pay gas.`);
+}
 
 function artifact(name) {
   const prefix = path.join(artifactDir, name);
@@ -36,6 +45,8 @@ function artifact(name) {
 
 const factoryArtifact = artifact('WinmarTokenFactory_sol_WinmarTokenFactory');
 const faucetArtifact = artifact('WinmarFaucet_sol_WinmarFaucet');
+
+console.log(`Deploying to Winmar Chain mainnet ${MAINNET_CHAIN_ID} from ${deployer}`);
 
 const factory = await new ContractFactory(factoryArtifact.abi, factoryArtifact.bytecode, wallet).deploy();
 await factory.waitForDeployment();
@@ -55,7 +66,7 @@ await faucet.waitForDeployment();
 const faucetAddress = await faucet.getAddress();
 
 const result = {
-  network: { chainId: expectedChainId.toString(), rpcUrl },
+  network: { name: 'Winmar Chain', chainId: expectedChainId.toString(), rpcUrl },
   deployer,
   tokenFactory: { address: factoryAddress, transactionHash: factory.deploymentTransaction()?.hash || null },
   faucet: {
@@ -63,7 +74,8 @@ const result = {
     transactionHash: faucet.deploymentTransaction()?.hash || null,
     claimAmountWei: claimAmount.toString(),
     cooldownSeconds: cooldown.toString(),
-    dailyCapWei: dailyCap.toString()
+    dailyCapWei: dailyCap.toString(),
+    funded: false
   },
   generatedAt: new Date().toISOString(),
 };
