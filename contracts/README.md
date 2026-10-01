@@ -30,10 +30,10 @@ The factory cannot mint, pause, or seize tokens after deployment.
 
 ### WinmarFaucet.sol
 
-Native WMC faucet for a dedicated developer testnet/devnet treasury.
+Native WMC faucet for a controlled Winmar Chain mainnet deployment.
 
 - does not mint WMC;
-- must be funded with native WMC;
+- must be funded separately with bounded native WMC;
 - per-wallet cooldown;
 - global daily distribution cap;
 - pause switch;
@@ -44,6 +44,8 @@ Native WMC faucet for a dedicated developer testnet/devnet treasury.
 
 These contracts are source code only until independently compiled, reviewed, deployed, and verified.
 
-Do not deploy WinmarFaucet against the production/mainnet WMC treasury. The intended faucet environment is a dedicated testnet/devnet.
+Mainnet deployment is controlled through the protected `production` GitHub environment. The faucet is deployed unfunded; funding is a separate operational transaction after address review.
+
+Do not use a validator signing key as the deployment key.
 
 The token factory may be deployed on a public network only after contract review and a deployment-specific verification record.
