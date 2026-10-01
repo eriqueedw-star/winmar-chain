@@ -12,14 +12,19 @@
     "explorer": "https://scan.winmarchain.io"
   },
   "faucet": {
-    "environment": "testnet-devnet-only",
+    "environment": "mainnet",
     "configured": false,
+    "deploymentStatus": "not-deployed",
     "contractAddress": null,
-    "claimAmount": null,
-    "cooldownSeconds": null
+    "claimAmount": "0.1 WMC",
+    "cooldownSeconds": 86400,
+    "dailyCap": "100 WMC",
+    "funded": false
   },
   "tokenMaker": {
+    "environment": "mainnet",
     "configured": false,
+    "deploymentStatus": "not-deployed",
     "factoryAddress": null
   }
 }
