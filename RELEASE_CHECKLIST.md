@@ -30,8 +30,18 @@ Use this checklist for public releases and subsequent signed release records.
 - [ ] Genesis block fingerprint matches the reviewed network-identity record.
 - [ ] Public RPC privileged-method exposure review is complete; unexpected administrative or account-management exposure blocks release until remediated or explicitly approved.
 - [ ] Validator-set evidence has been captured through authorized RPC access.
+- [ ] Mainnet allocation evidence is reconciled or explicitly marked unresolved in `docs/MAINNET_ALLOCATION_EVIDENCE.md`.
 - [ ] Bridge status and user-facing language match `docs/BRIDGE_TRUST_MODEL.md`.
 - [ ] Chainlist status is recorded accurately at release time.
+
+## Developer tools
+
+- [ ] Token Factory deployment address is independently reviewed before publication.
+- [ ] Faucet deployment address is independently reviewed before funding.
+- [ ] Faucet funding amount and treasury source are approved and recorded.
+- [ ] Faucet claim, cooldown, daily cap, pause, and withdrawal tests pass.
+- [ ] Token Maker ownership powers are displayed and documented.
+- [ ] Contract source is verified on the canonical explorer.
 
 ## Integrity and signing
 

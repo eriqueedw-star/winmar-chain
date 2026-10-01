@@ -26,7 +26,7 @@ The machine-readable public metadata lives in [`config/network.json`](config/net
 - `scripts/` — health, verification, and release utilities.
 - `assets/` — branding guidance and asset provenance.
 - `apps/` — static developer-tools UI for the faucet and token maker.
-- `scripts/build-developer-tools.sh` and `scripts/deploy-developer-tools.mjs` — guarded testnet/devnet deployment tooling.
+- `scripts/build-developer-tools.sh` and `scripts/deploy-developer-tools.mjs` — guarded mainnet developer-tools deployment tooling.
 - `chainlist/` — references for the upstream Chainlist registration.
 - `contracts/` — Winmar Faucet and Token Maker smart contracts.
 - `checksums/` — immutable checksum manifests for release artifacts.
@@ -37,6 +37,7 @@ The repository includes explicit controls for material that is not yet safe to i
 
 - [Genesis and QBFT baseline](docs/GENESIS_QBFT_BASELINE.md)
 - [Network identity evidence](docs/NETWORK_IDENTITY_EVIDENCE.md)
+- [Mainnet allocation evidence](docs/MAINNET_ALLOCATION_EVIDENCE.md)
 - [Public RPC exposure policy](docs/RPC_EXPOSURE_POLICY.md)
 - [Validator membership procedure](docs/VALIDATOR_MEMBERSHIP.md)
 - [Bootnode and peer-discovery policy](docs/BOOTNODE_POLICY.md)
