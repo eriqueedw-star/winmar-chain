@@ -28,9 +28,9 @@ These off-chain controls are intentionally not embedded in the contract.
 
 ## Deployment policy
 
-**Testnet/devnet only.**
+**Controlled mainnet deployment.**
 
-Do not deploy or fund this faucet from a production/mainnet validator or treasury wallet.
+The current deployment workflow targets Winmar Chain mainnet through the protected `production` environment. The faucet must use a dedicated operational funding wallet or treasury allocation; do not use a validator signing key.
 
 Before deployment:
 
@@ -43,7 +43,7 @@ Before deployment:
 7. configure the web UI;
 8. test claim, cooldown, cap, pause, and withdrawal behavior.
 
-## Suggested initial testnet configuration
+## Initial controlled configuration
 
 These are examples, not production defaults:
 
@@ -51,7 +51,7 @@ These are examples, not production defaults:
 - cooldown: 24 hours;
 - daily cap: 100 WMC.
 
-The actual values must be chosen by the testnet operator.
+The actual values must be approved by the mainnet operator before funding.
 
 ## User flow
 
