@@ -30,3 +30,5 @@ All notable project changes should be recorded here.
 - Added WinmarToken, WinmarTokenFactory, and the testnet/devnet-only WinmarFaucet source contracts.
 - Added Solidity compilation CI and a static developer-tools UI for the faucet and token maker.
 - Added deployment-safe configuration with contract addresses unset until reviewed deployments exist.
+- Aligned the developer-tools deployment path with the guarded Winmar mainnet workflow and protected `production` environment.
+- Added a mainnet allocation evidence record that preserves the observed explorer/local-RPC discrepancy instead of guessing at supply ownership.
