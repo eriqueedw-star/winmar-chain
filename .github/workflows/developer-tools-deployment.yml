@@ -11,11 +11,17 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: winmar-mainnet-developer-tools
+  cancel-in-progress: false
+
 jobs:
   deploy:
     name: Deploy Faucet and Token Factory to Winmar Chain mainnet
     if: ${{ inputs.confirm == 'DEPLOY_MAINNET' }}
-    environment: production
+    environment:
+      name: production
+      url: https://scan.winmarchain.io
     runs-on: ubuntu-latest
     steps:
       - name: Check out repository
