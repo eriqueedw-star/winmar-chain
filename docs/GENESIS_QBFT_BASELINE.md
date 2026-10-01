@@ -2,7 +2,7 @@
 
 ## Status
 
-The production genesis file is not yet published in this repository. No QBFT timing, epoch, validator, or extra-data values should be inferred from this document.
+The production genesis file is not published in this repository. No QBFT timing, epoch, validator, or extra-data values should be inferred from this document.
 
 The confirmed public network identity is:
 
@@ -11,6 +11,12 @@ The confirmed public network identity is:
 - native currency: WMC with 18 decimals;
 - client family: Hyperledger Besu;
 - consensus family: QBFT Proof of Authority.
+
+## Allocation evidence boundary
+
+Observed mainnet allocation and current-holder information is maintained separately in `docs/MAINNET_ALLOCATION_EVIDENCE.md`.
+
+That record is deliberately separate from the canonical genesis baseline because the current explorer observations and validator-local RPC observations were not reconciled during the initial review. Do not convert observed balances into a canonical supply statement until the reconciliation gate is complete.
 
 ## Publication rule
 
