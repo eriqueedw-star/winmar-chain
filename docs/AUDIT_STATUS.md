@@ -22,6 +22,7 @@ These controls improve audit readiness but do not constitute an independent secu
 - Automated logo inspection reports zero `tEXt`, `zTXt`, `iTXt`, and `eXIf` metadata chunks.
 - The publication audit reports personal-email-domain history without exposing complete email addresses.
 - Chainlist integration status is tracked separately and must be rechecked at release time.
+- Mainnet allocation evidence records two explorer observations of 25,000,000 WMC each, alongside a validator-side genesis allocation observation of 400,000,000 WMC each. The record explicitly marks the explorer/local-RPC discrepancy as unresolved and does not treat it as a canonical supply statement.
 
 Automated checks are repository-quality and verification controls, not a security audit. Their execution status must be verified on the relevant commit or pull request.
 
