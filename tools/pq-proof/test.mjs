@@ -30,9 +30,11 @@ const mutatedSignature = Uint8Array.from(signature);
 mutatedSignature[0] ^= 0x01;
 assert.equal(verify(mutatedSignature, message, keys.publicKey), false, 'mutated signature must fail');
 
-assert.throws(
-  () => canonicalMessage({ ...input, chainId: 1n }),
-  undefined,
+const otherChainMessage = canonicalMessage({ ...input, chainId: 1n });
+assert.notDeepEqual(
+  Array.from(otherChainMessage),
+  Array.from(message),
+  'chain ID domain separation must change the canonical message',
 );
 
 console.log('ML-DSA-65 positive verification: PASS');
