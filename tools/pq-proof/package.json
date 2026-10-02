@@ -1,0 +1,15 @@
+{
+  "name": "winmar-pq-proof",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Independent ML-DSA-65 proof tooling for Winmar Chain post-quantum evidence.",
+  "scripts": {
+    "test": "node test.mjs",
+    "evidence": "node generate-evidence.mjs",
+    "mainnet:evidence": "node collect-mainnet-transaction.mjs && node generate-mainnet-evidence.mjs && node verify-mainnet-evidence.mjs evidence/winmar-pq-mainnet-evidence-v1.json"
+  },
+  "dependencies": {
+    "@noble/post-quantum": "0.7.1"
+  }
+}
