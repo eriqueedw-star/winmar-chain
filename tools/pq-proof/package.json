@@ -1,0 +1,14 @@
+{
+  "name": "winmar-pq-proof",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Independent ML-DSA-65 proof tooling for Winmar Chain post-quantum evidence.",
+  "scripts": {
+    "test": "node test.mjs",
+    "evidence": "node generate-evidence.mjs"
+  },
+  "dependencies": {
+    "@noble/post-quantum": "0.7.1"
+  }
+}
