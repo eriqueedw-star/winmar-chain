@@ -38,7 +38,7 @@
 
   <section id="faucetPanel" class="card">
     <h2>Developer Faucet</h2>
-    <p class="muted">Testnet/devnet only. The faucet distributes funded native WMC; it does not mint WMC.</p>
+    <p class="muted">Faucet availability depends on network configuration and available funding. Claims transfer funded native WMC; they do not mint WMC.</p>
     <button id="claim" disabled>Claim WMC</button>
     <div id="faucetStatus" class="status">Faucet contract is not configured yet.</div>
   </section>
@@ -161,7 +161,12 @@ document.getElementById('claim').onclick=()=>claim().catch(e=>document.getElemen
 document.getElementById('deploy').onclick=()=>deploy().catch(e=>document.getElementById('tokenStatus').textContent=e.shortMessage||e.message);
 document.getElementById('tabFaucet').onclick=()=>{document.getElementById('faucetPanel').hidden=false;document.getElementById('tokenPanel').hidden=true;};
 document.getElementById('tabToken').onclick=()=>{document.getElementById('faucetPanel').hidden=true;document.getElementById('tokenPanel').hidden=false;};
-loadConfig().catch(e=>document.getElementById('faucetStatus').textContent='Config load failed: '+e.message);
+loadConfig().catch(e=>{
+  const message = 'Config load failed: ' + e.message;
+  document.getElementById('faucetStatus').textContent = message;
+  document.getElementById('tokenStatus').textContent = message;
+  refreshButtons();
+});
 </script>
 </body>
 </html>
