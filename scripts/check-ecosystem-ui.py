@@ -19,7 +19,7 @@ assert conf["bridge"]["assetRegistryConfigured"] is False
 assert conf["bridge"]["supportedRoutes"] == []
 
 html = (ROOT / "apps/developer-tools/index.html").read_text(encoding="utf-8")
-scripts = re.findall(r"<script(?:\s[^>]*)?>(.*?)</script>", html, re.S | re.I)
+scripts = [s for s in re.findall(r"<script(?:\s[^>]*)?>(.*?)</script>", html, re.S | re.I) if s.strip()]
 assert len(scripts) == 1, "Expected one inline application script"
 assert all(f'id="p-{name}"' in html for name in ("faucet", "creator", "bridge", "documents"))
 assert "crypto.subtle.digest('SHA-256',buffer)" in html
