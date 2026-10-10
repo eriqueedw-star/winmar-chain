@@ -1,26 +1,24 @@
-# WINMAR CHAIN FAUCET: LOCAL STAGING / SIMULATION ONLY
-# No WMC signer or wallet funding in this stack; no public ports.
+# WINMAR CHAIN FAUCET: LOCAL STAGING / SIMULATION ONLY.
+# No WMC signer, funds or public network exposure.
+# Password required; only localhost port is published.
 name: winmar-faucet-staging
 services:
   redis:
     image: redis:7.4-alpine
     restart: "no"
+    environment:
+      REDIS_PASSWORD: ${WMC_STAGING_REDIS_PASSWORD:?Set WMC_STAGING_REDIS_PASSWORD locally; never commit it}
     command:
-      - redis-server
-      - --appendonly
-      - "yes"
-      - --appendfsync
-      - everysec
-      - --maxmemory-policy
-      - noeviction
-      - --protected-mode
-      - "yes"
+      - sh
+      - -ec
+      - |
+        exec redis-server --appendonly yes --appendfsync everysec --maxmemory-policy noeviction --requirepass "$$REDIS_PASSWORD"
     ports:
       - "127.0.0.1:16379:6379"
     volumes:
       - redis-staging-data:/data
     healthcheck:
-      test: ["CMD", "redis-cli", "PING"]
+      test: ["CMD-SHELL", "REDISCLI_AUTH=$$REDIS_PASSWORD redis-cli ping | grep -q PONG"]
       interval: 5s
       timeout: 3s
       retries: 12

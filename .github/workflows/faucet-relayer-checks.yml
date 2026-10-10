@@ -38,6 +38,11 @@ jobs:
       - name: Install test dependencies
         working-directory: services/faucet-relayer
         run: npm install --ignore-scripts --no-audit --no-fund --package-lock=false
+      - name: Validate local staging Compose syntax
+        env:
+          WMC_STAGING_REDIS_PASSWORD: CI_ONLY_DUMMY_VALUE
+        run: docker compose -f infra/faucet-staging/compose.yaml config --quiet
+
       - name: Run offline wallet authorization and real Redis atomicity tests
         working-directory: services/faucet-relayer
         env:
