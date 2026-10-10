@@ -19,6 +19,7 @@ class MemoryRedis {
       return next;
     }
     if(lua===CLAIM_LUA){
+      if(this.read(keys[3])!==undefined)return 4;
       if(this.read(keys[0])!==args[0])return 0;
       if(this.read(keys[1])!==undefined)return 2;
       const count=Number(this.read(keys[2])||0);
@@ -26,7 +27,8 @@ class MemoryRedis {
       this.values.set(keys[1],args[0]);this.expires.set(keys[1],clock+Number(args[2])*1000);
       this.values.set(keys[2],String(count+1));
       if(count===0)this.expires.set(keys[2],clock+Number(args[3])*1000);
-      this.values.delete(keys[0]);this.expires.delete(keys[0]);return 1;
+      this.values.delete(keys[0]);this.expires.delete(keys[0]);
+      this.values.set(keys[3],'reserved');return 1;
     }
     throw Error('Unknown redis script');
   }
@@ -116,4 +118,17 @@ test('unknown submission requires manual reconciliation and cannot be immediatel
   setFailure(false);
   await rejects(service.claim(form,ip),'CHALLENGE_ALREADY_USED');
   assert.equal(sent.length,0);
+});
+
+test('durable per-wallet submission journal survives cooldown and prevents uncertain retry',async()=>{
+  const {service,store}=harness(),w=Wallet.createRandom();
+  const ch=await service.challenge({address:w.address},ip);
+  const form=await request(w,ch);
+  const first=await service.claim(form,ip);
+  assert.equal(first.status,'submitted');
+  const journal='wmc:faucet:pending:'+w.address.toLowerCase();
+  assert.equal(await store.get(journal),'submitted:'+hash);
+  clock+=86500000; // cooldown expired; pending journal deliberately has no TTL
+  const fresh=await service.challenge({address:w.address},ip);
+  await rejects(service.claim(await request(w,fresh),ip),'CLAIM_AWAITING_RECONCILIATION');
 });

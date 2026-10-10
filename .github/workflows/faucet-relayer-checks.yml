@@ -18,6 +18,16 @@ jobs:
     name: Wallet challenge and replay-prevention tests
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    services:
+      redis:
+        image: redis:7.4-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 10
     steps:
       - name: Check out repository
         uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
@@ -28,9 +38,12 @@ jobs:
       - name: Install test dependencies
         working-directory: services/faucet-relayer
         run: npm install --ignore-scripts --no-audit --no-fund --package-lock=false
-      - name: Run offline wallet authorization tests
+      - name: Run offline wallet authorization and real Redis atomicity tests
         working-directory: services/faucet-relayer
+        env:
+          REDIS_TEST_URL: redis://127.0.0.1:6379
         run: |
           node --check core.cjs
           node --check server.cjs
+          node --check edge.cjs
           npm test

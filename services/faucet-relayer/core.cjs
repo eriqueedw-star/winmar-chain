@@ -13,6 +13,7 @@ const LIMIT_LUA = [
   "return count"
 ].join('\n');
 const CLAIM_LUA = [
+  "if redis.call('EXISTS', KEYS[4]) == 1 then return 4 end",
   "local nonce = redis.call('GET', KEYS[1])",
   "if not nonce or nonce ~= ARGV[1] then return 0 end",
   "if redis.call('EXISTS', KEYS[2]) == 1 then return 2 end",
@@ -22,6 +23,7 @@ const CLAIM_LUA = [
   "redis.call('INCR', KEYS[3])",
   "if count == 0 then redis.call('EXPIRE', KEYS[3], tonumber(ARGV[4])) end",
   "redis.call('DEL', KEYS[1])",
+  "redis.call('SET', KEYS[4], 'reserved')",
   "return 1"
 ].join('\n');
 
@@ -100,23 +102,32 @@ function createFaucetAuthorization(options) {
     const lockKey='wmc:faucet:wallet:'+wallet.toLowerCase();
     const limitKey='wmc:faucet:claim-ip:'+ipId+':'+dayWindow;
     const ok=Number(await store.eval(CLAIM_LUA,{
-      keys:[nonceKey,lockKey,limitKey],
+      keys:[nonceKey,lockKey,limitKey,'wmc:faucet:pending:'+wallet.toLowerCase()],
       arguments:[record,'3',String(walletHoldSeconds),'86400']
     }));
     if(ok===0)throw new ClaimError(409,'CHALLENGE_ALREADY_USED');
     if(ok===2)throw new ClaimError(429,'WALLET_COOLDOWN');
     if(ok===3)throw new ClaimError(429,'IP_DAILY_LIMIT');
+    if(ok===4)throw new ClaimError(409,'CLAIM_AWAITING_RECONCILIATION');
     if(ok!==1)throw new Error('Authorization store failed closed');
 
     // Do NOT automatically release the durable wallet lock on submission failure:
     // a transaction could have been broadcast but the response lost.
     // Operator must investigate the chain and reconcile any uncertain result.
+    const journalKey='wmc:faucet:pending:'+wallet.toLowerCase();
     let outcome;
     try{outcome=await submitClaim(wallet);}
-    catch(_){throw new ClaimError(503,'CLAIM_REQUIRES_OPERATOR_RECONCILIATION');}
-    if(!outcome || typeof outcome.hash!=='string' || !/^0x[0-9a-f]{64}$/i.test(outcome.hash)){
+    catch(_){
+      // This record has no TTL. A crash / network timeout may still have
+      // broadcast a transaction. NEVER automatically clear the reservation.
+      await store.set(journalKey,'unknown');
       throw new ClaimError(503,'CLAIM_REQUIRES_OPERATOR_RECONCILIATION');
     }
+    if(!outcome || typeof outcome.hash!=='string' || !/^0x[0-9a-f]{64}$/i.test(outcome.hash)){
+      await store.set(journalKey,'unknown');
+      throw new ClaimError(503,'CLAIM_REQUIRES_OPERATOR_RECONCILIATION');
+    }
+    await store.set(journalKey,'submitted:'+outcome.hash);
     return {status:'submitted',txHash:outcome.hash,explorer:'https://scan.winmarchain.io/tx/'+outcome.hash};
   }
 
