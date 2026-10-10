@@ -18,7 +18,7 @@ const CLAIM_LUA = [
   "if redis.call('EXISTS', KEYS[2]) == 1 then return 2 end",
   "local count = tonumber(redis.call('GET', KEYS[3]) or '0')",
   "if count >= tonumber(ARGV[2]) then return 3 end",
-  "redis.call('SET', KEYS[2], 'reserved', 'EX', tonumber(ARGV[3]), 'NX')",
+  "redis.call('SET', KEYS[2], ARGV[1], 'EX', tonumber(ARGV[3]), 'NX')",
   "redis.call('INCR', KEYS[3])",
   "if count == 0 then redis.call('EXPIRE', KEYS[3], tonumber(ARGV[4])) end",
   "redis.call('DEL', KEYS[1])",
@@ -73,7 +73,21 @@ function createFaucetAuthorization(options) {
     if(typeof input?.captchaToken!=='string' || input.captchaToken.length<10 || input.captchaToken.length>2048)throw new ClaimError(400,'BAD_CAPTCHA');
     const nonceKey='wmc:faucet:nonce:'+wallet.toLowerCase();
     const record=await store.get(nonceKey);
-    if(!record)throw new ClaimError(400,'CHALLENGE_EXPIRED');
+    if(!record){
+      // A consumed nonce is removed atomically by the claim script. Retain
+      // the signed challenge in the per-wallet cooldown slot to distinguish
+      // the same previously submitted signature from a truly expired nonce.
+      const prior=await store.get('wmc:faucet:wallet:'+wallet.toLowerCase());
+      if(prior){
+        try {
+          const used=JSON.parse(prior);
+          if(typeof used.message==='string' && getAddress(verifyMessage(used.message,input.signature))===wallet){
+            throw new ClaimError(409,'CHALLENGE_ALREADY_USED');
+          }
+        }catch(e){ if(e instanceof ClaimError)throw e; }
+      }
+      throw new ClaimError(400,'CHALLENGE_EXPIRED');
+    }
     let saved;try{saved=JSON.parse(record);}catch(_){throw new ClaimError(400,'CHALLENGE_CORRUPT');}
     if(clock()>saved.expires)throw new ClaimError(400,'CHALLENGE_EXPIRED');
     let recovered;

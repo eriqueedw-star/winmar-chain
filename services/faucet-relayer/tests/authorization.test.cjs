@@ -23,7 +23,7 @@ class MemoryRedis {
       if(this.read(keys[1])!==undefined)return 2;
       const count=Number(this.read(keys[2])||0);
       if(count>=Number(args[1]))return 3;
-      this.values.set(keys[1],'reserved');this.expires.set(keys[1],clock+Number(args[2])*1000);
+      this.values.set(keys[1],args[0]);this.expires.set(keys[1],clock+Number(args[2])*1000);
       this.values.set(keys[2],String(count+1));
       if(count===0)this.expires.set(keys[2],clock+Number(args[3])*1000);
       this.values.delete(keys[0]);this.expires.delete(keys[0]);return 1;
