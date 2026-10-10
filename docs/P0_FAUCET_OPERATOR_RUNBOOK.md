@@ -24,7 +24,7 @@ Production must use authenticated rediss://, short-scoped ACL users, AOF, maxmem
 
 ## 4. Reconciliation of uncertain transactions — manual until audited
 
-The authorization service writes a per-wallet pending key before any transaction submission. Expected values are reserved, unknown, or submitted:<txHash>. Records have no TTL. A pending record is an unconditional hold on further claims by that wallet. A Redis singleton-relayer key has no TTL and prevents accidental concurrent signer instances.
+The authorization service writes a per-wallet pending key before any transaction submission. Expected values are reserved, unknown, or submitted:transaction-hash. Records have no TTL. A pending record is an unconditional hold on further claims by that wallet. A Redis singleton-relayer key has no TTL and prevents accidental concurrent signer instances.
 
 **Never unlock based solely on an HTTP 500, timeout, RPC error, or missing explorer result.** A transaction may have been sent successfully even when the HTTP request failed. For every attempted claim:
 
