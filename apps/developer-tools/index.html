@@ -38,7 +38,7 @@
 
   <section id="faucetPanel" class="card">
     <h2>Developer Faucet</h2>
-    <p class="muted">Testnet/devnet only. The faucet distributes funded native WMC; it does not mint WMC.</p>
+    <p class="muted">Faucet availability depends on network configuration and available funding. Claims transfer funded native WMC; they do not mint WMC.</p>
     <button id="claim" disabled>Claim WMC</button>
     <div id="faucetStatus" class="status">Faucet contract is not configured yet.</div>
   </section>
@@ -69,17 +69,28 @@ const EXPLORER = 'https://scan.winmarchain.io';
 const FAUCET_ABI = ['function claim()','function claimAmount() view returns (uint256)'];
 const FACTORY_ABI = [
   'function createToken((string,string,uint8,uint256,address,bool,bool,bool),bytes32) returns (address)',
+  'event TokenCreated(address indexed token,address indexed creator,string name,string symbol,uint8 decimals,uint256 initialSupply,bool mintable,bool burnable,bool pausable,bytes32 indexed salt)',
 ];
 let config = null;
 let provider = null;
 let signer = null;
 let account = null;
 
+function ready(tool, addressField){
+  return Boolean(config?.[tool]?.configured && config[tool].deploymentStatus === 'deployed' &&
+    ethers.isAddress(config[tool][addressField] || '') && signer);
+}
+
+function refreshButtons(){
+  document.getElementById('claim').disabled = !ready('faucet', 'contractAddress');
+  document.getElementById('deploy').disabled = !ready('tokenMaker', 'factoryAddress');
+}
+
 async function loadConfig(){
   const response = await fetch('../../config/developer-tools.json',{cache:'no-store'});
+  if (!response.ok) throw new Error('HTTP ' + response.status);
   config = await response.json();
-  document.getElementById('claim').disabled = !config.faucet.configured;
-    document.getElementById('deploy').disabled = !config.tokenMaker.configured;
+  refreshButtons();
 }
 
 async function connect(){
@@ -97,8 +108,7 @@ async function connect(){
   account = await signer.getAddress();
   document.getElementById('account').textContent = account;
   document.getElementById('holder').value = account;
-  document.getElementById('deploy').disabled = !config.tokenMaker.configured;
-  document.getElementById('claim').disabled = !config.faucet.configured;
+  refreshButtons();
 }
 
 async function claim(){
@@ -134,15 +144,29 @@ async function deploy(){
       if(parsed && parsed.name==='TokenCreated'){ tokenAddress=parsed.args.token; break; }
     }catch(_){ }
   }
-  document.getElementById('tokenStatus').textContent += '\nConfirmed in block '+receipt.blockNumber+'.' + (tokenAddress ? '\\nToken: '+tokenAddress+'\\n'+EXPLORER+'/address/'+tokenAddress : '');
+  document.getElementById('tokenStatus').textContent += '\nConfirmed in block '+receipt.blockNumber+'.' + (tokenAddress ? '\nToken: '+tokenAddress+'\n'+EXPLORER+'/address/'+tokenAddress : '');
 }
 
-document.getElementById('connect').onclick=connect;
+document.getElementById('connect').onclick=()=>connect().catch(e=>{
+  document.getElementById('account').textContent = 'Connection failed: ' + (e.shortMessage || e.message || 'Unknown error');
+  signer = null;
+  account = null;
+  refreshButtons();
+});
+if (window.ethereum?.on) {
+  window.ethereum.on('accountsChanged', () => { signer = null; account = null; document.getElementById('account').textContent = 'Wallet changed. Reconnect to continue.'; refreshButtons(); });
+  window.ethereum.on('chainChanged', () => { signer = null; account = null; document.getElementById('account').textContent = 'Network changed. Reconnect to continue.'; refreshButtons(); });
+}
 document.getElementById('claim').onclick=()=>claim().catch(e=>document.getElementById('faucetStatus').textContent=e.shortMessage||e.message);
 document.getElementById('deploy').onclick=()=>deploy().catch(e=>document.getElementById('tokenStatus').textContent=e.shortMessage||e.message);
 document.getElementById('tabFaucet').onclick=()=>{document.getElementById('faucetPanel').hidden=false;document.getElementById('tokenPanel').hidden=true;};
 document.getElementById('tabToken').onclick=()=>{document.getElementById('faucetPanel').hidden=true;document.getElementById('tokenPanel').hidden=false;};
-loadConfig().catch(e=>document.getElementById('faucetStatus').textContent='Config load failed: '+e.message);
+loadConfig().catch(e=>{
+  const message = 'Config load failed: ' + e.message;
+  document.getElementById('faucetStatus').textContent = message;
+  document.getElementById('tokenStatus').textContent = message;
+  refreshButtons();
+});
 </script>
 </body>
 </html>
