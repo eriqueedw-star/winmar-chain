@@ -46,4 +46,5 @@ jobs:
           node --check core.cjs
           node --check server.cjs
           node --check edge.cjs
+          node --check tests/staging-smoke.test.cjs
           npm test
