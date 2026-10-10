@@ -1,0 +1,35 @@
+name: Ecosystem suite checks
+
+on:
+  push:
+    branches:
+      - "feature/**"
+    paths:
+      - "apps/developer-tools/**"
+      - "config/developer-tools.json"
+      - "scripts/check-ecosystem-ui.py"
+      - ".github/workflows/ecosystem-suite-checks.yml"
+  pull_request:
+    paths:
+      - "apps/developer-tools/**"
+      - "config/developer-tools.json"
+      - "scripts/check-ecosystem-ui.py"
+      - ".github/workflows/ecosystem-suite-checks.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  fail-closed:
+    name: Check UI and pre-release safety gates
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+      - name: Set up Node
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 24
+      - name: Validate pre-release feature flags and JavaScript
+        run: python3 scripts/check-ecosystem-ui.py

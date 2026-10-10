@@ -1,148 +1,290 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Winmar Developer Tools</title>
-  <style>
-    :root{color-scheme:dark;font-family:Inter,system-ui,sans-serif;background:#07111f;color:#e9f0f7}
-    body{margin:0;background:linear-gradient(180deg,#07111f,#0b1626);min-height:100vh}
-    main{max-width:960px;margin:0 auto;padding:40px 20px}
-    .card{background:#101d2e;border:1px solid #24364d;border-radius:18px;padding:24px;margin:16px 0}
-    h1,h2{margin-top:0}
-    .muted{color:#9eb0c4}
-    .row{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
-    label{display:block;font-size:13px;color:#a9bbce;margin-bottom:6px}
-    input{width:100%;box-sizing:border-box;background:#0a1524;border:1px solid #2a405a;color:#fff;border-radius:10px;padding:11px}
-    button{border:0;border-radius:10px;padding:11px 16px;background:#2d7ff9;color:#fff;font-weight:700;cursor:pointer}
-    button:disabled{opacity:.45;cursor:not-allowed}
-    .tabs{display:flex;gap:8px;margin:20px 0}
-    .status{padding:12px;border-radius:10px;background:#0a1524;color:#b9c9da;white-space:pre-wrap}
-    @media(max-width:700px){.row{grid-template-columns:1fr}}
-  </style>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="Winmar Chain developer suite: native WMC faucet, ERC-20 token creator, wrapped-asset registry, and on-chain SHA-256 document attestation.">
+<title>WINMAR CHAIN — Ecosystem Console</title>
+<style>
+:root{color-scheme:dark;font-family:Inter,system-ui,-apple-system,sans-serif;color:#e8f0fa;background:#070f1c}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at 12% 0%,#16345c,#070f1c 45%);min-height:100vh}
+main{max-width:1180px;padding:26px 20px 70px;margin:auto}
+a{color:#88baff;text-decoration:none}a:hover{text-decoration:underline}
+header{display:flex;align-items:center;justify-content:space-between;gap:18px;flex-wrap:wrap;border-bottom:1px solid #283a50;padding:12px 0 23px}
+.brand{display:flex;align-items:center;gap:14px}.brand img{width:57px;height:57px;border:1px solid #314f71;border-radius:12px;background:#13243a;object-fit:cover}
+.brand b{font-size:21px;letter-spacing:2px}.muted{color:#a3b5cc;font-size:13px;line-height:1.7}
+.small{font-size:11px;letter-spacing:1px;color:#a2bbd5;display:block;margin-top:6px}
+h1{font-size:clamp(30px,5vw,54px);line-height:1.06;margin:12px 0 14px;letter-spacing:-1.6px}
+h2{margin:0 0 12px;font-size:23px}h3{margin:0 0 14px;font-size:16px}
+.hero{padding:35px 0 22px}.eyebrow{font-size:11px;letter-spacing:2px;font-weight:800;color:#80c5f3;text-transform:uppercase}
+.pill{display:inline-block;border:1px solid #876732;border-radius:25px;background:#342714;color:#ffda91;font-weight:700;padding:7px 12px;font-size:11px;margin-top:8px}
+button{cursor:pointer;color:#fff;background:#256dd4;border:1px solid #3385dc;border-radius:9px;padding:12px 15px;font-weight:700;font-size:13px}
+button.secondary{background:#17253a;border-color:#344d67}button:disabled{opacity:.4;cursor:not-allowed}
+.tabs{display:grid;grid-template-columns:repeat(4,1fr);gap:9px;margin:15px 0 19px}
+.tabs button{text-align:left;background:#102033;border-color:#284159;font-size:14px;padding:17px}
+.tabs button[aria-selected=true]{background:#1c3860;border-color:#5c9df2;box-shadow:inset 0 0 0 1px #527bb7}
+.no{display:block;font-size:10px;letter-spacing:1.4px;color:#9ab1c7;font-weight:600;margin-bottom:8px}
+.layout{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(260px,1fr);gap:18px}
+.card{background:linear-gradient(150deg,#122137,#0c1829);border:1px solid #293e58;border-radius:15px;padding:26px;min-width:0}
+section[hidden]{display:none}.flag{color:#f5cc91;font-size:10px;font-weight:800;letter-spacing:1.5px}
+fieldset{border:0;padding:0;margin:16px 0}.cols{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.field{margin-bottom:12px}label{display:block;color:#c4d6e9;font-size:12px;font-weight:650;margin-bottom:7px}
+input,select{width:100%;min-width:0;padding:12px;background:#081526;border:1px solid #35516d;color:#f0f5fd;border-radius:9px;font:inherit;font-size:13px}
+input[type=checkbox]{width:auto;accent-color:#3c8de0}.checks{display:flex;flex-wrap:wrap;gap:17px;margin:12px 0 20px}.checks label{display:flex;align-items:center;gap:8px}
+.note{background:#172c43;border-left:3px solid #5c9fe8;color:#c0d9f2;padding:12px 14px;font-size:12px;line-height:1.7;margin:15px 0}
+.risk{background:#322515;border-left:3px solid #c4964a;color:#f1d7ad;padding:12px 14px;font-size:12px;line-height:1.7;margin:15px 0}
+.result{white-space:pre-wrap;overflow-wrap:anywhere;background:#070f1b;border:1px solid #283e58;border-radius:9px;padding:14px;color:#bbd7f4;font:12px/1.7 ui-monospace,Consolas,monospace;margin:14px 0 0;min-height:44px}
+.kv{display:flex;justify-content:space-between;gap:14px;border-bottom:1px solid #263b50;padding:11px 0;font-size:12px}
+.kv span:first-child{color:#a1b7ce}.kv span:last-child{text-align:right;overflow-wrap:anywhere}
+.links{margin-top:22px;display:flex;gap:14px;flex-wrap:wrap;font-size:12px}
+footer{border-top:1px solid #293e58;margin-top:30px;padding-top:20px;font-size:12px;color:#8eabc9;line-height:1.7}
+@media(max-width:840px){.layout{grid-template-columns:1fr}}
+@media(max-width:600px){.tabs{grid-template-columns:repeat(2,1fr)}.cols{grid-template-columns:1fr}.card{padding:18px}.brand b{font-size:16px}.brand img{width:48px;height:48px}main{padding:14px}}
+</style>
 </head>
 <body>
 <main>
-  <div class="card">
-    <p class="muted">WINMAR CHAIN · DEVELOPER TOOLS</p>
-    <h1>Faucet + Token Maker</h1>
-    <p class="muted">Canonical network: Chain ID 12142816 · WMC · rpc.winmarchain.io</p>
-    <button id="connect">Connect Wallet</button>
-    <span id="account" class="muted"></span>
-  </div>
-
-  <div class="tabs">
-    <button id="tabFaucet">Faucet</button>
-    <button id="tabToken">Token Maker</button>
-  </div>
-
-  <section id="faucetPanel" class="card">
-    <h2>Developer Faucet</h2>
-    <p class="muted">Testnet/devnet only. The faucet distributes funded native WMC; it does not mint WMC.</p>
-    <button id="claim" disabled>Claim WMC</button>
-    <div id="faucetStatus" class="status">Faucet contract is not configured yet.</div>
+<header>
+  <div class="brand"><img alt="Winmar Chain logo" src="https://raw.githubusercontent.com/eriqueedw-star/winmar-chain/main/winmar-chain-logo-framed-v2.png">
+    <div><b>WINMAR CHAIN</b><span class="small">INSTITUTIONAL BLOCKCHAIN INFRASTRUCTURE</span></div></div>
+  <div class="muted">MAINNET · ID 12142816 · WMC<br><a href="https://scan.winmarchain.io" target="_blank" rel="noopener noreferrer">EXPLORER ↗</a> &nbsp; <a href="https://winmarchain.io" target="_blank" rel="noopener noreferrer">OFFICIAL WEBSITE ↗</a></div>
+  <button id="connect" type="button">Connect Wallet</button>
+</header>
+<div class="hero">
+  <p class="eyebrow">Winmar Chain / Developer Infrastructure</p>
+  <h1>Build. Bridge. Verify.</h1>
+  <p class="muted">Developer gas access, transparent token issuance, wrapped-asset discovery and SHA-256 document attestation on Winmar Chain.</p>
+  <span class="pill">PRE-RELEASE · ON-CHAIN ACTIONS DISABLED UNTIL REVIEW</span>
+</div>
+<div class="tabs" role="tablist" aria-label="Developer tools">
+  <button type="button" id="t-faucet" aria-selected="true"><span class="no">01 / GAS</span>Faucet</button>
+  <button type="button" id="t-creator" aria-selected="false"><span class="no">02 / ASSET ISSUANCE</span>Token Creator</button>
+  <button type="button" id="t-bridge" aria-selected="false"><span class="no">03 / INTEROPERABILITY</span>Wrapped Assets</button>
+  <button type="button" id="t-documents" aria-selected="false"><span class="no">04 / INTEGRITY</span>Document Verify</button>
+</div>
+<div class="layout">
+  <div>
+  <section id="p-faucet" class="card">
+    <span class="flag">NOT FUNDED · NOT DEPLOYED</span><h2>Native WMC Faucet</h2>
+    <p class="muted">Controlled WMC distribution for developer gas. WMC is the native network coin; this service never mints it.</p>
+    <div class="note">A zero-WMC wallet cannot ordinarily send a faucet claim transaction that requires gas. A reviewed relayer-based claim service and bot controls are prerequisites for public onboarding.</div>
+    <button id="claim" type="button" disabled>Claim WMC</button>
+    <div id="faucet-result" class="result" role="status">Waiting for verified deployment and separate treasury funding.</div>
   </section>
-
-  <section id="tokenPanel" class="card" hidden>
-    <h2>Token Maker</h2>
-    <div class="row">
-      <div><label>Name</label><input id="name" value="My Winmar Token"></div>
-      <div><label>Symbol</label><input id="symbol" value="MWT"></div>
-      <div><label>Decimals</label><input id="decimals" type="number" min="0" max="18" value="18"></div>
-      <div><label>Initial supply</label><input id="supply" value="1000000"></div>
-      <div><label>Initial holder</label><input id="holder" placeholder="Connect wallet first"></div>
-      <div><label>Creator salt</label><input id="salt" value="winmar-token-1"></div>
+  <section id="p-creator" class="card" hidden>
+    <span class="flag">FACTORY NOT DEPLOYED</span><h2>Token Creator</h2>
+    <p class="muted">Create a transparent ERC-20-compatible contract. Gas is paid in native WMC. Issuer control powers are visible before deployment.</p>
+    <div class="cols">
+      <div class="field"><label for="token-name">Token name</label><input id="token-name" maxlength="80" value="Example Winmar Token"></div>
+      <div class="field"><label for="token-symbol">Symbol</label><input id="token-symbol" maxlength="18" value="EWT"></div>
+      <div class="field"><label for="token-decimals">Decimals</label><input id="token-decimals" type="number" min="0" max="18" value="18"></div>
+      <div class="field"><label for="token-supply">Initial supply</label><input id="token-supply" inputmode="decimal" value="1000000"></div>
+      <div class="field"><label for="token-holder">Initial holder</label><input id="token-holder" placeholder="0x..."></div>
+      <div class="field"><label for="token-salt">Creator salt</label><input id="token-salt" value="example-v1"></div>
     </div>
-    <p><label><input id="mintable" type="checkbox"> Mintable</label></p>
-    <p><label><input id="burnable" type="checkbox" checked> Burnable</label></p>
-    <p><label><input id="pausable" type="checkbox"> Pausable</label></p>
-    <button id="deploy" disabled>Deploy Token</button>
-    <div id="tokenStatus" class="status">Token factory is not configured yet.</div>
+    <div class="checks">
+      <label><input id="mintable" type="checkbox"> Mintable</label>
+      <label><input id="burnable" type="checkbox" checked> Burnable</label>
+      <label><input id="pausable" type="checkbox"> Pausable</label>
+    </div>
+    <div class="risk">If <strong>Mintable</strong> or <strong>Pausable</strong> is enabled, the token creator retains owner authority. Creating a token does not make it endorsed or listed by Winmar Chain.</div>
+    <button type="button" id="deploy" disabled>Deploy Token</button>
+    <div class="result" id="token-result" role="status">Awaiting reviewed Token Factory deployment.</div>
   </section>
+  <section id="p-bridge" class="card" hidden>
+    <span class="flag">TRANSFERS DISABLED · REVIEW REQUIRED</span><h2>Wrapped Asset Registry</h2>
+    <p class="muted">A transparent catalog of supported origin-chain contracts and their registered representations on Winmar Chain.</p>
+    <div class="risk">This screen is NOT a bridge. No funds are moved, locked or minted here. Bridge transfers must remain disabled until independent security review, settlement validation, and verified asset backing.</div>
+    <div class="kv"><span>Registry status</span><span id="bridge-state">Awaiting configuration</span></div>
+    <div class="kv"><span>Asset transfers</span><span>DISABLED</span></div>
+    <div class="kv"><span>Asset routes</span><span id="bridge-routes">0 verified</span></div>
+    <div class="links"><a href="https://bridge.winmarchain.io" target="_blank" rel="noopener noreferrer">Existing Bridge Interface ↗</a><a href="https://github.com/eriqueedw-star/winmar-chain/blob/main/docs/BRIDGE_TRUST_MODEL.md" target="_blank" rel="noopener noreferrer">Bridge Trust Model ↗</a></div>
+    <div id="bridge-result" class="result" role="status">Routes pending verification. No asset representation is endorsed by this prototype.</div>
+  </section>
+  <section id="p-documents" class="card" hidden>
+    <span class="flag">SELF-ATTESTATION · NOT CERTIFICATION</span><h2>Document Integrity Verify</h2>
+    <p class="muted">Compute SHA-256 locally in your browser. Your document stays on your device. Once a reviewed registry is deployed, its digest can be anchored against your connected wallet on Winmar Chain.</p>
+    <div class="field"><label for="doc-file">Select document (processed locally)</label><input type="file" id="doc-file"></div>
+    <button id="hash" type="button" class="secondary">Calculate SHA-256</button>
+    <div id="hash-result" class="result" role="status">No document selected. No document content is uploaded.</div>
+    <div class="field" style="margin-top:18px"><label for="issuer">Issuer wallet address for verification</label><input id="issuer" placeholder="0x..."></div>
+    <button id="verify" type="button" disabled>Verify Blockchain Record</button>
+    <button id="anchor" type="button" disabled>Anchor My Document Hash</button>
+    <button id="revoke" type="button" class="secondary" disabled>Revoke My Attestation</button>
+    <div id="document-result" class="result" role="status">On-chain registry not deployed. Local SHA-256 calculation is available.</div>
+    <div class="risk">Matching SHA-256 only proves that the same bytes were self-attested by a wallet at a recorded block time. It does NOT prove legal validity, signing authority, ownership, KYC, or official institutional approval. Avoid publishing sensitive metadata.</div>
+  </section>
+  </div>
+  <aside class="card">
+    <h3>Network Identity</h3>
+    <div class="kv"><span>Network</span><span>Winmar Chain</span></div>
+    <div class="kv"><span>Chain ID</span><span>12142816</span></div>
+    <div class="kv"><span>Native asset</span><span>WMC</span></div>
+    <div class="kv"><span>RPC</span><span>rpc.winmarchain.io</span></div>
+    <div class="kv"><span>Explorer</span><span>scan.winmarchain.io</span></div>
+    <div class="kv"><span>Wallet</span><span id="wallet-status">Not connected</span></div>
+    <div class="kv"><span>Config</span><span id="config-status">Loading…</span></div>
+    <div class="note"><strong>Security boundary</strong><br>No validator keys or seed phrases are requested. All on-chain transactions require explicit wallet confirmation, and remain unavailable until reviewed deployment addresses are configured.</div>
+    <h3>Integration references</h3>
+    <div class="links">
+      <a href="https://github.com/DefiLlama/chainlist/pull/3209" target="_blank" rel="noopener noreferrer">Chainlist ↗</a>
+      <a href="https://github.com/ethereum-lists/chains/pull/8740" target="_blank" rel="noopener noreferrer">EVM Registry ↗</a>
+      <a href="https://winmarchain.io/logo/" target="_blank" rel="noopener noreferrer">Official Logo ↗</a>
+    </div>
+  </aside>
+</div>
+<footer>WINMAR CHAIN · WHERE THE WORLD SETTLES VALUE. &nbsp; | &nbsp; Pre-release developer prototype — not an offer of custody, token listing, verified asset backing or legal-document certification.</footer>
 </main>
 <script src="https://cdn.jsdelivr.net/npm/ethers@6.15.0/dist/ethers.umd.min.js"></script>
 <script>
-const CHAIN_ID = 12142816n;
-const CHAIN_HEX = '0xB948E0';
-const RPC_URL = 'https://rpc.winmarchain.io';
-const EXPLORER = 'https://scan.winmarchain.io';
-const FAUCET_ABI = ['function claim()','function claimAmount() view returns (uint256)'];
+'use strict';
+const CHAIN = 12142816n, CHAIN_HEX = '0xB948E0';
+const RPC = 'https://rpc.winmarchain.io', SCAN = 'https://scan.winmarchain.io';
+const FAUCET_ABI = ['function claim()'];
 const FACTORY_ABI = [
-  'function createToken((string,string,uint8,uint256,address,bool,bool,bool),bytes32) returns (address)',
+  'function createToken((string name,string symbol,uint8 decimals,uint256 initialSupply,address initialHolder,bool mintable,bool burnable,bool pausable) config,bytes32 userSalt) returns (address token)',
+  'event TokenCreated(address indexed token,address indexed creator,string name,string symbol,uint8 decimals,uint256 initialSupply,bool mintable,bool burnable,bool pausable,bytes32 indexed salt)'
 ];
-let config = null;
-let provider = null;
-let signer = null;
-let account = null;
-
-async function loadConfig(){
-  const response = await fetch('../../config/developer-tools.json',{cache:'no-store'});
-  config = await response.json();
-  document.getElementById('claim').disabled = !config.faucet.configured;
-    document.getElementById('deploy').disabled = !config.tokenMaker.configured;
-}
-
-async function connect(){
-  if(!window.ethereum){ alert('Install an EVM wallet such as MetaMask.'); return; }
-  provider = new ethers.BrowserProvider(window.ethereum);
-  await provider.send('eth_requestAccounts',[]);
-  await provider.send('wallet_switchEthereumChain',[{chainId:CHAIN_HEX}]).catch(async err=>{
-    if(err.code !== 4902) throw err;
-    await provider.send('wallet_addEthereumChain',[{
-      chainId:CHAIN_HEX,chainName:'Winmar Chain',nativeCurrency:{name:'Winmar Coin',symbol:'WMC',decimals:18},
-      rpcUrls:[RPC_URL],blockExplorerUrls:[EXPLORER]
-    }]);
+const DOC_ABI = [
+  'function anchor(bytes32 sha256)',
+  'function revoke(bytes32 sha256)',
+  'function getRecord(address issuer,bytes32 sha256) view returns (uint64 anchoredAt,uint64 revokedAt)'
+];
+const $ = id => document.getElementById(id);
+let conf, provider, signer, account, digest;
+for (const name of ['faucet','creator','bridge','documents']) {
+  $('t-'+name).addEventListener('click',()=>{
+    for(const k of ['faucet','creator','bridge','documents']){
+      $('p-'+k).hidden = k !== name;
+      $('t-'+k).setAttribute('aria-selected', String(k===name));
+    }
   });
-  signer = await provider.getSigner();
-  account = await signer.getAddress();
-  document.getElementById('account').textContent = account;
-  document.getElementById('holder').value = account;
-  document.getElementById('deploy').disabled = !config.tokenMaker.configured;
-  document.getElementById('claim').disabled = !config.faucet.configured;
 }
-
-async function claim(){
-  const faucet = new ethers.Contract(config.faucet.contractAddress,FAUCET_ABI,signer);
-  const tx = await faucet.claim();
-  document.getElementById('faucetStatus').textContent = 'Submitted: '+tx.hash+'\n'+EXPLORER+'/tx/'+tx.hash;
-  await tx.wait();
-  document.getElementById('faucetStatus').textContent += '\nConfirmed.';
+function msg(id,s){ $(id).textContent = s; }
+function eword(e){ return (e.shortMessage || e.message || String(e)).slice(0,600); }
+function ready(configPart, addressKey){return !!(configPart?.configured && configPart?.[addressKey] && window.ethers && ethers.isAddress(configPart[addressKey]));}
+function refresh(){
+  if(!conf) return;
+  const faucetOk = ready(conf.faucet,'contractAddress') && conf.faucet.funded === true;
+  const factoryOk = ready(conf.tokenMaker,'factoryAddress');
+  const docOk = ready(conf.documentVerifier,'registryAddress');
+  $('claim').disabled=!(account&&faucetOk);
+  $('deploy').disabled=!(account&&factoryOk);
+  $('verify').disabled=!(digest&&docOk);
+  $('anchor').disabled=!(digest&&account&&docOk);
+  $('revoke').disabled=!(digest&&account&&docOk);
+  $('bridge-state').textContent=conf.bridge?.transfersEnabled ? 'Review required' : 'Transfers locked';
+  $('bridge-routes').textContent=String(conf.bridge?.supportedRoutes?.length||0)+' configured';
 }
-
-function tokenArgs(){
-  const decimals = Number(document.getElementById('decimals').value);
-  if(!Number.isInteger(decimals)||decimals<0||decimals>18) throw new Error('Decimals must be 0-18.');
-  const supply = ethers.parseUnits(document.getElementById('supply').value,decimals);
-  const holder = document.getElementById('holder').value || account;
-  if(!ethers.isAddress(holder)) throw new Error('Initial holder is not a valid address.');
-  const salt = ethers.id(document.getElementById('salt').value);
-  return [document.getElementById('name').value,document.getElementById('symbol').value,decimals,supply,holder,document.getElementById('mintable').checked,document.getElementById('burnable').checked,document.getElementById('pausable').checked,salt];
+async function loadConfig(){
+  try {
+    const response=await fetch('../../config/developer-tools.json',{cache:'no-store'});
+    if(!response.ok)throw new Error('HTTP '+response.status);
+    const x=await response.json();
+    if(x.network?.chainId!==12142816 || x.network?.rpc!==RPC)throw new Error('Unexpected network metadata');
+    conf=x; msg('config-status','Loaded'); refresh();
+  } catch(e){msg('config-status','Unavailable');msg('document-result','Configuration unavailable: '+eword(e));}
 }
-
-async function deploy(){
-  const args=tokenArgs();
-  const factory=new ethers.Contract(config.tokenMaker.factoryAddress,FACTORY_ABI,signer);
-  const tokenConfig=[args[0],args[1],args[2],args[3],args[4],args[5],args[6],args[7]];
-  const tx=await factory.createToken(tokenConfig,args[8]);
-  document.getElementById('tokenStatus').textContent='Submitted: '+tx.hash+'\n'+EXPLORER+'/tx/'+tx.hash;
-  const receipt=await tx.wait();
-  const iface=new ethers.Interface(FACTORY_ABI);
-  let tokenAddress='';
-  for(const log of receipt.logs){
-    try{
-      const parsed=iface.parseLog(log);
-      if(parsed && parsed.name==='TokenCreated'){ tokenAddress=parsed.args.token; break; }
-    }catch(_){ }
+async function connect(){
+  if(!window.ethereum)throw new Error('Install a compatible EVM wallet.');
+  if(!window.ethers)throw new Error('Wallet library unavailable.');
+  const walletProvider=new ethers.BrowserProvider(window.ethereum);
+  await walletProvider.send('eth_requestAccounts',[]);
+  let network=await walletProvider.getNetwork();
+  if(network.chainId!==CHAIN){
+    try{await window.ethereum.request({method:'wallet_switchEthereumChain',params:[{chainId:CHAIN_HEX}]});}
+    catch(e){
+      if(e.code!==4902)throw e;
+      await window.ethereum.request({method:'wallet_addEthereumChain',params:[{
+        chainId:CHAIN_HEX,chainName:'Winmar Chain',
+        nativeCurrency:{name:'Winmar Coin',symbol:'WMC',decimals:18},
+        rpcUrls:[RPC],blockExplorerUrls:[SCAN]
+      }]});
+    }
   }
-  document.getElementById('tokenStatus').textContent += '\nConfirmed in block '+receipt.blockNumber+'.' + (tokenAddress ? '\\nToken: '+tokenAddress+'\\n'+EXPLORER+'/address/'+tokenAddress : '');
+  provider=new ethers.BrowserProvider(window.ethereum);
+  if((await provider.getNetwork()).chainId!==CHAIN)throw new Error('Wrong wallet network.');
+  signer=await provider.getSigner(); account=await signer.getAddress();
+  $('token-holder').value=account;$('issuer').value=account;
+  msg('wallet-status',account.slice(0,7)+'…'+account.slice(-5));
+  $('connect').textContent='Connected';refresh();
 }
-
-document.getElementById('connect').onclick=connect;
-document.getElementById('claim').onclick=()=>claim().catch(e=>document.getElementById('faucetStatus').textContent=e.shortMessage||e.message);
-document.getElementById('deploy').onclick=()=>deploy().catch(e=>document.getElementById('tokenStatus').textContent=e.shortMessage||e.message);
-document.getElementById('tabFaucet').onclick=()=>{document.getElementById('faucetPanel').hidden=false;document.getElementById('tokenPanel').hidden=true;};
-document.getElementById('tabToken').onclick=()=>{document.getElementById('faucetPanel').hidden=true;document.getElementById('tokenPanel').hidden=false;};
-loadConfig().catch(e=>document.getElementById('faucetStatus').textContent='Config load failed: '+e.message);
+function withSigner(){if(!signer || !account)throw new Error('Connect wallet first.');return signer;}
+async function claim(){
+  if(!ready(conf?.faucet,'contractAddress') || !conf.faucet.funded)throw new Error('Faucet not active.');
+  const tx=await new ethers.Contract(conf.faucet.contractAddress,FAUCET_ABI,withSigner()).claim();
+  msg('faucet-result',SCAN+'/tx/'+tx.hash+'\nWaiting for confirmation…');
+  await tx.wait();msg('faucet-result',SCAN+'/tx/'+tx.hash+'\nConfirmed.');
+}
+function tokenInputs(){
+  const name=$('token-name').value.trim(), symbol=$('token-symbol').value.trim();
+  const decimals=Number($('token-decimals').value), supply=$('token-supply').value;
+  if(!name || name.length>80 || !symbol || symbol.length>18)throw new Error('Enter a valid name and symbol.');
+  if(!Number.isInteger(decimals)||decimals<0||decimals>18)throw new Error('Decimals must be 0–18.');
+  if(!/^(0|[1-9]\d*)(\.\d+)?$/.test(supply))throw new Error('Initial supply must be nonnegative decimal.');
+  const initialSupply=ethers.parseUnits(supply,decimals);
+  const holder=$('token-holder').value.trim();
+  if(!ethers.isAddress(holder))throw new Error('Initial holder is not a valid address.');
+  const salt=$('token-salt').value.trim();if(!salt)throw new Error('Creator salt is required.');
+  return [[name,symbol,decimals,initialSupply,holder,$('mintable').checked,$('burnable').checked,$('pausable').checked],ethers.id(salt)];
+}
+async function deployToken(){
+  if(!ready(conf?.tokenMaker,'factoryAddress'))throw new Error('Factory not deployed.');
+  const [params,salt]=tokenInputs();
+  const factory=new ethers.Contract(conf.tokenMaker.factoryAddress,FACTORY_ABI,withSigner());
+  const tx=await factory.createToken(params,salt);
+  msg('token-result',SCAN+'/tx/'+tx.hash+'\nWaiting for confirmation…');
+  const receipt=await tx.wait(), parser=new ethers.Interface(FACTORY_ABI);
+  let newToken='';
+  for(const log of receipt.logs){try{
+    const parsed=parser.parseLog(log);
+    if(parsed?.name==='TokenCreated'){newToken=parsed.args.token;break;}
+  }catch(_){}}
+  msg('token-result','Confirmed transaction: '+SCAN+'/tx/'+tx.hash+(newToken?'\nToken: '+SCAN+'/address/'+newToken:'\nCheck event logs for deployed address.'));
+}
+async function sha256(){
+  const file=$('doc-file').files?.[0];
+  if(!file)throw new Error('Choose a local document.');
+  if(!crypto?.subtle)throw new Error('HTTPS is required for local SHA-256.');
+  const buffer=await file.arrayBuffer();
+  const bytes=new Uint8Array(await crypto.subtle.digest('SHA-256',buffer));
+  digest='0x'+Array.from(bytes,b=>b.toString(16).padStart(2,'0')).join('');
+  msg('hash-result','File: '+file.name+'\nSHA-256: '+digest.slice(2)+'\nProcessed in browser; no upload.');
+  refresh();
+}
+function docContract(write){
+  if(!ready(conf?.documentVerifier,'registryAddress'))throw new Error('Document registry not deployed.');
+  return new ethers.Contract(conf.documentVerifier.registryAddress,DOC_ABI,write?withSigner():new ethers.JsonRpcProvider(RPC,Number(CHAIN)));
+}
+async function verify(){
+  if(!digest)throw new Error('Hash a file first.');
+  const issuer=$('issuer').value.trim();if(!ethers.isAddress(issuer))throw new Error('Issuer wallet address invalid.');
+  const [at,revoked]=await docContract(false).getRecord(issuer,digest);
+  msg('document-result',at===0n?'No record found for this issuer and digest.':
+    'Self-attestation '+(revoked===0n?'ACTIVE':'REVOKED')+'\nIssuer: '+issuer+
+    '\nSHA-256: '+digest.slice(2)+ '\nAnchored timestamp: '+new Date(Number(at)*1000).toISOString()+
+    (revoked===0n?'':'\nRevoked timestamp: '+new Date(Number(revoked)*1000).toISOString())+
+    '\nThis is not institutional certification.');
+}
+async function changeDocument(action){
+  if(!digest)throw new Error('Hash a file first.');
+  const tx=await docContract(true)[action](digest);
+  msg('document-result','Submitted: '+SCAN+'/tx/'+tx.hash+'\nWaiting for confirmation…');
+  await tx.wait();msg('document-result','Confirmed: '+SCAN+'/tx/'+tx.hash+'\nIssuer: '+account+'\nAction: '+action);
+}
+$('connect').onclick=()=>connect().catch(e=>msg('wallet-status',eword(e)));
+$('claim').onclick=()=>claim().catch(e=>msg('faucet-result',eword(e)));
+$('deploy').onclick=()=>deployToken().catch(e=>msg('token-result',eword(e)));
+$('hash').onclick=()=>sha256().catch(e=>msg('hash-result',eword(e)));
+$('verify').onclick=()=>verify().catch(e=>msg('document-result',eword(e)));
+$('anchor').onclick=()=>changeDocument('anchor').catch(e=>msg('document-result',eword(e)));
+$('revoke').onclick=()=>changeDocument('revoke').catch(e=>msg('document-result',eword(e)));
+$('doc-file').addEventListener('change',()=>{digest=null;msg('hash-result','File changed; calculate new hash.');refresh();});
+if(window.ethereum) {
+  window.ethereum.on?.('accountsChanged',()=>{account=null;signer=null;provider=null;msg('wallet-status','Reconnect wallet');refresh();});
+  window.ethereum.on?.('chainChanged',()=>{account=null;signer=null;provider=null;msg('wallet-status','Reconnect wallet');refresh();});
+}
+loadConfig();
 </script>
 </body>
 </html>

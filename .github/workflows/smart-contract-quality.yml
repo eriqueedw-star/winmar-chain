@@ -39,10 +39,8 @@ jobs:
           set -euo pipefail
           rm -rf /tmp/winmar-solc
           mkdir -p /tmp/winmar-solc
-          npx --yes solc@0.8.30 --base-path . --include-path contracts --bin --abi contracts/WinmarToken.sol contracts/WinmarTokenFactory.sol contracts/WinmarFaucet.sol -o /tmp/winmar-solc
-          find /tmp/winmar-solc -maxdepth 1 -type f -name "*.bin" -print
-          test "$(find /tmp/winmar-solc -maxdepth 1 -type f -name "*.bin" | wc -l)" -ge 3
-          find /tmp/winmar-solc -maxdepth 1 -type f -name "*WinmarToken*" | grep -q "WinmarToken"
-          find /tmp/winmar-solc -maxdepth 1 -type f -name "*WinmarTokenFactory*" | grep -q "WinmarTokenFactory"
-          find /tmp/winmar-solc -maxdepth 1 -type f -name "*WinmarFaucet*" | grep -q "WinmarFaucet"
+          npx --yes solc@0.8.30 --base-path . --include-path contracts --bin --abi contracts/WinmarToken.sol contracts/WinmarTokenFactory.sol contracts/WinmarFaucet.sol contracts/WinmarDocumentRegistry.sol contracts/WinmarBridgeAssetRegistry.sol -o /tmp/winmar-solc
+          for name in WinmarToken WinmarTokenFactory WinmarFaucet WinmarDocumentRegistry WinmarBridgeAssetRegistry; do
+            find /tmp/winmar-solc -maxdepth 1 -type f -name "*_$name.bin" | grep -q .
+          done
           echo "Solidity compilation passed"
