@@ -1,37 +1,51 @@
 # DefiLlama Chainlist integration
 
-## Why this is required
+## Canonical Winmar Chain production identity
 
-Chainlist.org currently consumes chain data from `https://chainid.network/chains.json`, but its frontend also applies its own registry and icon behavior.
+All Winmar Chain network integrations must use the **.io** production
+domain. Earlier Winmar domain variants are deprecated and must not be
+published as active RPC, explorer, or website endpoints.
 
-For Winmar Chain, two upstream actions are required:
+| Field | Canonical value |
+| --- | --- |
+| Network | Winmar Chain |
+| Chain ID | `12142816` |
+| Native currency | WMC |
+| RPC | `https://rpc.winmarchain.io` |
+| Explorer | `https://scan.winmarchain.io` |
+| Website | `https://winmarchain.io` |
+| Logo | `https://winmarchain.io/logo/` |
 
-1. Merge `ethereum-lists/chains#8740` so `chainid.network` publishes the canonical `.io` RPC, explorer, website, network name, and icon metadata.
-2. Add a Winmar-specific override or chain slug in `DefiLlama/chainlist` and publish the matching `winmar` chain logo in `DefiLlama/icons`.
+The authoritative checked-in metadata is
+[`config/network.json`](../config/network.json).
 
-## Current verified state
+## Upstream publication tracking
 
-At the latest review:
+Checked on 2026-10-10:
 
-- `ethereum-lists/chains#8740` is open and mergeable.
-- All four recorded upstream checks pass: `prettier`, `build`, `actionlint`, and `validate_json`.
-- The upstream `master` chain record still points to `https://rpc.winmarchain.org` and `https://scan.winmarchain.org`.
-- The upstream `master` icon record `_data/icons/winmar.json` does not yet exist.
-- `DefiLlama/chainlist` has no Winmar Chain ID mapping or override.
-- `DefiLlama/icons` has no Winmar chain asset in the reviewed source.
+1. [Ethereum Lists PR #8740](https://github.com/ethereum-lists/chains/pull/8740)
+   is open and proposes the canonical .io URLs and chain icon metadata.
+2. [DefiLlama Chainlist PR #3209](https://github.com/DefiLlama/chainlist/pull/3209)
+   is open and proposes the Winmar Chain override, .io RPC/explorer,
+   website, `chainSlug: "winmar"`, and network ID 12142816.
+3. [DefiLlama Icons PR #2523](https://github.com/DefiLlama/icons/pull/2523)
+   is open and proposes the Winmar Chain logo.
 
-## Prepared patch
+These pull requests are **not merged**. A live registry listing does not
+prove that its published metadata already matches the proposed changes.
+Final publication is controlled by upstream maintainers.
 
-The ready-to-apply DefiLlama registry patch is stored at:
+## Local publication artifacts
 
-`chainlist/defillama-chainlist-12142816.patch`
+- `chainlist/defillama-chainlist-12142816.patch`: proposed .io override.
+- `chainlist/defillama-icons-winmar.md`: logo publication guidance.
+- `chainlist/README.md`: registry and publication tracking.
 
-The corresponding icon publication requirements are stored at:
+Never reintroduce a deprecated Winmar domain when preparing wallet,
+exchange, explorer, mobile-wallet, RPC provider, or indexer submissions.
 
-`chainlist/defillama-icons-winmar.md`
+## Repository permissions
 
-## Access limitation
-
-The connected GitHub integration has read-only access to `DefiLlama/chainlist` and `DefiLlama/icons`. Direct branch creation and issue creation were both rejected by GitHub with `403 Resource not accessible by integration`.
-
-A fork with write access, or an upstream maintainer applying the prepared patch, is required to submit the DefiLlama changes.
+The connected GitHub integration has read access, but not push access,
+to upstream DefiLlama repositories. Maintainers must merge upstream PRs;
+the Winmar Chain repository cannot force those changes into production.
