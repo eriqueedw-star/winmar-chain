@@ -138,8 +138,9 @@ test('Gas-sponsored WMC claims require an appointed relayer and enforce recipien
   await done(admin.sendTransaction({to:await faucet.getAddress(),value:ethers.parseEther('1')}));
   const before=await recipient.provider.getBalance(recipientAddress);
   await assert.rejects(()=>faucet.connect(relayer).claimFor.staticCall(recipientAddress));
-  await assert.rejects(()=>faucet.connect(relayer).setRelayer.staticCall(await relayer.getAddress()));
-  await done(faucet.setRelayer(await relayer.getAddress()));
+  const relayWallet = await relayer.getAddress();
+  await assert.rejects(()=>faucet.connect(relayer).setRelayer.staticCall(relayWallet));
+  await done(faucet.setRelayer(relayWallet));
   await assert.rejects(()=>faucet.connect(outsider).claimFor.staticCall(recipientAddress));
   await assert.rejects(()=>faucet.connect(relayer).claimFor.staticCall(ethers.ZeroAddress));
   await done(faucet.connect(relayer).claimFor(recipientAddress));
