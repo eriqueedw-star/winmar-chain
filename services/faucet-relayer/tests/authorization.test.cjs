@@ -86,7 +86,9 @@ test('wallet cooldown shared by worker replicas',async()=>{
     submitClaim:async recipient=>{sent.push(recipient);return {hash};}
   });
   const next=await other.challenge({address:w.address},ip);
-  await rejects(other.claim(await request(w,next),ip),'WALLET_COOLDOWN');
+  // Durable unresolved journal blocks retries even across replicas and
+  // takes precedence over the 24-hour wallet cooldown.
+  await rejects(other.claim(await request(w,next),ip),'CLAIM_AWAITING_RECONCILIATION');
   assert.equal(sent.length,1);
 });
 test('IP quota limits claims across distinct wallets',async()=>{
