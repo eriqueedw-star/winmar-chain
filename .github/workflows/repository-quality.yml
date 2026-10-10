@@ -47,6 +47,37 @@ jobs:
           print('JSON validation passed')
           PY
 
+
+      - name: Enforce canonical Winmar Chain domains
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import pathlib
+          import subprocess
+          import sys
+
+          forbidden = {"winmarchain." + suffix for suffix in ("org", "com")}
+          tracked = subprocess.check_output(["git", "ls-files", "-z"]).decode().split("\0")
+          matches = []
+          for filename in tracked:
+              if not filename:
+                  continue
+              try:
+                  content = pathlib.Path(filename).read_text(encoding="utf-8").lower()
+              except (UnicodeError, OSError):
+                  continue
+              if any(domain in content for domain in forbidden):
+                  matches.append(filename)
+
+          if matches:
+              print("Deprecated Winmar Chain domains found:")
+              for filename in matches:
+                  print(f"- {filename}")
+              sys.exit(1)
+
+          print("PASS: canonical Winmar Chain .io domain policy")
+          PY
+
       - name: Check shell syntax
         shell: bash
         run: |
