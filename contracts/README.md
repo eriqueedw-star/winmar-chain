@@ -36,8 +36,10 @@ Native WMC faucet for a controlled Winmar Chain mainnet deployment.
 
 - does not mint WMC;
 - must be funded separately with bounded native WMC;
-- per-wallet cooldown;
+- per-recipient cooldown;
+- gas-sponsored `claimFor(recipient)` restricted to an admin-appointed relayer (off by default);
 - global daily distribution cap;
+- reentrancy guard for claim paths;
 - pause switch;
 - admin treasury withdrawal;
 - no validator or wallet private key is stored in the repository.
@@ -46,7 +48,7 @@ Native WMC faucet for a controlled Winmar Chain mainnet deployment.
 
 These contracts are source code only until independently compiled, reviewed, deployed, and verified.
 
-Mainnet deployment is controlled through the protected `production` GitHub environment. The faucet is deployed unfunded; funding is a separate operational transaction after address review.
+Mainnet deployment is controlled through the protected `production` GitHub environment. The faucet is deployed unfunded with no appointed relayer; its funding and trusted relayer activation are separate, reviewed operational transactions after anti-abuse service readiness.
 
 Do not use a validator signing key as the deployment key.
 

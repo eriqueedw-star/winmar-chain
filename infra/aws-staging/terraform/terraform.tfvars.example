@@ -1,0 +1,6 @@
+# EXAMPLE ONLY. Replace with operator-confirmed values outside version control.
+aws_region        = "ap-southeast-1"
+vpc_id            = "vpc-EXISTING-APPROVED-VPC"
+private_subnet_id = "subnet-EXISTING-PRIVATE-SUBNET"
+instance_type     = "t3.medium"
+root_volume_gb    = 40
