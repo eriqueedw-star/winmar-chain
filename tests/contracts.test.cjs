@@ -12,6 +12,7 @@ const sources = Object.fromEntries(files.map(f => [f,{content:fs.readFileSync(pa
 const result = JSON.parse(solc.compile(JSON.stringify({
   language:'Solidity',sources,settings:{
     optimizer:{enabled:true,runs:200},
+    evmVersion:'paris',
     outputSelection:{'*':{'*':['abi','evm.bytecode.object']}}
   }
 })));
@@ -52,12 +53,12 @@ test('Document digest self-attestation is issuer-scoped, non-repeatable and revo
   assert.ok(anchored>0n);assert.equal(revoked,0n);
   assert.equal(await registry.isActive(mine,digest),true);
   assert.equal((await registry.getRecord(other,digest))[0],0n);
-  await assert.rejects(()=>registry.anchor(digest));
-  await assert.rejects(()=>registry.connect(outsider).revoke(digest));
+  await assert.rejects(()=>registry.anchor.staticCall(digest));
+  await assert.rejects(()=>registry.connect(outsider).revoke.staticCall(digest));
   await done(registry.revoke(digest));
   assert.equal(await registry.isActive(mine,digest),false);
   assert.ok((await registry.getRecord(mine,digest))[1]>0n);
-  await assert.rejects(()=>registry.revoke(digest));
+  await assert.rejects(()=>registry.revoke.staticCall(digest));
 });
 
 test('Bridge catalog rejects unauthorized routes and starts globally paused',async()=>{
@@ -67,18 +68,18 @@ test('Bridge catalog rejects unauthorized routes and starts globally paused',asy
   const wrapped='0x2222222222222222222222222222222222222222';
   const id=await registry.computeRouteId(1n,source);
   assert.equal(await registry.paused(),true);
-  await assert.rejects(()=>registry.connect(stranger).registerRoute(1n,source,wrapped));
-  await assert.rejects(()=>registry.registerRoute(12142816n,source,wrapped));
+  await assert.rejects(()=>registry.connect(stranger).registerRoute.staticCall(1n,source,wrapped));
+  await assert.rejects(()=>registry.registerRoute.staticCall(12142816n,source,wrapped));
   await done(registry.registerRoute(1n,source,wrapped));
   assert.equal((await registry.getRoute(id)).enabled,false);
-  await assert.rejects(()=>registry.registerRoute(1n,source,wrapped));
-  await assert.rejects(()=>registry.setRouteEnabled(id,true));
+  await assert.rejects(()=>registry.registerRoute.staticCall(1n,source,wrapped));
+  await assert.rejects(()=>registry.setRouteEnabled.staticCall(id,true));
   await done(registry.setPaused(false));
   await done(registry.setRouteEnabled(id,true));
   assert.equal(await registry.isRouteActive(id),true);
   await done(registry.setPaused(true));
   assert.equal(await registry.isRouteActive(id),false);
-  await assert.rejects(()=>registry.connect(stranger).setPaused(false));
+  await assert.rejects(()=>registry.connect(stranger).setPaused.staticCall(false));
   const methods=new Set(artifact('WinmarBridgeAssetRegistry').abi.filter(x=>x.type==='function').map(x=>x.name));
   for(const forbidden of ['mint','burn','deposit','withdraw','lock','release','bridge'])
     assert.equal(methods.has(forbidden),false,'Forbidden method: '+forbidden);
@@ -105,11 +106,11 @@ test('WMC-20 factory preserves ERC-20 ABI, balances, allowances and optional iss
   await done(token.connect(spender).transferFrom(me,to,ethers.parseEther('20')));
   assert.equal(await token.balanceOf(to),ethers.parseEther('120'));
   assert.equal(await token.allowance(me,by),ethers.parseEther('10'));
-  await assert.rejects(()=>token.mint(me,1n));
+  await assert.rejects(()=>token.mint.staticCall(me,1n));
   await done(token.connect(receiver).burn(ethers.parseEther('10')));
   assert.equal(await token.totalSupply(),ethers.parseEther('990'));
-  await assert.rejects(()=>token.setPaused(true));
-  await assert.rejects(()=>factory.createToken(cfg,salt));
+  await assert.rejects(()=>token.setPaused.staticCall(true));
+  await assert.rejects(()=>factory.createToken.staticCall(cfg,salt));
 });
 
 test('Native WMC faucet enforces daily cap, cooldown, pause and admin access',async()=>{
@@ -118,13 +119,13 @@ test('Native WMC faucet enforces daily cap, cooldown, pause and admin access',as
   const faucet=await deploy('WinmarFaucet',admin,await admin.getAddress(),amount,86400n,ethers.parseEther('0.4'));
   await done(admin.sendTransaction({to:await faucet.getAddress(),value:ethers.parseEther('1')}));
   await done(faucet.connect(alice).claim());
-  await assert.rejects(()=>faucet.connect(alice).claim());
+  await assert.rejects(()=>faucet.connect(alice).claim.staticCall());
   await done(faucet.connect(bob).claim());
-  await assert.rejects(()=>faucet.connect(carol).claim());
+  await assert.rejects(()=>faucet.connect(carol).claim.staticCall());
   assert.equal(await faucet.distributedToday(),ethers.parseEther('0.4'));
-  await assert.rejects(()=>faucet.connect(alice).setPaused(true));
+  await assert.rejects(()=>faucet.connect(alice).setPaused.staticCall(true));
   await done(faucet.setPaused(true));
-  await assert.rejects(()=>faucet.connect(carol).claim());
+  await assert.rejects(()=>faucet.connect(carol).claim.staticCall());
   await done(faucet.withdraw(await admin.getAddress(),ethers.parseEther('0.1')));
   assert.equal(await faucet.availableBalance(),ethers.parseEther('0.5'));
 });
