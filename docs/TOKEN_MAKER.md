@@ -1,8 +1,10 @@
-# Winmar Token Maker
+# Winmar WMC-20 Token Creator
 
 ## Purpose
 
-Winmar Token Maker creates standard ERC-20-compatible tokens using the first-party WinmarTokenFactory.
+Winmar Token Creator issues **WMC-20** fungible tokens on **Winmar Chain** using the first-party WinmarTokenFactory. WMC-20 is the Winmar Chain ecosystem token standard, technically compatible with ERC-20 wallets and tooling. It is not a separate blockchain or native coin.
+
+See [WMC-20 v1.0.0 standard](standards/WMC-20.md). Gas is paid in native **WMC**, which is distinct from WMC-20 contract tokens.
 
 ## Creation fields
 

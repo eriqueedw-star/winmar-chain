@@ -6,7 +6,9 @@ This directory contains the first-party smart-contract layer for the Winmar deve
 
 ### WinmarToken.sol
 
-A transparent ERC-20-compatible token template.
+A WMC-20 fungible token template, compatible with the ERC-20 ABI and events.
+
+See [WMC-20 v1.0.0](../docs/standards/WMC-20.md) for the formal ecosystem specification. WMC-20 contract tokens run on Winmar Chain; native WMC pays gas.
 
 Supported options are explicit constructor flags:
 
@@ -18,7 +20,7 @@ The template intentionally has no transfer tax, blacklist, hidden mint path, ref
 
 ### WinmarTokenFactory.sol
 
-Permissionless factory for WinmarToken.
+Permissionless factory for WMC-20 WinmarToken contracts.
 
 - no protocol fee;
 - no factory owner;
