@@ -136,7 +136,7 @@ test('Gas-sponsored WMC claims require an appointed relayer and enforce recipien
   const recipientAddress=await recipient.getAddress();
   const faucet=await deploy('WinmarFaucet',admin,await admin.getAddress(),amount,86400n,ethers.parseEther('0.3'));
   await done(admin.sendTransaction({to:await faucet.getAddress(),value:ethers.parseEther('1')}));
-  const before=await recipient.provider.getBalance(recipientAddress);
+  const before=BigInt(await recipient.provider.send('eth_getBalance',[recipientAddress,'latest']));
   await assert.rejects(()=>faucet.connect(relayer).claimFor.staticCall(recipientAddress));
   const relayWallet = await relayer.getAddress();
   await assert.rejects(()=>faucet.connect(relayer).setRelayer.staticCall(relayWallet));
@@ -144,7 +144,7 @@ test('Gas-sponsored WMC claims require an appointed relayer and enforce recipien
   await assert.rejects(()=>faucet.connect(outsider).claimFor.staticCall(recipientAddress));
   await assert.rejects(()=>faucet.connect(relayer).claimFor.staticCall(ethers.ZeroAddress));
   await done(faucet.connect(relayer).claimFor(recipientAddress));
-  const after=await recipient.provider.getBalance(recipientAddress);
+  const after=BigInt(await recipient.provider.send('eth_getBalance',[recipientAddress,'latest']));
   assert.equal(after-before,amount,'Only the relayer paid gas; recipient received full WMC');
   assert.equal(await faucet.claimedTotal(recipientAddress),amount);
   await assert.rejects(()=>faucet.connect(relayer).claimFor.staticCall(recipientAddress));
