@@ -21,7 +21,7 @@ Date: 2026-10-10. Development branch only. NO production deployment authorized.
 
 ### Faucet
 
-Distributor for previously funded native WMC, not a WMC minter. For mainnet, use an independently governed treasury and a small, approved daily cap. Contract cooldown is per wallet; it does NOT prevent Sybil claims, so CAPTCHA / IP and abuse controls require a secure backend before public funding. Status: NOT DEPLOYED / NOT FUNDED.
+Distributor for previously funded native WMC, not a WMC minter. For mainnet, use an independently governed treasury and a small, approved daily cap. Contract cooldown is per recipient; it does NOT prevent Sybil claims, so CAPTCHA / IP and abuse controls require a secure backend before public funding. The contract additionally provides an **optional admin-appointed gas sponsor relayer**, disabled by default; `claimFor` lets the backend sponsor a recipient's claim if their WMC balance is zero. Off-chain relayer service, wallet-ownership challenge and anti-bot checks remain unimplemented. Status: NOT DEPLOYED / NOT FUNDED.
 
 ### Token Creator
 
@@ -42,7 +42,7 @@ User's browser computes SHA-256 from local document bytes. No document is sent t
 3. Deploy with dedicated least-privilege operational accounts, not validator signing keys.
 4. Verify deployed source, addresses, tx hashes, role ownership and upgrade assumptions.
 5. Submit a separate reviewed PR setting only verified contract addresses and configured flags.
-6. Faucet: fund only after rate-limiting backend, approved allocation and alarm testing.
+6. Faucet: fund or authorize a relayer only after a wallet-challenge anti-abuse backend, per-IP quotas, approved allocation and alarm testing.
 7. Bridge: only proceed after independent audit and controlled pilot with capped assets; the current suite contains no live transfers.
 8. Document registry: independent review and privacy risk assessment before on-chain anchoring goes live.
 

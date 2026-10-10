@@ -129,3 +129,26 @@ test('Native WMC faucet enforces daily cap, cooldown, pause and admin access',as
   await done(faucet.withdraw(await admin.getAddress(),ethers.parseEther('0.1')));
   assert.equal(await faucet.availableBalance(),ethers.parseEther('0.5'));
 });
+
+test('Gas-sponsored WMC claims require an appointed relayer and enforce recipient-based limits',async()=>{
+  const {accounts:[admin,relayer,recipient,outsider]}=await fixture();
+  const amount=ethers.parseEther('0.15');
+  const recipientAddress=await recipient.getAddress();
+  const faucet=await deploy('WinmarFaucet',admin,await admin.getAddress(),amount,86400n,ethers.parseEther('0.3'));
+  await done(admin.sendTransaction({to:await faucet.getAddress(),value:ethers.parseEther('1')}));
+  const before=await recipient.provider.getBalance(recipientAddress);
+  await assert.rejects(()=>faucet.connect(relayer).claimFor.staticCall(recipientAddress));
+  await assert.rejects(()=>faucet.connect(relayer).setRelayer.staticCall(await relayer.getAddress()));
+  await done(faucet.setRelayer(await relayer.getAddress()));
+  await assert.rejects(()=>faucet.connect(outsider).claimFor.staticCall(recipientAddress));
+  await assert.rejects(()=>faucet.connect(relayer).claimFor.staticCall(ethers.ZeroAddress));
+  await done(faucet.connect(relayer).claimFor(recipientAddress));
+  const after=await recipient.provider.getBalance(recipientAddress);
+  assert.equal(after-before,amount,'Only the relayer paid gas; recipient received full WMC');
+  assert.equal(await faucet.claimedTotal(recipientAddress),amount);
+  await assert.rejects(()=>faucet.connect(relayer).claimFor.staticCall(recipientAddress));
+  await done(faucet.setRelayer(ethers.ZeroAddress));
+  await assert.rejects(()=>faucet.connect(relayer).claimFor.staticCall(await outsider.getAddress()));
+  await done(faucet.setPaused(true));
+  await assert.rejects(()=>faucet.connect(recipient).claim.staticCall());
+});
