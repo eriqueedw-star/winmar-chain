@@ -33,3 +33,21 @@ Run npm install --ignore-scripts then npm test in services/faucet-relayer. Unit 
 ## Notes
 
 Environment fields are documented in .env.example. All official RPC and explorer endpoints use winmarchain.io. No secrets or validator operations belong in this repository.
+
+## P0 security implementation in development
+
+- Live mode now requires private Unix socket ingress, with permission mode 0600. The reverse proxy must authenticate the originating client and inject only the verified `X-Winmar-Verified-IP` header. Other forwarded-IP headers are rejected. This requires infrastructure configuration and independent validation before launch.
+- Live Redis now requires TLS (`rediss://`), password authentication, `noeviction`, and AOF persistence. A per-wallet pending-transaction journal has no TTL. The atomic claim script blocks unresolved requests from repeating.
+- An approved dedicated public relayer address must match the signing key. A persistent Redis singleton lock prevents a second signer from starting simultaneously, and `ethers.NonceManager` manages the nonce sequence inside the single process. After a crash, operators must reconcile and explicitly release the singleton lock before restart.
+- Journal entries are `reserved`, `unknown`, or `submitted:<transaction-hash>`. They remain locked pending manual reconciliation, including uncertain or failed network responses. Never delete them automatically.
+- CI tests cover the authorization mock, proxy IP parsing, contract transactions and concurrent access against isolated real Redis. This does NOT establish an independent security audit.
+
+### Unresolved production blockers
+
+1. Restrict the origin firewall to approved edge/proxy endpoints, configure a trusted Cloudflare client-IP chain, strip client-supplied IP headers, inject a fresh verified header, and route traffic only through private Unix socket. Prove direct-origin bypass is impossible.
+2. Set up an authenticated Redis with TLS, ACL, AOF, noeviction, backups and recovery validation. The ephemeral Redis CI container is never production state.
+3. Custody the dedicated relayer signing key in an approved secrets manager or signing service; enforce least privilege and WMC limits, and never reuse a QBFT validator or treasury key.
+4. Document transaction receipt, contract-event and chain-confirmation verification, and use two-person authorization before releasing an outstanding transaction or singleton lock.
+5. Audit runtime and smart contracts independently, stage integration/load tests, monitor budgets and run emergency stop procedures before mainnet activation.
+
+**Do not enable live WMC claims on the basis of successful CI alone.**

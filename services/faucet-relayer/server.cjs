@@ -20,6 +20,7 @@ const key=process.env.WMC_RELAYER_PRIVATE_KEY;
 const redisUrl=process.env.REDIS_URL;
 const captchaSecret=process.env.TURNSTILE_SECRET;
 const port=Number(process.env.PORT||8788);
+const expectedRelayer=process.env.WMC_EXPECTED_RELAYER_ADDRESS;
 const socketPath=process.env.WMC_PROXY_SOCKET;
 const edgeMode=socketPath?'unix':'tcp';
 
@@ -41,19 +42,34 @@ async function main(){
     get:key=>redis.get(key),
     set:(key,value,opts)=>redis.set(key,value,opts)
   };
+  if(enabled){
+    // Live auth state must survive Redis restarts and may not be evicted.
+    const policy=await redis.configGet('maxmemory-policy');
+    const persistence=await redis.info('persistence');
+    if(policy['maxmemory-policy']!=='noeviction' || !/(^|\n)aof_enabled:1\r?(\n|$)/.test(persistence)){
+      throw new Error('Live Redis requires noeviction and AOF persistence');
+    }
+  }
   const provider=enabled?new ethers.JsonRpcProvider(rpcUrl):null;
   let relay=null,contract=null;
   if(enabled){
     const network=await provider.getNetwork();
     if(network.chainId!==12142816n)throw new Error('RPC chain ID mismatch');
+    if(!ethers.isAddress(expectedRelayer||''))throw new Error('Dedicated relayer identity not configured');
     relay=new ethers.Wallet(key,provider);
+    if(relay.address.toLowerCase()!==expectedRelayer.toLowerCase())throw new Error('Relayer wallet is not approved');
+    // Persistent lock. After a crash, pending claims require operator review
+    // before this lock can be explicitly released for a new signer process.
+    const acquired=await redis.set('wmc:faucet:singleton-relayer',relay.address,{NX:true});
+    if(acquired!=='OK')throw new Error('Relayer singleton is locked; reconcile before restart');
+    relay=new ethers.NonceManager(relay);
     contract=new ethers.Contract(contractAddress,[
       'function claimFor(address recipient)',
       'function relayer() view returns (address)',
       'function paused() view returns (bool)',
       'function availableBalance() view returns (uint256)'
     ],relay);
-    if((await contract.relayer()).toLowerCase()!==relay.address.toLowerCase())throw new Error('Relayer not authorized on contract');
+    if((await contract.relayer()).toLowerCase()!==expectedRelayer.toLowerCase())throw new Error('Relayer not authorized on contract');
     if(await contract.paused())throw new Error('Faucet paused');
     if((await contract.availableBalance())===0n)throw new Error('Faucet unfunded');
   }
@@ -76,7 +92,7 @@ async function main(){
       if(network.chainId!==12142816n)throw new Error('Wrong network');
       if(await contract.paused())throw new Error('Faucet paused');
       if((await contract.availableBalance())===0n)throw new Error('Faucet depleted');
-      if((await contract.relayer()).toLowerCase()!==relay.address.toLowerCase())throw new Error('Relayer changed');
+      if((await contract.relayer()).toLowerCase()!==expectedRelayer.toLowerCase())throw new Error('Relayer changed');
       // A successful broadcast is not a receipt; the client gets the tx hash.
       const tx=await contract.claimFor(wallet);
       return {hash:tx.hash};
