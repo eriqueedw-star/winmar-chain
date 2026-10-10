@@ -11,6 +11,7 @@ This public repository is the canonical project index for public network informa
 | Network name | Winmar Chain |
 | Chain ID | `12142816` (`0xB948E0`) |
 | Native currency | WMC |
+| Fungible token standard | **WMC-20** (ERC-20 compatible) |
 | Consensus | QBFT Proof of Authority |
 | Public RPC | `https://rpc.winmarchain.io` |
 | Explorer | `https://scan.winmarchain.io` |
@@ -18,6 +19,8 @@ This public repository is the canonical project index for public network informa
 | Bridge | `https://bridge.winmarchain.io` |
 
 The machine-readable public metadata lives in [`config/network.json`](config/network.json).
+
+The **WMC-20** fungible-token standard is defined in [`docs/standards/WMC-20.md`](docs/standards/WMC-20.md). WMC-20 describes contract tokens issued on Winmar Chain; **WMC** remains the native gas asset.
 
 ## Repository map
 
@@ -47,7 +50,8 @@ The repository includes explicit controls for material that is not yet safe to i
 - [Release process](docs/RELEASE_PROCESS.md)
 - [Release checklist](RELEASE_CHECKLIST.md)
 - [Winmar Faucet](docs/FAUCET.md)
-- [Winmar Token Maker](docs/TOKEN_MAKER.md)
+- [WMC-20 Token Creator](docs/TOKEN_MAKER.md)
+- [WMC-20 token standard v1.0.0](docs/standards/WMC-20.md)
 - [Developer tools deployment](docs/DEVELOPER_TOOLS_DEPLOYMENT.md)
 
 Unverified production consensus parameters must not be invented or copied into the repository.

@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="description" content="Winmar Chain developer suite: native WMC faucet, ERC-20 token creator, wrapped-asset registry, and on-chain SHA-256 document attestation.">
+<meta name="description" content="Winmar Chain developer suite: native WMC faucet, WMC-20 token creator (ERC-20 compatible), wrapped-asset registry, and on-chain SHA-256 document attestation.">
 <title>WINMAR CHAIN — Ecosystem Console</title>
 <style>
 :root{color-scheme:dark;font-family:Inter,system-ui,-apple-system,sans-serif;color:#e8f0fa;background:#070f1c}
@@ -58,7 +58,7 @@ footer{border-top:1px solid #293e58;margin-top:30px;padding-top:20px;font-size:1
 </div>
 <div class="tabs" role="tablist" aria-label="Developer tools">
   <button type="button" id="t-faucet" aria-selected="true"><span class="no">01 / GAS</span>Faucet</button>
-  <button type="button" id="t-creator" aria-selected="false"><span class="no">02 / ASSET ISSUANCE</span>Token Creator</button>
+  <button type="button" id="t-creator" aria-selected="false"><span class="no">02 / ASSET ISSUANCE</span>WMC-20 Creator</button>
   <button type="button" id="t-bridge" aria-selected="false"><span class="no">03 / INTEROPERABILITY</span>Wrapped Assets</button>
   <button type="button" id="t-documents" aria-selected="false"><span class="no">04 / INTEGRITY</span>Document Verify</button>
 </div>
@@ -72,8 +72,8 @@ footer{border-top:1px solid #293e58;margin-top:30px;padding-top:20px;font-size:1
     <div id="faucet-result" class="result" role="status">Waiting for verified deployment and separate treasury funding.</div>
   </section>
   <section id="p-creator" class="card" hidden>
-    <span class="flag">FACTORY NOT DEPLOYED</span><h2>Token Creator</h2>
-    <p class="muted">Create a transparent ERC-20-compatible contract. Gas is paid in native WMC. Issuer control powers are visible before deployment.</p>
+    <span class="flag">FACTORY NOT DEPLOYED</span><h2>WMC-20 Token Creator</h2>
+    <p class="muted">Create a WMC-20 fungible token native to Winmar Chain. ERC-20 compatible for EVM wallets and tools. Gas is paid in native WMC; issuer powers are disclosed before deployment.</p>
     <div class="cols">
       <div class="field"><label for="token-name">Token name</label><input id="token-name" maxlength="80" value="Example Winmar Token"></div>
       <div class="field"><label for="token-symbol">Symbol</label><input id="token-symbol" maxlength="18" value="EWT"></div>
@@ -88,7 +88,7 @@ footer{border-top:1px solid #293e58;margin-top:30px;padding-top:20px;font-size:1
       <label><input id="pausable" type="checkbox"> Pausable</label>
     </div>
     <div class="risk">If <strong>Mintable</strong> or <strong>Pausable</strong> is enabled, the token creator retains owner authority. Creating a token does not make it endorsed or listed by Winmar Chain.</div>
-    <button type="button" id="deploy" disabled>Deploy Token</button>
+    <button type="button" id="deploy" disabled>Deploy WMC-20 Token</button>
     <div class="result" id="token-result" role="status">Awaiting reviewed Token Factory deployment.</div>
   </section>
   <section id="p-bridge" class="card" hidden>
@@ -120,6 +120,7 @@ footer{border-top:1px solid #293e58;margin-top:30px;padding-top:20px;font-size:1
     <div class="kv"><span>Network</span><span>Winmar Chain</span></div>
     <div class="kv"><span>Chain ID</span><span>12142816</span></div>
     <div class="kv"><span>Native asset</span><span>WMC</span></div>
+    <div class="kv"><span>Fungible token standard</span><span>WMC-20 (ERC-20 compatible)</span></div>
     <div class="kv"><span>RPC</span><span>rpc.winmarchain.io</span></div>
     <div class="kv"><span>Explorer</span><span>scan.winmarchain.io</span></div>
     <div class="kv"><span>Wallet</span><span id="wallet-status">Not connected</span></div>

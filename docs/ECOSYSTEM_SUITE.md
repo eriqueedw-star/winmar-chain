@@ -5,7 +5,7 @@ Date: 2026-10-10. Development branch only. NO production deployment authorized.
 ## Existing verified repository components
 
 - Native WMC Faucet contract: contracts/WinmarFaucet.sol.
-- ERC-20 token template and factory: contracts/WinmarToken.sol and contracts/WinmarTokenFactory.sol.
+- WMC-20 token template and factory (ERC-20 compatible): contracts/WinmarToken.sol and contracts/WinmarTokenFactory.sol.
 - Basic developer interface: apps/developer-tools/index.html.
 - Mainnet deploy workflow exists but must NOT be triggered by this change.
 - Faucet and Token Maker deployment addresses are currently NOT recorded; config flags remain false.
@@ -14,7 +14,7 @@ Date: 2026-10-10. Development branch only. NO production deployment authorized.
 
 - Document SHA-256 self-attestation registry: contracts/WinmarDocumentRegistry.sol.
 - Read-only bridged asset route catalog: contracts/WinmarBridgeAssetRegistry.sol.
-- Integrated four-feature prototype: apps/developer-tools/suite.html.
+- Integrated four-feature prototype: apps/developer-tools/index.html.
 - Fail-closed feature switches: config/developer-tools.json.
 
 ## Four modules
@@ -25,7 +25,7 @@ Distributor for previously funded native WMC, not a WMC minter. For mainnet, use
 
 ### Token Creator
 
-Transparent factory for ERC-20-compatible tokens. Issuer controls optional mint/pause powers, which must be displayed prominently. Token deployer pays WMC gas. A factory deployment, verified source, test suite and assessment are required before a public enablement. Token creation does NOT certify or endorse third-party tokens. Status: NOT DEPLOYED.
+Transparent factory for WMC-20 tokens (ERC-20 compatible). The WMC-20 v1.0.0 specification is in docs/standards/WMC-20.md. Issuer controls optional mint/pause powers, which must be displayed prominently. Token deployer pays WMC gas. A factory deployment, verified source, test suite and assessment are required before a public enablement. Token creation does NOT certify or endorse third-party tokens. Status: NOT DEPLOYED.
 
 ### Wrapped Assets and Cross-chain Bridge
 

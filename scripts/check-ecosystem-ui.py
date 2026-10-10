@@ -13,6 +13,8 @@ assert conf["network"]["rpc"] == "https://rpc.winmarchain.io"
 assert conf["faucet"]["configured"] is False
 assert conf["faucet"]["funded"] is False
 assert conf["tokenMaker"]["configured"] is False
+assert conf["tokenMaker"]["tokenStandard"] == "WMC-20"
+assert conf["tokenMaker"]["technicalCompatibility"] == "ERC-20"
 assert conf["documentVerifier"]["configured"] is False
 assert conf["bridge"]["transfersEnabled"] is False
 assert conf["bridge"]["assetRegistryConfigured"] is False
@@ -25,6 +27,8 @@ assert all(f'id="p-{name}"' in html for name in ("faucet", "creator", "bridge", 
 assert "crypto.subtle.digest('SHA-256',buffer)" in html
 assert "function getRecord(address issuer,bytes32 sha256)" in html
 assert "document.getElementById" in html
+assert "WMC-20 Token Creator" in html
+assert "ERC-20 compatible" in html
 with tempfile.TemporaryDirectory() as folder:
     p = pathlib.Path(folder) / "suite.js"
     p.write_text(scripts[0], encoding="utf-8")

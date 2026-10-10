@@ -25,7 +25,10 @@
     "environment": "mainnet",
     "configured": false,
     "deploymentStatus": "not-deployed",
-    "factoryAddress": null
+    "factoryAddress": null,
+    "tokenStandard": "WMC-20",
+    "technicalCompatibility": "ERC-20",
+    "standardSpecification": "docs/standards/WMC-20.md"
   },
   "documentVerifier": {
     "environment": "mainnet",
