@@ -1,0 +1,44 @@
+name: Ecosystem contract transaction tests
+
+on:
+  push:
+    branches:
+      - "feature/**"
+  pull_request:
+    paths:
+      - "contracts/**"
+      - "tests/contracts.test.cjs"
+      - ".github/workflows/ecosystem-contract-tests.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  local-evm:
+    name: Exercise Faucet, WMC-20, Bridge and Document Registry
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+
+      - name: Set up Node.js
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 24
+
+      - name: Install explicit test dependencies
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm install --no-save --ignore-scripts --no-audit --no-fund --package-lock=false ethers@6.15.0 solc@0.8.30 ganache@7.9.2
+
+      - name: Run in-memory EVM transaction tests
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --test tests/contracts.test.cjs
+
+      - name: Verify offline test mode
+        run: echo "Only in-memory Ganache was used; no mainnet signing keys or on-chain transactions."
