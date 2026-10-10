@@ -1,0 +1,36 @@
+name: Faucet relayer authorization checks
+
+on:
+  push:
+    branches:
+      - "feature/**"
+  pull_request:
+    paths:
+      - "services/faucet-relayer/**"
+      - ".github/workflows/faucet-relayer-checks.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  offline-authorization:
+    name: Wallet challenge and replay-prevention tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+      - name: Set up Node.js
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 24
+      - name: Install test dependencies
+        working-directory: services/faucet-relayer
+        run: npm install --ignore-scripts --no-audit --no-fund --package-lock=false
+      - name: Run offline wallet authorization tests
+        working-directory: services/faucet-relayer
+        run: |
+          node --check core.cjs
+          node --check server.cjs
+          npm test
