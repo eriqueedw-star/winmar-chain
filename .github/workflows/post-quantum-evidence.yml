@@ -1,0 +1,80 @@
+name: Post-quantum evidence
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+      - "feature/post-quantum-foundation"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    name: ML-DSA-65 evidence
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+
+      - name: Set up Node.js
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: "22"
+
+      - name: Install pinned PQ dependency
+        working-directory: tools/pq-proof
+        run: npm install --ignore-scripts --no-audit --no-fund
+
+      - name: Run cryptographic tests
+        working-directory: tools/pq-proof
+        run: npm test
+
+      - name: Generate evidence bundle
+        working-directory: tools/pq-proof
+        run: npm run evidence
+
+      - name: Independently re-verify generated bundle
+        working-directory: tools/pq-proof
+        run: node verify-evidence.mjs evidence/winmar-pq-evidence-v1.json
+
+      - name: Publish evidence artifact
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: winmar-pq-evidence-v1
+          path: tools/pq-proof/evidence/winmar-pq-evidence-v1.json
+          if-no-files-found: error
+          retention-days: 90
+
+  mainnet:
+    name: Live mainnet ML-DSA evidence
+    runs-on: ubuntu-latest
+    needs: verify
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+
+      - name: Set up Node.js
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: "22"
+
+      - name: Install pinned PQ dependency
+        working-directory: tools/pq-proof
+        run: npm install --ignore-scripts --no-audit --no-fund
+
+      - name: Collect and verify live mainnet evidence
+        working-directory: tools/pq-proof
+        run: npm run mainnet:evidence
+
+      - name: Publish live mainnet evidence artifact
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: winmar-pq-mainnet-evidence-v1
+          path: |
+            tools/pq-proof/evidence/live-mainnet-transaction.json
+            tools/pq-proof/evidence/winmar-pq-mainnet-evidence-v1.json
+          if-no-files-found: error
+          retention-days: 90
