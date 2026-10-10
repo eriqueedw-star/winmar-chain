@@ -5,6 +5,8 @@
  * real-client IP forwarding. Never use a validator signer or public admin RPC.
  */
 const http=require('node:http');
+const fs=require('node:fs');
+const {verifiedClientIp}=require('./edge.cjs');
 const {URL}=require('node:url');
 const {createClient}=require('redis');
 const {ethers}=require('ethers');
@@ -18,9 +20,14 @@ const key=process.env.WMC_RELAYER_PRIVATE_KEY;
 const redisUrl=process.env.REDIS_URL;
 const captchaSecret=process.env.TURNSTILE_SECRET;
 const port=Number(process.env.PORT||8788);
+const socketPath=process.env.WMC_PROXY_SOCKET;
+const edgeMode=socketPath?'unix':'tcp';
 
 async function main(){
   if(!redisUrl)throw new Error('REDIS_URL required; never use in-memory authorization state');
+  if(enabled && edgeMode!=='unix')throw new Error('Live claims require private Unix socket ingress');
+  if(enabled && (!redisUrl.startsWith('rediss://') || !new URL(redisUrl).password))throw new Error('Live claims require TLS and authenticated Redis');
+  if(socketPath && (!socketPath.startsWith('/') || socketPath.length>100))throw new Error('Invalid Unix socket path');
   if(!Number.isInteger(port)||port<1||port>65535)throw new Error('Invalid PORT');
   if(rpcUrl!=='https://rpc.winmarchain.io')throw new Error('Only canonical RPC allowed');
   if(enabled && (!key||!captchaSecret||!contractAddress||!ethers.isAddress(contractAddress))) {
@@ -93,10 +100,10 @@ async function main(){
       const bufs=[];let total=0;
       for await(const chunk of req){total+=chunk.length;if(total>8192)throw new ClaimError(413,'BODY_TOO_LARGE');bufs.push(chunk);}
       let data;try{data=JSON.parse(Buffer.concat(bufs).toString('utf8'));}catch(_){throw new ClaimError(400,'INVALID_JSON');}
-      // Do not trust caller-supplied X-Forwarded-For. Edge topology must preserve
-      // verified client IP on this socket or requests must be rejected upstream.
-      const ip=req.socket.remoteAddress;
-      if(!ip)throw new ClaimError(503,'PEER_IP_UNAVAILABLE');
+      // TCP preview mode never accepts public claims; in live mode only
+      // a private Unix-domain-socket peer with an explicitly proxy-verified
+      // client IP header may submit claims. No arbitrary forwarded headers.
+      const ip=verifiedClientIp(req,edgeMode);
       const result=url.pathname==='/v1/challenge'
         ?await authorize.challenge(data,ip)
         :await authorize.claim(data,ip);
@@ -107,6 +114,15 @@ async function main(){
     }
   });
   server.requestTimeout=10000;server.headersTimeout=10000;
-  server.listen(port,'127.0.0.1',()=>process.stdout.write('WMC faucet relayer service listening locally; claims enabled: '+enabled+'\n'));
+  if(edgeMode==='unix') {
+    // Never unlink an existing path or bind through a symlink.
+    if(fs.existsSync(socketPath))throw new Error('Unix socket path already exists');
+    server.listen(socketPath,()=>{
+      fs.chmodSync(socketPath,0o600);
+      process.stdout.write('WMC faucet relayer listening on private Unix socket; claims enabled: '+enabled+'\n');
+    });
+  }else{
+    server.listen(port,'127.0.0.1',()=>process.stdout.write('WMC faucet preview on loopback; claims enabled: '+enabled+'\n'));
+  }
 }
 main().catch(()=>{process.stderr.write('Relayer failed closed at startup\n');process.exitCode=1;});
