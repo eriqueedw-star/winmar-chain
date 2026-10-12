@@ -90,11 +90,13 @@ A production claim of "quantum-resistant" requires all of the following:
 Until the production gates above are complete:
 
 Allowed:
+
 - "Post-quantum foundation"
 - "Hybrid post-quantum architecture in development"
 - "Designed for quantum-resilient transaction assurance"
 
 Not yet allowed as a production fact:
+
 - "Quantum-secure blockchain"
 - "All Winmar Chain transactions are quantum-resistant"
 - "ML-DSA is enforced by QBFT consensus"
