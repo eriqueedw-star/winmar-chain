@@ -3,8 +3,16 @@ name: Mainnet developer tools deployment
 on:
   workflow_dispatch:
     inputs:
+      component:
+        description: 'Select the reviewed component to deploy'
+        required: true
+        default: 'token-factory'
+        type: choice
+        options:
+          - token-factory
+          - all
       confirm:
-        description: 'Type DEPLOY_MAINNET to authorize mainnet deployment'
+        description: 'Type DEPLOY_TOKEN_FACTORY for token-factory, or DEPLOY_ALL for all components'
         required: true
         type: string
 
@@ -17,8 +25,8 @@ concurrency:
 
 jobs:
   deploy:
-    name: Deploy Faucet and Token Factory to Winmar Chain mainnet
-    if: ${{ inputs.confirm == 'DEPLOY_MAINNET' }}
+    name: Deploy reviewed developer tools to Winmar Chain mainnet
+    if: ${{ (inputs.component == 'token-factory' && inputs.confirm == 'DEPLOY_TOKEN_FACTORY') || (inputs.component == 'all' && inputs.confirm == 'DEPLOY_ALL') }}
     environment:
       name: production
       url: https://scan.winmarchain.io
@@ -43,6 +51,7 @@ jobs:
       - name: Deploy to Winmar Chain mainnet
         env:
           WINMAR_DEPLOY_TARGET: mainnet
+          WINMAR_DEPLOY_COMPONENT: ${{ inputs.component }}
           WINMAR_DEPLOY_RPC_URL: https://rpc.winmarchain.io
           WINMAR_DEPLOY_CHAIN_ID: '12142816'
           WINMAR_DEPLOY_PRIVATE_KEY: ${{ secrets.WINMAR_MAINNET_DEPLOYER_PRIVATE_KEY }}
