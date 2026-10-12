@@ -18,7 +18,14 @@ assert conf["tokenMaker"]["technicalCompatibility"] == "ERC-20"
 assert conf["documentVerifier"]["configured"] is False
 assert conf["bridge"]["transfersEnabled"] is False
 assert conf["bridge"]["assetRegistryConfigured"] is False
-assert conf["bridge"]["supportedRoutes"] == []
+routes = conf["bridge"]["supportedRoutes"]
+assert len(routes) == 1
+assert routes[0]["sourceChainId"] == 56
+assert routes[0]["sourceToken"].lower() == "0x3fc94a05ed1b7044f666a0342f4b750ab1b2ddd9"
+assert routes[0]["status"] == "staging-paused"
+assert routes[0]["lockMint"] is False
+assert routes[0]["burnRelease"] is False
+assert routes[0]["proofVerification"] == "not-deployed"
 
 html = (ROOT / "apps/developer-tools/index.html").read_text(encoding="utf-8")
 scripts = [s for s in re.findall(r"<script(?:\s[^>]*)?>(.*?)</script>", html, re.S | re.I) if s.strip()]
