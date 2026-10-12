@@ -48,9 +48,9 @@ function artifact(name) {
   return { abi, bytecode: `0x${bytecode}` };
 }
 
-const factoryArtifact = artifact('WinmarTokenFactory_sol_WinmarTokenFactory');
+const factoryArtifact = artifact('contracts_WinmarTokenFactory_sol_WinmarTokenFactory');
 const faucetArtifact = component === 'all'
-  ? artifact('WinmarFaucet_sol_WinmarFaucet')
+  ? artifact('contracts_WinmarFaucet_sol_WinmarFaucet')
   : null;
 
 console.log(`Deploying to Winmar Chain mainnet ${MAINNET_CHAIN_ID} from ${deployer}`);
