@@ -3,7 +3,9 @@ pragma solidity ^0.8.24;
 
 /**
  * @title WinmarToken
- * @notice Transparent ERC-20 template used by WinmarTokenFactory.
+ * @notice WMC-20 fungible token template for Winmar Chain.
+ * @dev Maintains the standard ERC-20 ABI and events for EVM compatibility.
+ *      WMC is the native chain gas coin, not a WMC-20 contract.
  *
  * No transfer tax, blacklist, hidden mint, honeypot, reflection, or
  * arbitrary transfer restriction is implemented.

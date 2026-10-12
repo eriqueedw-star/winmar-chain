@@ -1,0 +1,55 @@
+name: Faucet relayer authorization checks
+
+on:
+  push:
+    branches:
+      - "feature/**"
+  pull_request:
+    paths:
+      - "services/faucet-relayer/**"
+      - ".github/workflows/faucet-relayer-checks.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  offline-authorization:
+    name: Wallet challenge and replay-prevention tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    services:
+      redis:
+        image: redis:7.4-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 10
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+      - name: Set up Node.js
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 24
+      - name: Install test dependencies
+        working-directory: services/faucet-relayer
+        run: npm install --ignore-scripts --no-audit --no-fund --package-lock=false
+      - name: Validate local staging Compose syntax
+        env:
+          WMC_STAGING_REDIS_PASSWORD: CI_ONLY_DUMMY_VALUE
+        run: docker compose -f infra/faucet-staging/compose.yaml config --quiet
+
+      - name: Run offline wallet authorization and real Redis atomicity tests
+        working-directory: services/faucet-relayer
+        env:
+          REDIS_TEST_URL: redis://127.0.0.1:6379
+        run: |
+          node --check core.cjs
+          node --check server.cjs
+          node --check edge.cjs
+          node --check tests/staging-smoke.test.cjs
+          npm test

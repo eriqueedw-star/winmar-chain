@@ -25,6 +25,26 @@
     "environment": "mainnet",
     "configured": false,
     "deploymentStatus": "not-deployed",
-    "factoryAddress": null
+    "factoryAddress": null,
+    "tokenStandard": "WMC-20",
+    "technicalCompatibility": "ERC-20",
+    "standardSpecification": "docs/standards/WMC-20.md"
+  },
+  "documentVerifier": {
+    "environment": "mainnet",
+    "configured": false,
+    "deploymentStatus": "not-deployed",
+    "registryAddress": null,
+    "hashAlgorithm": "SHA-256",
+    "custody": "local-only",
+    "attestation": "self-issued; not institutional verification"
+  },
+  "bridge": {
+    "interface": "https://bridge.winmarchain.io",
+    "transfersEnabled": false,
+    "assetRegistryConfigured": false,
+    "assetRegistryAddress": null,
+    "productionAudited": false,
+    "supportedRoutes": []
   }
 }

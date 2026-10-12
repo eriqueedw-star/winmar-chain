@@ -35,3 +35,13 @@ desktop.ini
 *.zip
 *.tar
 *.tar.gz
+
+# Terraform: keep local state, credentials and machine overrides out of Git
+.terraform/
+*.tfstate
+*.tfstate.*
+*.tfvars
+!*.tfvars.example
+*.tfplan
+crash.log
+crash.*.log

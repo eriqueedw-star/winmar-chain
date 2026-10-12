@@ -2,7 +2,7 @@
 
 ## Purpose
 
-This runbook deploys the Winmar Token Factory and native WMC Faucet to Winmar Chain mainnet.
+This runbook deploys reviewed developer-tool components to Winmar Chain mainnet. Deploy the Winmar Token Factory independently by default. The native WMC Faucet must remain excluded until its off-chain anti-abuse service passes the production gates in `docs/FAUCET.md`.
 
 ## Mainnet identity
 
@@ -49,9 +49,10 @@ Where possible, configure required reviewers for the production environment so t
 1. Ensure the `production` environment secret exists.
 2. Confirm the deployment wallet has WMC for gas.
 3. Open Actions → `Mainnet developer tools deployment`.
-4. Run workflow and enter exactly `DEPLOY_MAINNET`.
-5. Approve the `production` environment if protection is enabled.
-6. Review the deployment artifact for factory and faucet addresses and transaction hashes.
-7. Verify both contracts on the explorer before publishing their addresses in `config/developer-tools.json`.
+4. Select `token-factory` and enter exactly `DEPLOY_TOKEN_FACTORY` for the recommended token-only release.
+5. Select `all` and enter exactly `DEPLOY_ALL` only after the Faucet production gates and independent review are complete.
+6. Approve the `production` environment if protection is enabled.
+7. Review the deployment artifact for deployed addresses and transaction hashes. A token-only manifest records `faucet` as `null`.
+8. Verify every deployed contract on the explorer before publishing its address in `config/developer-tools.json`.
 
 Mainnet deployment creates real on-chain contracts and consumes gas. Smart-contract deployments should be reviewed and source-verified before being treated as production-ready.

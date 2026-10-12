@@ -5,7 +5,9 @@ import "./WinmarToken.sol";
 
 /**
  * @title WinmarTokenFactory
- * @notice Permissionless factory for the transparent WinmarToken template.
+ * @notice Permissionless factory for WMC-20 tokens on Winmar Chain.
+ * @dev WMC-20 preserves ERC-20 interface compatibility; deployment uses
+ *      native WMC for gas and does not mint native WMC.
  *
  * Each creator gets an independent salt namespace. The factory has no
  * admin minting authority over created tokens and charges no protocol fee.

@@ -1,0 +1,39 @@
+name: AWS staging Terraform checks
+
+on:
+  pull_request:
+    paths:
+      - "infra/aws-staging/**"
+      - ".github/workflows/aws-staging-terraform-checks.yml"
+  push:
+    branches:
+      - "feature/**"
+    paths:
+      - "infra/aws-staging/**"
+      - ".github/workflows/aws-staging-terraform-checks.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  terraform-validation:
+    name: Validate private AWS staging Terraform
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: infra/aws-staging/terraform
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+      - name: Install pinned Terraform
+        uses: hashicorp/setup-terraform@b9cd54a3c349d3f38e8881555d616ced269862dd # v3.1.2
+        with:
+          terraform_version: 1.11.4
+      - name: Terraform formatting
+        run: terraform fmt -check -recursive
+      - name: Terraform provider initialization (no backend, no AWS credentials)
+        run: terraform init -backend=false -input=false -no-color
+      - name: Validate Terraform syntax and references
+        run: terraform validate -no-color
