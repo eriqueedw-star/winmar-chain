@@ -11,7 +11,7 @@ published as active RPC, explorer, or website endpoints.
 | Network | Winmar Chain |
 | Chain ID | `12142816` |
 | Native currency | WMC |
-| RPC | `https://rpc.winmarchain.io` |
+| RPC | `https://rpc.winmarchain.com` |
 | Explorer | `https://scan.winmarchain.io` |
 | Website | `https://winmarchain.io` |
 | Logo | `https://winmarchain.io/logo/` |

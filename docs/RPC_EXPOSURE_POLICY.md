@@ -2,7 +2,7 @@
 
 ## Objective
 
-The public RPC at `https://rpc.winmarchain.io` should expose only methods required for ordinary public chain interaction and read-only network verification.
+The public RPC at `https://rpc.winmarchain.com` should expose only methods required for ordinary public chain interaction and read-only network verification.
 
 ## Publicly expected methods
 

@@ -10,7 +10,7 @@ These controls improve audit readiness but do not constitute an independent secu
 
 ## Completed evidence
 
-- Public metadata identifies chain ID `12142816`, RPC `rpc.winmarchain.io`, and explorer `scan.winmarchain.io`.
+- Public metadata identifies chain ID `12142816`, RPC `rpc.winmarchain.com`, and explorer `scan.winmarchain.io`.
 - Repository CI validates JSON, lints Markdown and shell scripts, and performs full-history Gitleaks scanning.
 - CI dependencies are pinned and reviewed through repository supply-chain controls.
 - The public-network probe checks website and explorer reachability and verifies `eth_chainId` and `eth_blockNumber` through the public RPC.

@@ -8,7 +8,7 @@
       "symbol": "WMC",
       "decimals": 18
     },
-    "rpc": "https://rpc.winmarchain.io",
+    "rpc": "https://rpc.winmarchain.com",
     "explorer": "https://scan.winmarchain.io"
   },
   "faucet": {

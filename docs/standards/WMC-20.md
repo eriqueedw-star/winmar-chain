@@ -15,7 +15,7 @@
 - **Native coin:** Winmar Coin (\`WMC\`), the gas asset.
 - **Token standard:** WMC-20 (fungible contract tokens on Winmar Chain).
 - **Underlying ABI and events:** Ethereum ERC-20-compatible.
-- **Public RPC:** \`https://rpc.winmarchain.io\`.
+- **Public RPC:** \`https://rpc.winmarchain.com\`.
 - **Explorer:** \`https://scan.winmarchain.io\`.
 - **Official website:** \`https://winmarchain.io\`.
 
