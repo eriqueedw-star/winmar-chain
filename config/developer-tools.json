@@ -8,8 +8,10 @@
       "symbol": "WMC",
       "decimals": 18
     },
-    "rpc": "https://rpc.winmarchain.com",
-    "explorer": "https://scan.winmarchain.io"
+    "rpc": "https://rpc.winmarchain.io",
+    "rpcBackup": "https://rpc.winmarchain.com",
+    "explorer": "https://scan.winmarchain.io",
+    "explorerBackup": "https://scan.winmarchain.com"
   },
   "faucet": {
     "environment": "mainnet",

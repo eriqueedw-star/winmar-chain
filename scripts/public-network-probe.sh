@@ -5,7 +5,7 @@ CHAIN_ID_DECIMAL="12142816"
 CHAIN_ID_HEX="0xB948E0"
 EXPECTED_GENESIS_BLOCK_HASH="0x82f43cfcd8c9152bae9bde20af3e790451ad1d778707f506b5794335c065c2fd"
 WEBSITE_URL="https://winmarchain.io"
-RPC_URL="https://rpc.winmarchain.com"
+RPC_URL="https://rpc.winmarchain.io"
 EXPLORER_URL="https://scan.winmarchain.io"
 BRIDGE_URL="https://bridge.winmarchain.io"
 

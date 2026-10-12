@@ -6,7 +6,7 @@ new file mode 100644
 +export const data = {
 +  name: "Winmar Chain",
 +  chain: "WMC",
-+  rpc: ["https://rpc.winmarchain.com"],
++  rpc: ["https://rpc.winmarchain.io"],
 +  faucets: [],
 +  nativeCurrency: {
 +    name: "Winmar Coin",

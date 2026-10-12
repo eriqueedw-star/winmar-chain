@@ -9,7 +9,7 @@ This runbook deploys reviewed developer-tool components to Winmar Chain mainnet.
 - Network: Winmar Chain
 - Chain ID: `12142816`
 - Native currency: WMC
-- RPC: `https://rpc.winmarchain.com`
+- RPC: `https://rpc.winmarchain.io`
 - Explorer: `https://scan.winmarchain.io`
 
 ## Deployment safety

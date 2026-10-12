@@ -49,7 +49,7 @@ test('Faucet preview is private, starts without signer and blocks all claims',{t
       WMC_FAUCET_CONTRACT:'',
       WMC_EXPECTED_RELAYER_ADDRESS:'',
       TURNSTILE_SECRET:'',
-      WMC_RPC:'https://rpc.winmarchain.com',
+      WMC_RPC:'https://rpc.winmarchain.io',
       WMC_FAUCET_ORIGIN:'https://faucet.winmarchain.io',
       REDIS_URL:process.env.REDIS_TEST_URL||'redis://127.0.0.1:6379',
       WMC_PROXY_SOCKET:socket

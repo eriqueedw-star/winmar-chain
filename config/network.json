@@ -9,12 +9,14 @@
   },
   "consensus": "QBFT Proof of Authority",
   "rpc": [
+    "https://rpc.winmarchain.io",
     "https://rpc.winmarchain.com"
   ],
   "explorers": [
     {
       "name": "Winmar Chain Explorer",
-      "url": "https://scan.winmarchain.io"
+      "url": "https://scan.winmarchain.io",
+      "backupUrl": "https://scan.winmarchain.com"
     }
   ],
   "website": "https://winmarchain.io",

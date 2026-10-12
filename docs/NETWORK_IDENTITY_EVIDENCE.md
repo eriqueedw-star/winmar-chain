@@ -10,7 +10,7 @@ This document defines the public, non-secret evidence used to identify the activ
 - Chain ID: `12142816` (`0xB948E0`)
 - Native currency: WMC
 - Consensus family: QBFT Proof of Authority
-- Public RPC: `https://rpc.winmarchain.com`
+- Public RPC: `https://rpc.winmarchain.io`
 - Explorer: `https://scan.winmarchain.io`
 
 ## Genesis block fingerprint

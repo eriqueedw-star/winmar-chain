@@ -11,7 +11,7 @@ Maintain one canonical, auditable project for Winmar Chain public network inform
 - Currency: WMC, 18 decimals
 - Consensus: QBFT Proof of Authority
 - Website: `https://winmarchain.io`
-- RPC: `https://rpc.winmarchain.com`
+- RPC: `https://rpc.winmarchain.io`
 - Explorer: `https://scan.winmarchain.io`
 - Bridge: `https://bridge.winmarchain.io`
 

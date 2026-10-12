@@ -121,7 +121,7 @@ footer{border-top:1px solid #293e58;margin-top:30px;padding-top:20px;font-size:1
     <div class="kv"><span>Chain ID</span><span>12142816</span></div>
     <div class="kv"><span>Native asset</span><span>WMC</span></div>
     <div class="kv"><span>Fungible token standard</span><span>WMC-20 (ERC-20 compatible)</span></div>
-    <div class="kv"><span>RPC</span><span>rpc.winmarchain.com</span></div>
+    <div class="kv"><span>RPC</span><span>rpc.winmarchain.io</span></div>
     <div class="kv"><span>Explorer</span><span>scan.winmarchain.io</span></div>
     <div class="kv"><span>Wallet</span><span id="wallet-status">Not connected</span></div>
     <div class="kv"><span>Config</span><span id="config-status">Loading…</span></div>
@@ -140,7 +140,7 @@ footer{border-top:1px solid #293e58;margin-top:30px;padding-top:20px;font-size:1
 <script>
 'use strict';
 const CHAIN = 12142816n, CHAIN_HEX = '0xB948E0';
-const RPC = 'https://rpc.winmarchain.com', SCAN = 'https://scan.winmarchain.io';
+const RPC = 'https://rpc.winmarchain.io', SCAN = 'https://scan.winmarchain.io';
 const FAUCET_ABI = ['function claim()'];
 const FACTORY_ABI = [
   'function createToken((string name,string symbol,uint8 decimals,uint256 initialSupply,address initialHolder,bool mintable,bool burnable,bool pausable) config,bytes32 userSalt) returns (address token)',

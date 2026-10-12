@@ -5,7 +5,7 @@ Winmar Chain is an EVM-compatible network operated with Hyperledger Besu and QBF
 ## Logical components
 
 1. **Validator nodes** participate in QBFT voting and block production.
-2. **Public RPC gateway** exposes approved JSON-RPC methods at `rpc.winmarchain.com`.
+2. **Public RPC gateway** exposes approved JSON-RPC methods at `rpc.winmarchain.io`.
 3. **Explorer stack** indexes and presents chain data at `scan.winmarchain.io`.
 4. **Website** publishes project and network information at `winmarchain.io`.
 5. **Bridge interface** is published at `bridge.winmarchain.io`; its contracts, trust model, and security assumptions must be documented before production asset transfers are promoted.
