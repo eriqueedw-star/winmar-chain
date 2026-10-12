@@ -15,7 +15,7 @@ const {createFaucetAuthorization,ClaimError}=require('./core.cjs');
 const enabled=process.env.WMC_ENABLE_LIVE_CLAIMS==='I_ACKNOWLEDGE_MAINNET_RISK';
 const origin=process.env.WMC_FAUCET_ORIGIN || 'https://faucet.winmarchain.io';
 const contractAddress=process.env.WMC_FAUCET_CONTRACT;
-const rpcUrl=process.env.WMC_RPC || 'https://rpc.winmarchain.io';
+const rpcUrl=process.env.WMC_RPC || 'https://rpc.winmarchain.com';
 const key=process.env.WMC_RELAYER_PRIVATE_KEY;
 const redisUrl=process.env.REDIS_URL;
 const captchaSecret=process.env.TURNSTILE_SECRET;
@@ -30,7 +30,7 @@ async function main(){
   if(enabled && (!redisUrl.startsWith('rediss://') || !new URL(redisUrl).password))throw new Error('Live claims require TLS and authenticated Redis');
   if(socketPath && (!socketPath.startsWith('/') || socketPath.length>100))throw new Error('Invalid Unix socket path');
   if(!Number.isInteger(port)||port<1||port>65535)throw new Error('Invalid PORT');
-  if(rpcUrl!=='https://rpc.winmarchain.io')throw new Error('Only canonical RPC allowed');
+  if(rpcUrl!=='https://rpc.winmarchain.com')throw new Error('Only canonical RPC allowed');
   if(enabled && (!key||!captchaSecret||!contractAddress||!ethers.isAddress(contractAddress))) {
     throw new Error('Production gate missing audited contract, relayer wallet key or Turnstile key');
   }

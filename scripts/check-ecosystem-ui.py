@@ -9,7 +9,7 @@ import tempfile
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 conf = json.loads((ROOT / "config/developer-tools.json").read_text(encoding="utf-8"))
 assert conf["network"]["chainId"] == 12142816
-assert conf["network"]["rpc"] == "https://rpc.winmarchain.io"
+assert conf["network"]["rpc"] == "https://rpc.winmarchain.com"
 assert conf["faucet"]["configured"] is False
 assert conf["faucet"]["funded"] is False
 assert conf["tokenMaker"]["configured"] is False

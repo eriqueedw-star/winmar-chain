@@ -13,7 +13,7 @@ Winmar Chain is tracked through two upstream integration layers.
 
 The pending PR sets these canonical production endpoints (all other Winmar domains are deprecated):
 
-- RPC: `https://rpc.winmarchain.io`
+- RPC: `https://rpc.winmarchain.com`
 - Explorer: `https://scan.winmarchain.io`
 - Website: `https://winmarchain.io`
 

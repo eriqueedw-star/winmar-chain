@@ -52,7 +52,7 @@ jobs:
         env:
           WINMAR_DEPLOY_TARGET: mainnet
           WINMAR_DEPLOY_COMPONENT: ${{ inputs.component }}
-          WINMAR_DEPLOY_RPC_URL: https://rpc.winmarchain.io
+          WINMAR_DEPLOY_RPC_URL: https://rpc.winmarchain.com
           WINMAR_DEPLOY_CHAIN_ID: '12142816'
           WINMAR_DEPLOY_PRIVATE_KEY: ${{ secrets.WINMAR_MAINNET_DEPLOYER_PRIVATE_KEY }}
           WINMAR_FAUCET_CLAIM_AMOUNT: '0.1'

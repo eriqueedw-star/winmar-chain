@@ -9,7 +9,7 @@
   },
   "consensus": "QBFT Proof of Authority",
   "rpc": [
-    "https://rpc.winmarchain.io"
+    "https://rpc.winmarchain.com"
   ],
   "explorers": [
     {

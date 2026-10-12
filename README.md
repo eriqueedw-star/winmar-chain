@@ -13,7 +13,7 @@ This public repository is the canonical project index for public network informa
 | Native currency | WMC |
 | Fungible token standard | **WMC-20** (ERC-20 compatible) |
 | Consensus | QBFT Proof of Authority |
-| Public RPC | `https://rpc.winmarchain.io` |
+| Public RPC | `https://rpc.winmarchain.com` |
 | Explorer | `https://scan.winmarchain.io` |
 | Website | `https://winmarchain.io` |
 | Bridge | `https://bridge.winmarchain.io` |
