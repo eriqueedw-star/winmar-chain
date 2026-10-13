@@ -65,7 +65,7 @@ footer{border-top:1px solid #293e58;margin-top:30px;padding-top:20px;font-size:1
 <div class="layout">
   <div>
   <section id="p-faucet" class="card">
-    <span class="flag">NOT FUNDED · NOT DEPLOYED</span><h2>Native WMC Faucet</h2>
+    <span class="flag" id="faucet-state">DEPLOYED · PAUSED · NOT FUNDED</span><h2>Native WMC Faucet</h2>
     <p class="muted">Controlled WMC distribution for developer gas. WMC is the native network coin; this service never mints it.</p>
     <div class="note">A zero-WMC wallet cannot ordinarily send a faucet claim transaction that requires gas. A reviewed relayer-based claim service and bot controls are prerequisites for public onboarding.</div>
     <button id="claim" type="button" disabled>Claim WMC</button>
@@ -174,6 +174,7 @@ function refresh(){
   const factoryOk = ready(conf.tokenMaker,'factoryAddress');
   const docOk = ready(conf.documentVerifier,'registryAddress');
   $('claim').disabled=!(account&&faucetOk);
+  $('faucet-state').textContent=ready(conf.faucet,'contractAddress') ? (conf.faucet.funded ? 'FUNDED · CLAIM GATE STILL REVIEWED' : 'DEPLOYED · PAUSED · NOT FUNDED') : 'NOT DEPLOYED';
   $('deploy').disabled=!(account&&factoryOk);
   $('creator-state').textContent=factoryOk ? 'FACTORY LIVE · TOKEN CREATION REQUIRES WALLET CONFIRMATION' : 'FACTORY NOT DEPLOYED';
   $('add-network').disabled=!account;
