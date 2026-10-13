@@ -56,7 +56,8 @@ jobs:
           import subprocess
           import sys
 
-          forbidden = {"winmarchain." + suffix for suffix in ("org", "com")}
+          # .io is primary; .com is the documented backup endpoint.
+          forbidden = {"winmarchain.org"}
           tracked = subprocess.check_output(["git", "ls-files", "-z"]).decode().split("\0")
           matches = []
           for filename in tracked:
