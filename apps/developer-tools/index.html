@@ -35,6 +35,7 @@ input[type=checkbox]{width:auto;accent-color:#3c8de0}.checks{display:flex;flex-w
 .risk{background:#322515;border-left:3px solid #c4964a;color:#f1d7ad;padding:12px 14px;font-size:12px;line-height:1.7;margin:15px 0}
 .result{white-space:pre-wrap;overflow-wrap:anywhere;background:#070f1b;border:1px solid #283e58;border-radius:9px;padding:14px;color:#bbd7f4;font:12px/1.7 ui-monospace,Consolas,monospace;margin:14px 0 0;min-height:44px}
 .kv{display:flex;justify-content:space-between;gap:14px;border-bottom:1px solid #263b50;padding:11px 0;font-size:12px}
+.health{margin-top:18px}.health .kv span:last-child{font-variant-numeric:tabular-nums}.ok{color:#7ee2aa!important}.warn{color:#ffcf70!important}.bad{color:#ff9696!important}
 .kv span:first-child{color:#a1b7ce}.kv span:last-child{text-align:right;overflow-wrap:anywhere}
 .links{margin-top:22px;display:flex;gap:14px;flex-wrap:wrap;font-size:12px}
 footer{border-top:1px solid #293e58;margin-top:30px;padding-top:20px;font-size:12px;color:#8eabc9;line-height:1.7}
@@ -65,14 +66,14 @@ footer{border-top:1px solid #293e58;margin-top:30px;padding-top:20px;font-size:1
 <div class="layout">
   <div>
   <section id="p-faucet" class="card">
-    <span class="flag">NOT FUNDED · NOT DEPLOYED</span><h2>Native WMC Faucet</h2>
+    <span class="flag" id="faucet-state">DEPLOYED · PAUSED · NOT FUNDED</span><h2>Native WMC Faucet</h2>
     <p class="muted">Controlled WMC distribution for developer gas. WMC is the native network coin; this service never mints it.</p>
     <div class="note">A zero-WMC wallet cannot ordinarily send a faucet claim transaction that requires gas. A reviewed relayer-based claim service and bot controls are prerequisites for public onboarding.</div>
     <button id="claim" type="button" disabled>Claim WMC</button>
     <div id="faucet-result" class="result" role="status">Waiting for verified deployment and separate treasury funding.</div>
   </section>
   <section id="p-creator" class="card" hidden>
-    <span class="flag">FACTORY NOT DEPLOYED</span><h2>WMC-20 Token Creator</h2>
+    <span class="flag" id="creator-state">FACTORY LIVE · TOKEN CREATION REQUIRES WALLET CONFIRMATION</span><h2>WMC-20 Token Creator</h2>
     <p class="muted">Create a WMC-20 fungible token native to Winmar Chain. ERC-20 compatible for EVM wallets and tools. Gas is paid in native WMC; issuer powers are disclosed before deployment.</p>
     <div class="cols">
       <div class="field"><label for="token-name">Token name</label><input id="token-name" maxlength="80" value="Example Winmar Token"></div>
@@ -89,7 +90,7 @@ footer{border-top:1px solid #293e58;margin-top:30px;padding-top:20px;font-size:1
     </div>
     <div class="risk">If <strong>Mintable</strong> or <strong>Pausable</strong> is enabled, the token creator retains owner authority. Creating a token does not make it endorsed or listed by Winmar Chain.</div>
     <button type="button" id="deploy" disabled>Deploy WMC-20 Token</button>
-    <div class="result" id="token-result" role="status">Awaiting reviewed Token Factory deployment.</div>
+    <div class="result" id="token-result" role="status">Connect a wallet to create a token through the live Winmar Token Factory.</div>
   </section>
   <section id="p-bridge" class="card" hidden>
     <span class="flag">TRANSFERS DISABLED · REVIEW REQUIRED</span><h2>Wrapped Asset Registry</h2>
@@ -129,7 +130,17 @@ footer{border-top:1px solid #293e58;margin-top:30px;padding-top:20px;font-size:1
     <button id="add-wmc20" type="button" class="secondary" disabled>Add WMC-20 Token</button>
     <div id="wallet-config-result" class="result" role="status">Connect a wallet to configure Winmar assets.</div>
     <div class="kv"><span>Config</span><span id="config-status">Loading…</span></div>
-    <div class="note"><strong>Security boundary</strong><br>No validator keys or seed phrases are requested. All on-chain transactions require explicit wallet confirmation, and remain unavailable until reviewed deployment addresses are configured.</div>
+    <div class="note"><strong>Security boundary</strong><br>No validator keys or seed phrases are requested. Token deployment requires explicit wallet confirmation and costs native WMC gas. WMC is the native coin; WMC-20 is a separate contract token.</div>
+    <div class="health">
+      <h3>Live Network Health</h3>
+      <div class="kv"><span>RPC primary</span><span id="health-rpc" class="warn">Checking…</span></div>
+      <div class="kv"><span>RPC backup</span><span id="health-backup" class="warn">Checking…</span></div>
+      <div class="kv"><span>Chain ID</span><span id="health-chain">—</span></div>
+      <div class="kv"><span>Latest block</span><span id="health-block">—</span></div>
+      <div class="kv"><span>Gas price</span><span id="health-gas">—</span></div>
+      <button id="health-refresh" type="button" class="secondary">Refresh health</button>
+      <div id="health-result" class="result" role="status">Read-only RPC diagnostics.</div>
+    </div>
     <h3>Integration references</h3>
     <div class="links">
       <a href="https://github.com/DefiLlama/chainlist/pull/3209" target="_blank" rel="noopener noreferrer">Chainlist ↗</a>
@@ -174,7 +185,9 @@ function refresh(){
   const factoryOk = ready(conf.tokenMaker,'factoryAddress');
   const docOk = ready(conf.documentVerifier,'registryAddress');
   $('claim').disabled=!(account&&faucetOk);
+  $('faucet-state').textContent=ready(conf.faucet,'contractAddress') ? (conf.faucet.funded ? 'FUNDED · CLAIM GATE STILL REVIEWED' : 'DEPLOYED · PAUSED · NOT FUNDED') : 'NOT DEPLOYED';
   $('deploy').disabled=!(account&&factoryOk);
+  $('creator-state').textContent=factoryOk ? 'FACTORY LIVE · TOKEN CREATION REQUIRES WALLET CONFIRMATION' : 'FACTORY NOT DEPLOYED';
   $('add-network').disabled=!account;
   $('add-wmc20').disabled=!(account&&conf.tokenMaker?.tokenAddress && ethers.isAddress(conf.tokenMaker.tokenAddress));
   $('verify').disabled=!(digest&&docOk);
@@ -189,8 +202,23 @@ async function loadConfig(){
     if(!response.ok)throw new Error('HTTP '+response.status);
     const x=await response.json();
     if(x.network?.chainId!==12142816 || x.network?.rpc!==RPC)throw new Error('Unexpected network metadata');
-    conf=x; msg('config-status','Loaded'); refresh();
+    conf=x; msg('config-status','Loaded · factory '+(conf.tokenMaker?.factoryAddress ? conf.tokenMaker.factoryAddress.slice(0,10)+'…' : 'not configured')); refresh();
   } catch(e){msg('config-status','Unavailable');msg('document-result','Configuration unavailable: '+eword(e));}
+}
+async function rpcProbe(url){
+  const started=performance.now();
+  const call=async(method,id)=>{const r=await fetch(url,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({jsonrpc:'2.0',id,method,params:[]}),cache:'no-store'});if(!r.ok)throw new Error('HTTP '+r.status);const x=await r.json();if(x.error)throw new Error(x.error.message||'RPC error');return x.result;};
+  const [chain,block,gas]=await Promise.all([call('eth_chainId',1),call('eth_blockNumber',2),call('eth_gasPrice',3)]);
+  return {chain,block,gas,latency:Math.round(performance.now()-started)};
+}
+function hexNumber(v){try{return BigInt(v).toString();}catch(_){return '—';}}
+async function refreshHealth(){
+  const primary=$('health-rpc'), backup=$('health-backup');
+  primary.textContent='Checking…';backup.textContent='Checking…';primary.className='warn';backup.className='warn';
+  try{const x=await rpcProbe(RPC);$('health-chain').textContent=hexNumber(x.chain);$('health-block').textContent=hexNumber(x.block);$('health-gas').textContent=hexNumber(x.gas)+' wei';primary.textContent='Online · '+x.latency+' ms';primary.className='ok';$('health-result').textContent='Primary RPC healthy · read-only probe completed.';}
+  catch(e){primary.textContent='Unavailable';primary.className='bad';$('health-result').textContent='Primary RPC probe failed: '+eword(e);}
+  try{const x=await rpcProbe('https://rpc.winmarchain.com');backup.textContent='Online · '+x.latency+' ms';backup.className='ok';}
+  catch(_){backup.textContent='Unavailable';backup.className='bad';}
 }
 async function connect(){
   if(!window.ethereum)throw new Error('Install a compatible EVM wallet.');
@@ -299,12 +327,14 @@ $('hash').onclick=()=>sha256().catch(e=>msg('hash-result',eword(e)));
 $('verify').onclick=()=>verify().catch(e=>msg('document-result',eword(e)));
 $('anchor').onclick=()=>changeDocument('anchor').catch(e=>msg('document-result',eword(e)));
 $('revoke').onclick=()=>changeDocument('revoke').catch(e=>msg('document-result',eword(e)));
+$('health-refresh').onclick=()=>refreshHealth();
 $('doc-file').addEventListener('change',()=>{digest=null;msg('hash-result','File changed; calculate new hash.');refresh();});
 if(window.ethereum) {
   window.ethereum.on?.('accountsChanged',()=>{account=null;signer=null;provider=null;msg('wallet-status','Reconnect wallet');refresh();});
   window.ethereum.on?.('chainChanged',()=>{account=null;signer=null;provider=null;msg('wallet-status','Reconnect wallet');refresh();});
 }
 loadConfig();
+refreshHealth();
 </script>
 </body>
 </html>

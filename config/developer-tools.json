@@ -16,19 +16,21 @@
   },
   "faucet": {
     "environment": "mainnet",
-    "configured": false,
-    "deploymentStatus": "not-deployed",
-    "contractAddress": null,
+    "configured": true,
+    "deploymentStatus": "deployed-paused",
+    "contractAddress": "0x06411bf8C2d396F8889860ff3f93Bb6C9698d5b4",
     "claimAmount": "0.1 WMC",
     "cooldownSeconds": 86400,
     "dailyCap": "100 WMC",
-    "funded": false
+    "funded": false,
+    "deploymentTransaction": "0x3b90aeebf24ca50fad6aaef0d038b45db31ea7cd92bc9a5a440d19f4f411d7d4"
   },
   "tokenMaker": {
     "environment": "mainnet",
     "configured": true,
     "deploymentStatus": "deployed",
-    "factoryAddress": "0xe43aB4336c1B7A557cf857ed213c83F0D4fBaEA7",
+    "factoryAddress": "0xedC44c5b50241302Fb546364b7530fA723fC0144",
+    "deploymentTransaction": "0x1b396ae417e99a51c5b7d7c05fe030d60efa5fc06ddd6b0301107b2ea6014e2f",
     "tokenStandard": "WMC-20",
     "technicalCompatibility": "ERC-20",
     "standardSpecification": "docs/standards/WMC-20.md"
