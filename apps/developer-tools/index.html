@@ -218,7 +218,7 @@ async function connect(){
 }
 async function addWmcNetwork(){
   if(!window.ethereum)throw new Error('Install a compatible EVM wallet.');
-  await window.ethereum.request({method:'wallet_addEthereumChain',params:[{chainId:CHAIN_HEX,chainName:'Winmar Chain',nativeCurrency:{name:'Winmar Coin',symbol:'WMC',decimals:18},rpcUrls:[RPC,'https://rpc.winmarchain.com'],blockExplorerUrls:[SCAN,'https://scan.winmarchain.com']} ]});
+  await window.ethereum.request({method:'wallet_addEthereumChain',params:[{chainId:CHAIN_HEX,chainName:'Winmar Chain',nativeCurrency:{name:'Winmar Coin',symbol:'WMC',decimals:18},rpcUrls:[RPC,'https://rpc.winmarchain.com'],blockExplorerUrls:[SCAN,'https://scan.winmarchain.com'],iconUrls:['https://winmarchain.io/logo/wmc.png']} ]});
   msg('wallet-config-result','Winmar Chain network request sent to wallet.');
 }
 async function addWmc20(){
