@@ -1,0 +1,63 @@
+name: Publish Winmar developer tools
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'apps/developer-tools/**'
+      - 'config/**'
+      - 'assets/**'
+      - '.github/workflows/website-publish.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: winmar-developer-tools-pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Build static developer tools site
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Validate UI and configuration
+        run: python scripts/check-ecosystem-ui.py
+
+      - name: Assemble static site
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf _site
+          mkdir -p _site
+          cp apps/developer-tools/index.html _site/developers.html
+          cp apps/developer-tools/wmc.html _site/wmc.html
+          cp apps/developer-tools/wint.html _site/wint.html
+          cp -R config _site/config
+          mkdir -p _site/logo
+          if [[ -f assets/wmc.png ]]; then cp assets/wmc.png _site/logo/wmc.png; fi
+          if [[ -f assets/wint.png ]]; then cp assets/wint.png _site/logo/wint.png; fi
+          touch _site/.nojekyll
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
+  deploy:
+    name: Deploy to GitHub Pages
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy Pages artifact
+        id: deployment
+        uses: actions/deploy-pages@v4
