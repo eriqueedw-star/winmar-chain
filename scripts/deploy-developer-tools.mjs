@@ -6,6 +6,7 @@ const MAINNET_CHAIN_ID = 12142816n;
 const target = process.env.WINMAR_DEPLOY_TARGET || 'mainnet';
 const component = process.env.WINMAR_DEPLOY_COMPONENT || 'token-factory';
 const rpcUrl = process.env.WINMAR_DEPLOY_RPC_URL;
+const rpcBackupUrl = process.env.WINMAR_DEPLOY_RPC_BACKUP_URL || '';
 const expectedChainId = BigInt(process.env.WINMAR_DEPLOY_CHAIN_ID || '0');
 const privateKey = process.env.WINMAR_DEPLOY_PRIVATE_KEY;
 const artifactDir = process.env.WINMAR_ARTIFACT_DIR || 'build/developer-tools';
@@ -82,7 +83,7 @@ if (component === 'all') {
 }
 
 const result = {
-  network: { name: 'Winmar Chain', chainId: expectedChainId.toString(), rpcUrl },
+  network: { name: 'Winmar Chain', chainId: expectedChainId.toString(), rpcUrl, rpcBackupUrl },
   deployer,
   tokenFactory: { address: factoryAddress, transactionHash: factory.deploymentTransaction()?.hash || null },
   component,

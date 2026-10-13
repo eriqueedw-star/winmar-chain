@@ -47,7 +47,7 @@ footer{border-top:1px solid #293e58;margin-top:30px;padding-top:20px;font-size:1
 <header>
   <div class="brand"><img alt="Winmar Chain logo" src="https://raw.githubusercontent.com/eriqueedw-star/winmar-chain/main/winmar-chain-logo-framed-v2.png">
     <div><b>WINMAR CHAIN</b><span class="small">INSTITUTIONAL BLOCKCHAIN INFRASTRUCTURE</span></div></div>
-  <div class="muted">MAINNET · ID 12142816 · WMC<br><a href="https://scan.winmarchain.io" target="_blank" rel="noopener noreferrer">EXPLORER ↗</a> &nbsp; <a href="https://winmarchain.io" target="_blank" rel="noopener noreferrer">OFFICIAL WEBSITE ↗</a></div>
+  <div class="muted">MAINNET · ID 12142816 · <a href="/wmc.html">WMC</a> · <a href="/wint.html">WINT</a><br><a href="https://scan.winmarchain.io" target="_blank" rel="noopener noreferrer">EXPLORER ↗</a> &nbsp; <a href="https://winmarchain.io" target="_blank" rel="noopener noreferrer">OFFICIAL WEBSITE ↗</a></div>
   <button id="connect" type="button">Connect Wallet</button>
 </header>
 <div class="hero">
@@ -98,6 +98,7 @@ footer{border-top:1px solid #293e58;margin-top:30px;padding-top:20px;font-size:1
     <div class="kv"><span>Registry status</span><span id="bridge-state">Awaiting configuration</span></div>
     <div class="kv"><span>Asset transfers</span><span>DISABLED</span></div>
     <div class="kv"><span>Asset routes</span><span id="bridge-routes">0 verified</span></div>
+    <div class="kv"><span>Staging route</span><span>BSC NEXS → Winmar · PAUSED</span></div>
     <div class="links"><a href="https://bridge.winmarchain.io" target="_blank" rel="noopener noreferrer">Existing Bridge Interface ↗</a><a href="https://github.com/eriqueedw-star/winmar-chain/blob/main/docs/BRIDGE_TRUST_MODEL.md" target="_blank" rel="noopener noreferrer">Bridge Trust Model ↗</a></div>
     <div id="bridge-result" class="result" role="status">Routes pending verification. No asset representation is endorsed by this prototype.</div>
   </section>
@@ -124,6 +125,9 @@ footer{border-top:1px solid #293e58;margin-top:30px;padding-top:20px;font-size:1
     <div class="kv"><span>RPC</span><span>rpc.winmarchain.io</span></div>
     <div class="kv"><span>Explorer</span><span>scan.winmarchain.io</span></div>
     <div class="kv"><span>Wallet</span><span id="wallet-status">Not connected</span></div>
+    <button id="add-network" type="button" class="secondary" disabled>Add WMC Network to Wallet</button>
+    <button id="add-wmc20" type="button" class="secondary" disabled>Add WMC-20 Token</button>
+    <div id="wallet-config-result" class="result" role="status">Connect a wallet to configure Winmar assets.</div>
     <div class="kv"><span>Config</span><span id="config-status">Loading…</span></div>
     <div class="note"><strong>Security boundary</strong><br>No validator keys or seed phrases are requested. All on-chain transactions require explicit wallet confirmation, and remain unavailable until reviewed deployment addresses are configured.</div>
     <h3>Integration references</h3>
@@ -171,6 +175,8 @@ function refresh(){
   const docOk = ready(conf.documentVerifier,'registryAddress');
   $('claim').disabled=!(account&&faucetOk);
   $('deploy').disabled=!(account&&factoryOk);
+  $('add-network').disabled=!account;
+  $('add-wmc20').disabled=!(account&&conf.tokenMaker?.tokenAddress && ethers.isAddress(conf.tokenMaker.tokenAddress));
   $('verify').disabled=!(digest&&docOk);
   $('anchor').disabled=!(digest&&account&&docOk);
   $('revoke').disabled=!(digest&&account&&docOk);
@@ -209,6 +215,17 @@ async function connect(){
   $('token-holder').value=account;$('issuer').value=account;
   msg('wallet-status',account.slice(0,7)+'…'+account.slice(-5));
   $('connect').textContent='Connected';refresh();
+}
+async function addWmcNetwork(){
+  if(!window.ethereum)throw new Error('Install a compatible EVM wallet.');
+  await window.ethereum.request({method:'wallet_addEthereumChain',params:[{chainId:CHAIN_HEX,chainName:'Winmar Chain',nativeCurrency:{name:'Winmar Coin',symbol:'WMC',decimals:18},rpcUrls:[RPC,'https://rpc.winmarchain.com'],blockExplorerUrls:[SCAN,'https://scan.winmarchain.com'],iconUrls:['https://winmarchain.io/logo/wmc.png']} ]});
+  msg('wallet-config-result','Winmar Chain network request sent to wallet.');
+}
+async function addWmc20(){
+  const address=conf?.tokenMaker?.tokenAddress;
+  if(!address || !ethers.isAddress(address))throw new Error('No verified WMC-20 token address is configured.');
+  const added=await window.ethereum.request({method:'wallet_watchAsset',params:{type:'ERC20',options:{address,symbol:conf.tokenMaker.tokenSymbol||'WMC-20',decimals:Number(conf.tokenMaker.tokenDecimals||18),image:'https://winmarchain.io/logo/'}}});
+  msg('wallet-config-result',added?'WMC-20 token added to wallet.':'Wallet did not add the token.');
 }
 function withSigner(){if(!signer || !account)throw new Error('Connect wallet first.');return signer;}
 async function claim(){
@@ -274,6 +291,8 @@ async function changeDocument(action){
   await tx.wait();msg('document-result','Confirmed: '+SCAN+'/tx/'+tx.hash+'\nIssuer: '+account+'\nAction: '+action);
 }
 $('connect').onclick=()=>connect().catch(e=>msg('wallet-status',eword(e)));
+$('add-network').onclick=()=>addWmcNetwork().catch(e=>msg('wallet-config-result',eword(e)));
+$('add-wmc20').onclick=()=>addWmc20().catch(e=>msg('wallet-config-result',eword(e)));
 $('claim').onclick=()=>claim().catch(e=>msg('faucet-result',eword(e)));
 $('deploy').onclick=()=>deployToken().catch(e=>msg('token-result',eword(e)));
 $('hash').onclick=()=>sha256().catch(e=>msg('hash-result',eword(e)));

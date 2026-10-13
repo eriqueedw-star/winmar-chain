@@ -11,7 +11,7 @@ Winmar Chain is tracked through two upstream integration layers.
 - Icon definition: `_data/icons/winmar.json`
 - Icon CID: `bafkreidusntleelv3wx2pswfo5gc4hwis44ig4ume4l6jftu74pysp2lem`
 
-The pending PR sets these canonical production endpoints (all other Winmar domains are deprecated):
+The pending PR sets these canonical production endpoints (`.io` primary, `.com` backup; `.org` is deprecated):
 
 - RPC: `https://rpc.winmarchain.io`
 - Explorer: `https://scan.winmarchain.io`

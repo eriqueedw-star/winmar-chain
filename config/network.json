@@ -5,16 +5,19 @@
   "nativeCurrency": {
     "name": "Winmar Coin",
     "symbol": "WMC",
-    "decimals": 18
+    "decimals": 18,
+    "logoUrl": "https://winmarchain.io/logo/wmc.png"
   },
   "consensus": "QBFT Proof of Authority",
   "rpc": [
-    "https://rpc.winmarchain.io"
+    "https://rpc.winmarchain.io",
+    "https://rpc.winmarchain.com"
   ],
   "explorers": [
     {
       "name": "Winmar Chain Explorer",
-      "url": "https://scan.winmarchain.io"
+      "url": "https://scan.winmarchain.io",
+      "backupUrl": "https://scan.winmarchain.com"
     }
   ],
   "website": "https://winmarchain.io",

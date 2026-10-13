@@ -6,6 +6,10 @@
 
 Until the items below are verified and recorded, public documentation should describe the bridge as an interface under technical and security validation rather than as an audited production bridge.
 
+## Staging route: NEXS from BNB Smart Chain
+
+The first proposed route is NEXSUS Token (NEXS) on BNB Smart Chain (chain ID `56`), source contract `0x3fC94a05eD1b7044f666a0342f4b750AB1B2dDD9`. This route is metadata-only and remains paused: no custody contract, wrapped-token address, lock/mint flow, burn/release flow, relayer, or proof verifier is deployed. The source contract metadata was read from BSC; it is not an issuer endorsement.
+
 ## Required trust-model record
 
 Before production promotion, document:

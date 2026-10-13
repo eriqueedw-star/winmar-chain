@@ -6,10 +6,13 @@
     "nativeCurrency": {
       "name": "Winmar Coin",
       "symbol": "WMC",
-      "decimals": 18
+      "decimals": 18,
+      "logoUrl": "https://winmarchain.io/logo/wmc.png"
     },
     "rpc": "https://rpc.winmarchain.io",
-    "explorer": "https://scan.winmarchain.io"
+    "rpcBackup": "https://rpc.winmarchain.com",
+    "explorer": "https://scan.winmarchain.io",
+    "explorerBackup": "https://scan.winmarchain.com"
   },
   "faucet": {
     "environment": "mainnet",
@@ -45,6 +48,21 @@
     "assetRegistryConfigured": false,
     "assetRegistryAddress": null,
     "productionAudited": false,
-    "supportedRoutes": []
+    "supportedRoutes": [
+      {
+        "id": "bsc-56-nexs",
+        "status": "staging-paused",
+        "sourceChainId": 56,
+        "sourceNetwork": "BNB Smart Chain",
+        "sourceToken": "0x3fC94a05eD1b7044f666a0342f4b750AB1B2dDD9",
+        "sourceSymbol": "NEXS",
+        "sourceName": "NEXSUS Token",
+        "wrappedToken": null,
+        "custody": "not-enabled",
+        "lockMint": false,
+        "burnRelease": false,
+        "proofVerification": "not-deployed"
+      }
+    ]
   }
 }
