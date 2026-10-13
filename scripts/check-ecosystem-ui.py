@@ -12,7 +12,9 @@ assert conf["network"]["chainId"] == 12142816
 assert conf["network"]["rpc"] == "https://rpc.winmarchain.io"
 assert conf["faucet"]["configured"] is False
 assert conf["faucet"]["funded"] is False
-assert conf["tokenMaker"]["configured"] is False
+assert conf["tokenMaker"]["configured"] is True
+assert conf["tokenMaker"]["deploymentStatus"] == "deployed"
+assert re.fullmatch(r"0x[0-9a-fA-F]{40}", conf["tokenMaker"]["factoryAddress"])
 assert conf["tokenMaker"]["tokenStandard"] == "WMC-20"
 assert conf["tokenMaker"]["technicalCompatibility"] == "ERC-20"
 assert conf["documentVerifier"]["configured"] is False
@@ -41,4 +43,4 @@ with tempfile.TemporaryDirectory() as folder:
     p.write_text(scripts[0], encoding="utf-8")
     subprocess.run(["node", "--check", str(p)], check=True)
 
-print("PASS: four-module UI syntax and fail-closed feature configuration")
+print("PASS: four-module UI syntax and current feature configuration")

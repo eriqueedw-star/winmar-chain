@@ -72,7 +72,7 @@ footer{border-top:1px solid #293e58;margin-top:30px;padding-top:20px;font-size:1
     <div id="faucet-result" class="result" role="status">Waiting for verified deployment and separate treasury funding.</div>
   </section>
   <section id="p-creator" class="card" hidden>
-    <span class="flag">FACTORY NOT DEPLOYED</span><h2>WMC-20 Token Creator</h2>
+    <span class="flag" id="creator-state">FACTORY LIVE · TOKEN CREATION REQUIRES WALLET CONFIRMATION</span><h2>WMC-20 Token Creator</h2>
     <p class="muted">Create a WMC-20 fungible token native to Winmar Chain. ERC-20 compatible for EVM wallets and tools. Gas is paid in native WMC; issuer powers are disclosed before deployment.</p>
     <div class="cols">
       <div class="field"><label for="token-name">Token name</label><input id="token-name" maxlength="80" value="Example Winmar Token"></div>
@@ -89,7 +89,7 @@ footer{border-top:1px solid #293e58;margin-top:30px;padding-top:20px;font-size:1
     </div>
     <div class="risk">If <strong>Mintable</strong> or <strong>Pausable</strong> is enabled, the token creator retains owner authority. Creating a token does not make it endorsed or listed by Winmar Chain.</div>
     <button type="button" id="deploy" disabled>Deploy WMC-20 Token</button>
-    <div class="result" id="token-result" role="status">Awaiting reviewed Token Factory deployment.</div>
+    <div class="result" id="token-result" role="status">Connect a wallet to create a token through the live Winmar Token Factory.</div>
   </section>
   <section id="p-bridge" class="card" hidden>
     <span class="flag">TRANSFERS DISABLED · REVIEW REQUIRED</span><h2>Wrapped Asset Registry</h2>
@@ -129,7 +129,7 @@ footer{border-top:1px solid #293e58;margin-top:30px;padding-top:20px;font-size:1
     <button id="add-wmc20" type="button" class="secondary" disabled>Add WMC-20 Token</button>
     <div id="wallet-config-result" class="result" role="status">Connect a wallet to configure Winmar assets.</div>
     <div class="kv"><span>Config</span><span id="config-status">Loading…</span></div>
-    <div class="note"><strong>Security boundary</strong><br>No validator keys or seed phrases are requested. All on-chain transactions require explicit wallet confirmation, and remain unavailable until reviewed deployment addresses are configured.</div>
+    <div class="note"><strong>Security boundary</strong><br>No validator keys or seed phrases are requested. Token deployment requires explicit wallet confirmation and costs native WMC gas. WMC is the native coin; WMC-20 is a separate contract token.</div>
     <h3>Integration references</h3>
     <div class="links">
       <a href="https://github.com/DefiLlama/chainlist/pull/3209" target="_blank" rel="noopener noreferrer">Chainlist ↗</a>
@@ -175,6 +175,7 @@ function refresh(){
   const docOk = ready(conf.documentVerifier,'registryAddress');
   $('claim').disabled=!(account&&faucetOk);
   $('deploy').disabled=!(account&&factoryOk);
+  $('creator-state').textContent=factoryOk ? 'FACTORY LIVE · TOKEN CREATION REQUIRES WALLET CONFIRMATION' : 'FACTORY NOT DEPLOYED';
   $('add-network').disabled=!account;
   $('add-wmc20').disabled=!(account&&conf.tokenMaker?.tokenAddress && ethers.isAddress(conf.tokenMaker.tokenAddress));
   $('verify').disabled=!(digest&&docOk);
@@ -189,7 +190,7 @@ async function loadConfig(){
     if(!response.ok)throw new Error('HTTP '+response.status);
     const x=await response.json();
     if(x.network?.chainId!==12142816 || x.network?.rpc!==RPC)throw new Error('Unexpected network metadata');
-    conf=x; msg('config-status','Loaded'); refresh();
+    conf=x; msg('config-status','Loaded · factory '+(conf.tokenMaker?.factoryAddress ? conf.tokenMaker.factoryAddress.slice(0,10)+'…' : 'not configured')); refresh();
   } catch(e){msg('config-status','Unavailable');msg('document-result','Configuration unavailable: '+eword(e));}
 }
 async function connect(){
