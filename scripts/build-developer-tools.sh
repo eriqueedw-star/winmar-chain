@@ -6,10 +6,9 @@ OUT_DIR="${1:-build/developer-tools}"
 rm -rf "$OUT_DIR"
 mkdir -p "$OUT_DIR"
 
-npx --yes solc@0.8.30 \
+npx --yes solc@0.8.19 \
   --base-path . \
   --include-path contracts \
-  --evm-version paris \
   --bin --abi \
   contracts/WinmarTokenFactory.sol contracts/WinmarFaucet.sol \
   -o "$OUT_DIR"
