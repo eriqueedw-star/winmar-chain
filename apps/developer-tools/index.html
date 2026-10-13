@@ -4,7 +4,10 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="description" content="Winmar Chain developer suite: native WMC faucet, WMC-20 token creator (ERC-20 compatible), wrapped-asset registry, and on-chain SHA-256 document attestation.">
-<title>WINMAR CHAIN — Ecosystem Console</title>
+<title>Developers | Winmar Chain</title>
+<link rel="icon" href="https://winmarchain.io/assets/favicon.png">
+<link rel="stylesheet" href="https://winmarchain.io/styles.css">
+<link rel="stylesheet" href="https://winmarchain.io/refinements.css?v=20260916-2">
 <style>
 :root{color-scheme:dark;font-family:Inter,system-ui,-apple-system,sans-serif;color:#e8f0fa;background:#070f1c}
 *{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at 12% 0%,#16345c,#070f1c 45%);min-height:100vh}
@@ -42,20 +45,39 @@ footer{border-top:1px solid #293e58;margin-top:30px;padding-top:20px;font-size:1
 @media(max-width:840px){.layout{grid-template-columns:1fr}}
 @media(max-width:600px){.tabs{grid-template-columns:repeat(2,1fr)}.cols{grid-template-columns:1fr}.card{padding:18px}.brand b{font-size:16px}.brand img{width:48px;height:48px}main{padding:14px}}
 </style>
+<style>
+:root{color-scheme:light;color:#11121a;background:#fbfbff;font-family:Inter,ui-sans-serif,system-ui,-apple-system,sans-serif}
+body{background:#fbfbff;color:#11121a;line-height:1.65}
+main{max-width:1180px;padding:0 28px 80px}a{color:#3155ff}h1,h2,h3{font-family:inherit}
+.topbar{height:72px;padding:0 max(28px,calc((100% - 1180px)/2));max-width:none;margin:0;border-bottom:1px solid #e7e8ef;flex-wrap:nowrap;position:sticky;top:0;background:rgba(251,251,255,.95);z-index:20}
+.topbar .brand{color:#11121a;font-size:15px;letter-spacing:-.02em;gap:12px}.brand img{width:40px;height:40px;object-fit:contain;border:0;border-radius:0;background:none}.brand b{font-size:15px;letter-spacing:-.02em;color:#3155ff}
+.topbar nav{gap:20px;color:#555b69;font-size:14px}.topbar nav a{color:inherit}.topbar nav a.active{color:#11121a}.topbar button{white-space:nowrap}
+.hero{display:block;min-height:0;padding:76px 0 38px;background:none}.hero h1{font-size:clamp(43px,6vw,72px);letter-spacing:-.06em;line-height:1.03}.hero .muted{font-size:18px;max-width:760px}
+.muted,.small,.no,.kv span:first-child{color:#656a78}.eyebrow{color:#666c7a}.pill{background:#f3f3ff;border-color:#e0e1f4;color:#555b69}
+button{background:#11121a;border-color:#11121a;border-radius:12px;color:#fff;min-height:44px}button.secondary{background:#f3f3ff;border-color:#d8dced;color:#3155ff}button:disabled{opacity:.45}
+.tabs{gap:12px;margin:16px 0 28px}.tabs button{background:#fff;border-color:#e7e8ef;color:#11121a;border-radius:16px}.tabs button[aria-selected=true]{background:#f3f3ff;border-color:#3155ff;box-shadow:none}.tabs button[aria-selected=true] .no{color:#3155ff}
+.layout{gap:24px}.card{background:#fff;border:1px solid #e7e8ef;border-radius:20px;padding:28px;box-shadow:0 16px 48px rgba(26,30,60,.04)}.flag{color:#656a78}.card h2{margin-top:12px;letter-spacing:-.035em;font-size:28px}
+label{color:#555b69}input,select{background:#fbfbff;border-color:#dfe1ee;color:#11121a;border-radius:12px;min-height:44px}input[type=checkbox]{min-height:0;accent-color:#3155ff}
+.note{background:#f3f3ff;border-color:#3155ff;color:#555b69}.risk{background:#faf5e9;color:#6e592a;border-color:#d5a72c}.result{background:#f8f8ff;border-color:#e7e8ef;color:#555b69}.kv{border-color:#e7e8ef}.ok{color:#168154!important}.bad{color:#c02e37!important}.warn{color:#946b08!important}
+.site-footer{display:grid;grid-template-columns:1fr 1fr auto;max-width:none;width:100%;margin:0;padding:48px max(28px,calc((100% - 1180px)/2));background:#11121a;border:0;color:#aeb3c1;font-size:14px}.site-footer .brand{color:#fff}.site-footer a{color:#aeb3c1}.site-footer small{grid-column:1/-1;border-top:1px solid #2b2d38;padding-top:20px}
+@media(max-width:1050px){.topbar nav{gap:12px;font-size:12px}}
+@media(max-width:850px){.topbar{padding:0 20px}.topbar .menu{display:block;background:#fff;color:#11121a;border-color:#e7e8ef}.topbar nav{display:none;position:absolute;top:72px;left:14px;right:14px;background:#fff;border:1px solid #e7e8ef;border-radius:16px;padding:20px;box-shadow:0 24px 60px rgba(26,30,60,.12);flex-direction:column;align-items:stretch;font-size:15px}.topbar nav.open{display:flex}.topbar nav a{min-height:44px;display:flex;align-items:center}.site-footer{grid-template-columns:1fr}.hero{padding-top:48px}}
+@media(max-width:600px){main{padding:0 20px 56px}.card{padding:20px}.tabs button{padding:14px;font-size:13px}.hero .muted{font-size:16px}.topbar .brand{font-size:13px}.brand img{width:36px;height:36px}.brand b{font-size:13px}.kv{flex-wrap:wrap}.kv span:last-child{max-width:100%}}
+</style>
 </head>
 <body>
-<main>
-<header>
-  <div class="brand"><img alt="Winmar Chain logo" src="https://raw.githubusercontent.com/eriqueedw-star/winmar-chain/main/winmar-chain-logo-framed-v2.png">
-    <div><b>WINMAR CHAIN</b><span class="small">INSTITUTIONAL BLOCKCHAIN INFRASTRUCTURE</span></div></div>
-  <div class="muted">MAINNET · ID 12142816 · <a href="/wmc.html">WMC</a> · <a href="/wint.html">WINT</a><br><a href="https://scan.winmarchain.io" target="_blank" rel="noopener noreferrer">EXPLORER ↗</a> &nbsp; <a href="https://winmarchain.io" target="_blank" rel="noopener noreferrer">OFFICIAL WEBSITE ↗</a></div>
-  <button id="connect" type="button">Connect Wallet</button>
+<a class="skip-link" href="#main-content">Skip to content</a>
+<header class="topbar">
+  <a class="brand" href="https://winmarchain.io/"><img alt="Winmar Chain logo" src="https://winmarchain.io/assets/winmar-logo.png"><span>WINMAR <b>CHAIN</b></span></a>
+  <button class="menu" type="button" aria-expanded="false" aria-controls="developer-navigation" aria-label="Toggle navigation" onclick="const nav=document.getElementById('developer-navigation');const open=nav.classList.toggle('open');this.setAttribute('aria-expanded',String(open))">Menu</button>
+  <nav id="developer-navigation"><a href="https://winmarchain.io/network.html">Network</a><a href="https://winmarchain.io/technology.html">Technology</a><a class="active" aria-current="page" href="https://winmarchain.io/developers.html">Developers</a><a href="https://winmarchain.io/governance.html">Governance</a><a href="https://winmarchain.io/whitepaper.html">Whitepaper</a><a href="https://scan.winmarchain.io">Explorer ↗</a><button id="connect" class="btn compact" type="button">Connect Wallet</button></nav>
 </header>
+<main id="main-content">
 <div class="hero">
   <p class="eyebrow">Winmar Chain / Developer Infrastructure</p>
   <h1>Build. Bridge. Verify.</h1>
   <p class="muted">Developer gas access, transparent token issuance, wrapped-asset discovery and SHA-256 document attestation on Winmar Chain.</p>
-  <span class="pill">PRE-RELEASE · ON-CHAIN ACTIONS DISABLED UNTIL REVIEW</span>
+  <span class="pill">MAINNET · CHAIN ID 12142816 · GAS IN WMC</span>
 </div>
 <div class="tabs" role="tablist" aria-label="Developer tools">
   <button type="button" id="t-faucet" aria-selected="true"><span class="no">01 / GAS</span>Faucet</button>
@@ -149,8 +171,8 @@ footer{border-top:1px solid #293e58;margin-top:30px;padding-top:20px;font-size:1
     </div>
   </aside>
 </div>
-<footer>WINMAR CHAIN · WHERE THE WORLD SETTLES VALUE. &nbsp; | &nbsp; Pre-release developer prototype — not an offer of custody, token listing, verified asset backing or legal-document certification.</footer>
 </main>
+<footer class="site-footer"><a class="brand" href="https://winmarchain.io/"><img src="https://winmarchain.io/assets/winmar-logo.png" alt="Winmar Chain"><span>WINMAR <b>CHAIN</b></span></a><p>EVM-compatible Layer 1</p><div class="footer-links"><a href="https://scan.winmarchain.io">Explorer</a> · <a href="https://winmarchain.io/whitepaper.html">Specification</a> · <a href="https://winmarchain.io/logo/">Official logo</a></div><small>© 2026 Winmar Chain Team [ SYF ]. Developer tools · <a href="https://winmarchain.io/wmc.html">WMC</a> · <a href="https://winmarchain.io/wint.html">WINT</a></small></footer>
 <script src="https://cdn.jsdelivr.net/npm/ethers@6.15.0/dist/ethers.umd.min.js"></script>
 <script>
 'use strict';
