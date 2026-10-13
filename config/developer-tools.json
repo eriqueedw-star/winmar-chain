@@ -26,9 +26,9 @@
   },
   "tokenMaker": {
     "environment": "mainnet",
-    "configured": false,
-    "deploymentStatus": "not-deployed",
-    "factoryAddress": null,
+    "configured": true,
+    "deploymentStatus": "deployed",
+    "factoryAddress": "0xe43aB4336c1B7A557cf857ed213c83F0D4fBaEA7",
     "tokenStandard": "WMC-20",
     "technicalCompatibility": "ERC-20",
     "standardSpecification": "docs/standards/WMC-20.md"
