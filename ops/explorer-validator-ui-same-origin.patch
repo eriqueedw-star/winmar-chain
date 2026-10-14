@@ -1,0 +1,24 @@
+--- winmar-brand.js
++++ winmar-brand.js
+@@ -210,1 +210,1 @@
+-        ${card('◈', 'Block time', '3.0 sec', 'Deterministic finality', 'wmc-block-time')}
++        ${card('◈', 'Block time', 'Checking…', 'Recent finalized blocks', 'wmc-block-time')}
+@@ -235,1 +235,1 @@
+-      const response = await fetch('https://rpc.winmarchain.io', {
++      const response = await fetch('/api/eth-rpc', {
+@@ -238,1 +238,1 @@
+-        signal: controller.signal, cache: 'no-store',
++        signal: controller.signal,
+@@ -273,1 +273,6 @@
+-      document.querySelector('#wmc-block-time').textContent = `${(Number(stats.average_block_time) / 1000).toFixed(1)} sec`;
++      const sample = (blocks.items || []).slice(0, 20).filter((block) => Number.isFinite(Number(block.height)) && Number.isFinite(Date.parse(block.timestamp)));
++      const oldest = sample[sample.length - 1];
++      const heightSpan = Number(sample[0]?.height) - Number(oldest?.height);
++      const timeSpan = Date.parse(sample[0]?.timestamp) - Date.parse(oldest?.timestamp);
++      const recentInterval = heightSpan > 0 && timeSpan > 0 ? timeSpan / heightSpan / 1000 : null;
++      document.querySelector('#wmc-block-time').textContent = recentInterval !== null ? `${recentInterval.toFixed(1)} sec` : 'Checking…';
+@@ -276,2 +281,2 @@
+-      document.querySelector('#wmc-validators').textContent = validators ? `${producers.size} / ${validators.size} producing` : 'Unavailable';
+-      document.querySelector('#wmc-validators-detail').textContent = validators ? 'Recent producers / on-chain validators' : 'Consensus data unavailable';
++      document.querySelector('#wmc-validators').textContent = validators ? `${producers.size} / ${validators.size} producing` : 'Verification delayed';
++      document.querySelector('#wmc-validators-detail').textContent = validators ? 'Recent producers / on-chain validators' : 'Data issue—not an offline-validator alert';
