@@ -20,8 +20,8 @@ if (target !== 'mainnet') {
   throw new Error('This deployment workflow is mainnet-only.');
 }
 
-if (!['token-factory', 'all'].includes(component)) {
-  throw new Error('WINMAR_DEPLOY_COMPONENT must be token-factory or all.');
+if (!['token-factory', 'faucet-v2', 'all'].includes(component)) {
+  throw new Error('WINMAR_DEPLOY_COMPONENT must be token-factory, faucet-v2, or all.');
 }
 
 if (expectedChainId !== MAINNET_CHAIN_ID) {
@@ -49,35 +49,71 @@ function artifact(name) {
   return { abi, bytecode: `0x${bytecode}` };
 }
 
-const factoryArtifact = artifact('contracts_WinmarTokenFactory_sol_WinmarTokenFactory');
-const faucetArtifact = component === 'all'
-  ? artifact('contracts_WinmarFaucet_sol_WinmarFaucet')
+const shouldDeployFactory = component === 'token-factory' || component === 'all';
+const shouldDeployFaucet = component === 'faucet-v2' || component === 'all';
+const factoryArtifact = shouldDeployFactory
+  ? artifact('contracts_WinmarTokenFactory_sol_WinmarTokenFactory')
   : null;
+const faucetArtifact = shouldDeployFaucet
+  ? artifact('contracts_WinmarFaucetV2_sol_WinmarFaucetV2')
+  : null;
+
+if (shouldDeployFaucet) {
+  const expectedAdmin = process.env.WINMAR_FAUCET_EXPECTED_ADMIN;
+  if (!expectedAdmin || !/^0x[0-9a-fA-F]{40}$/.test(expectedAdmin)) {
+    throw new Error('WINMAR_FAUCET_EXPECTED_ADMIN must be set to the reviewed faucet admin address.');
+  }
+  if (deployer.toLowerCase() !== expectedAdmin.toLowerCase()) {
+    throw new Error(`Faucet V2 must be deployed by expected admin ${expectedAdmin}; current deployer is ${deployer}.`);
+  }
+  const intendedClaimAmount = parseEther('0.00001');
+  const intendedDailyCap = parseEther('10');
+  if (parseEther(process.env.WINMAR_FAUCET_CLAIM_AMOUNT || '0.00001') !== intendedClaimAmount ||
+      parseEther(process.env.WINMAR_FAUCET_DAILY_CAP || '10') !== intendedDailyCap) {
+    throw new Error('Faucet V2 deployment is locked to 0.00001 WMC per claim and 10 WMC per UTC day.');
+  }
+}
 
 console.log(`Deploying to Winmar Chain mainnet ${MAINNET_CHAIN_ID} from ${deployer}`);
 
-const factory = await new ContractFactory(factoryArtifact.abi, factoryArtifact.bytecode, wallet).deploy();
-await factory.waitForDeployment();
-const factoryAddress = await factory.getAddress();
+let factoryResult = null;
+if (shouldDeployFactory) {
+  const factory = await new ContractFactory(factoryArtifact.abi, factoryArtifact.bytecode, wallet).deploy();
+  await factory.waitForDeployment();
+  factoryResult = {
+    address: await factory.getAddress(),
+    transactionHash: factory.deploymentTransaction()?.hash || null,
+  };
+}
 
 let faucetResult = null;
-if (component === 'all') {
-  const claimAmount = parseEther(process.env.WINMAR_FAUCET_CLAIM_AMOUNT || '0.1');
-  const cooldown = BigInt(process.env.WINMAR_FAUCET_COOLDOWN_SECONDS || '86400');
-  const dailyCap = parseEther(process.env.WINMAR_FAUCET_DAILY_CAP || '100');
+if (shouldDeployFaucet) {
+  const claimAmount = parseEther(process.env.WINMAR_FAUCET_CLAIM_AMOUNT || '0.00001');
+  const dailyCap = parseEther(process.env.WINMAR_FAUCET_DAILY_CAP || '10');
   const faucet = await new ContractFactory(faucetArtifact.abi, faucetArtifact.bytecode, wallet).deploy(
     deployer,
     claimAmount,
-    cooldown,
     dailyCap
   );
   await faucet.waitForDeployment();
+  const faucetAddress = await faucet.getAddress();
+  const [onchainAdmin, onchainClaimAmount, onchainDailyCap, onchainPaused, runtimeCode] = await Promise.all([
+    faucet.admin(),
+    faucet.claimAmount(),
+    faucet.dailyCap(),
+    faucet.paused(),
+    provider.getCode(faucetAddress),
+  ]);
+  if (onchainAdmin.toLowerCase() !== deployer.toLowerCase()) throw new Error('Deployed faucet admin does not match deployer.');
+  if (onchainClaimAmount !== claimAmount || onchainDailyCap !== dailyCap) throw new Error('Deployed faucet parameters differ from requested settings.');
+  if (!onchainPaused || runtimeCode === '0x') throw new Error('Deployed faucet must have runtime code and start paused.');
   faucetResult = {
-    address: await faucet.getAddress(),
+    address: faucetAddress,
     transactionHash: faucet.deploymentTransaction()?.hash || null,
     claimAmountWei: claimAmount.toString(),
-    cooldownSeconds: cooldown.toString(),
     dailyCapWei: dailyCap.toString(),
+    oneClaimPerWallet: true,
+    initiallyPaused: true,
     funded: false
   };
 }
@@ -85,7 +121,7 @@ if (component === 'all') {
 const result = {
   network: { name: 'Winmar Chain', chainId: expectedChainId.toString(), rpcUrl, rpcBackupUrl },
   deployer,
-  tokenFactory: { address: factoryAddress, transactionHash: factory.deploymentTransaction()?.hash || null },
+  tokenFactory: factoryResult,
   component,
   faucet: faucetResult,
   generatedAt: new Date().toISOString(),

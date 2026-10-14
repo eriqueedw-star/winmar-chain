@@ -1,5 +1,25 @@
 # Winmar Faucet
 
+## Mainnet V2 design
+
+`WinmarFaucetV2` is a separate deployment so the existing faucet address and
+behavior remain unchanged. It enforces one successful claim per recipient for
+the lifetime of that deployment, including claims submitted through the
+relayer. This is an address-level limit, not a proof of one claim per human;
+users can create additional addresses. A fresh deployment starts paused. The intended initial settings are
+`0.00001 WMC` per claim and a `10 WMC` UTC-day distribution cap. The cap allows
+at most 1,000,000 distinct successful claims in one UTC day at that claim size.
+
+`0.00001 WMC` is enough to cover one payout; `1 WMC` covers at most 100,000
+payouts at the intended claim size and is a more conservative initial treasury
+deposit than the full daily cap. Relayer gas is a separate operating budget.
+
+Do not publish or fund a new faucet address until the deployment receipt,
+runtime bytecode, admin, parameters, paused state, and explorer record have
+been checked. The website configuration must be updated to the verified V2
+address after deployment; do not leave the old faucet address presented as the
+current funding target.
+
 ## Purpose
 
 The Winmar Faucet distributes native WMC from a funded faucet treasury to developers.
@@ -63,7 +83,7 @@ Before deployment:
 
 ## Initial controlled configuration
 
-These are examples, not production defaults:
+The legacy V1 examples below do not apply to V2:
 
 - claim amount: 0.1 WMC;
 - cooldown: 24 hours;

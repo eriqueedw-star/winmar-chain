@@ -7,7 +7,7 @@ const {test} = require('node:test');
 const ethers = require('ethers');
 const ganache = require('ganache');
 const solc = require('solc');
-const files = ['contracts/WinmarFaucet.sol','contracts/WinmarToken.sol','contracts/WinmarTokenFactory.sol','contracts/WinmarDocumentRegistry.sol','contracts/WinmarBridgeAssetRegistry.sol'];
+const files = ['contracts/WinmarFaucet.sol','contracts/WinmarFaucetV2.sol','contracts/WinmarToken.sol','contracts/WinmarTokenFactory.sol','contracts/WinmarDocumentRegistry.sol','contracts/WinmarBridgeAssetRegistry.sol'];
 const sources = Object.fromEntries(files.map(f => [f,{content:fs.readFileSync(path.join(__dirname,'..',f),'utf8')}]));
 const result = JSON.parse(solc.compile(JSON.stringify({
   language:'Solidity',sources,settings:{
@@ -32,7 +32,7 @@ async function fixture(){
   });
   const provider=new ethers.BrowserProvider(eip1193);
   assert.equal((await provider.getNetwork()).chainId,12142816n);
-  const accounts=await Promise.all([0,1,2,3].map(n=>provider.getSigner(n)));
+  const accounts=await Promise.all([0,1,2,3,4,5].map(n=>provider.getSigner(n)));
   return {provider,accounts};
 }
 async function deploy(name,signer,...args){
@@ -128,6 +128,37 @@ test('Native WMC faucet enforces daily cap, cooldown, pause and admin access',as
   await assert.rejects(()=>faucet.connect(carol).claim.staticCall());
   await done(faucet.withdraw(await admin.getAddress(),ethers.parseEther('0.1')));
   assert.equal(await faucet.availableBalance(),ethers.parseEther('0.5'));
+});
+
+test('Native WMC faucet v2 starts paused and allows one lifetime claim per wallet',async()=>{
+  const {accounts:[admin,alice,bob,carol,relayer,outsider]}=await fixture();
+  const amount=ethers.parseEther('0.00001');
+  const faucet=await deploy('WinmarFaucetV2',admin,await admin.getAddress(),amount,ethers.parseEther('0.00002'));
+  const address=await faucet.getAddress();
+  const aliceAddress=await alice.getAddress(), bobAddress=await bob.getAddress();
+  assert.equal(await faucet.paused(),true);
+  await done(admin.sendTransaction({to:address,value:ethers.parseEther('1')}));
+  await assert.rejects(()=>faucet.connect(alice).claim.staticCall());
+  await assert.rejects(()=>faucet.connect(outsider).setPaused.staticCall(false));
+  await assert.rejects(()=>faucet.connect(outsider).setParameters.staticCall(amount,ethers.parseEther('10')));
+
+  await done(faucet.setPaused(false));
+  await done(faucet.connect(alice).claim());
+  assert.equal(await faucet.hasClaimed(aliceAddress),true);
+  assert.equal(await faucet.claimedTotal(aliceAddress),amount);
+  await assert.rejects(()=>faucet.connect(alice).claim.staticCall());
+
+  await done(faucet.setRelayer(await relayer.getAddress()));
+  await assert.rejects(()=>faucet.connect(relayer).claimFor.staticCall(aliceAddress));
+  await done(faucet.connect(relayer).claimFor(bobAddress));
+  assert.equal(await faucet.hasClaimed(bobAddress),true);
+  assert.equal(await faucet.distributedToday(),ethers.parseEther('0.00002'));
+  await assert.rejects(()=>faucet.connect(carol).claim.staticCall());
+
+  await done(faucet.setParameters(amount,ethers.parseEther('10')));
+  await assert.rejects(()=>faucet.connect(alice).claim.staticCall());
+  await done(faucet.setPaused(true));
+  await assert.rejects(()=>faucet.connect(carol).claim.staticCall());
 });
 
 test('Gas-sponsored WMC claims require an appointed relayer and enforce recipient-based limits',async()=>{
