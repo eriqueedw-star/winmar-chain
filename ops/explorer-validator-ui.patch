@@ -1,0 +1,100 @@
+--- winmar-brand.js
++++ winmar-brand.js
+@@ -1,10 +1,49 @@
+ (() => {
+   const TITLE = 'Winmar (WMC) Blockchain Explorer';
+-  const VALIDATORS = new Set([
+-    '0x31971b8beca09c6936c8062230f6b776d88ba0bb',
+-    '0xdef515f4c8202b266c8e96134bbd781ad67bae3e',
+-    '0xf11906b401020089fd082be0527a280c15855d22',
+-    '0xfeac929960ee405d216b2007254aa6ed0f581d26',
+-    '0xfc75f677fe722f56091f2cd2040d1fe9af21cf84',
+-  ]);
++  function consensusValidators(extraData) {
++    if (!/^0x(?:[0-9a-f]{2})+$/i.test(extraData) || extraData.length > 131074) {
++      throw new Error('Invalid consensus extraData');
++    }
++    const bytes = Uint8Array.from(extraData.slice(2).match(/../g), (v) => parseInt(v, 16));
++    function decode(offset, boundary, depth = 0) {
++      if (offset >= boundary || depth > 16) throw new Error('Invalid RLP boundary');
++      const prefix = bytes[offset];
++      if (prefix < 128) return [bytes.slice(offset, offset + 1), offset + 1];
++      const list = prefix >= 192;
++      const short = list ? 192 : 128;
++      const long = list ? 247 : 183;
++      let start = offset + 1;
++      let length = prefix - short;
++      if (prefix > long) {
++        const lengthSize = prefix - long;
++        if (lengthSize > 4 || start + lengthSize > boundary || bytes[start] === 0) {
++          throw new Error('Invalid RLP length');
++        }
++        length = 0;
++        for (let i = 0; i < lengthSize; i++) length = length * 256 + bytes[start + i];
++        start += lengthSize;
++        if (length < 56) throw new Error('Non-canonical RLP length');
++      }
++      const end = start + length;
++      if (end > boundary) throw new Error('Truncated RLP');
++      if (!list) return [bytes.slice(start, end), end];
++      const items = [];
++      while (start < end) {
++        const [item, next] = decode(start, end, depth + 1);
++        items.push(item);
++        start = next;
++      }
++      return [items, end];
++    }
++    const [root, end] = decode(0, bytes.length);
++    if (end !== bytes.length || !Array.isArray(root) || root.length !== 5 ||
++        !Array.isArray(root[1]) || root[1].length === 0 ||
++        root[1].some((value) => !(value instanceof Uint8Array) || value.length !== 20)) {
++      throw new Error('Invalid QBFT validator set');
++    }
++    const addresses = root[1].map((value) => '0x' + [...value].map((b) => b.toString(16).padStart(2, '0')).join(''));
++    const validators = new Set(addresses);
++    if (validators.size !== addresses.length) throw new Error('Duplicate validator');
++    return validators;
++  }
+   const formatNumber = (value) => new Intl.NumberFormat('en-US').format(Number(value || 0));
+@@ -188,1 +227,1 @@
+-        rpcUrls: ['https://rpc.winmarchain.org'], blockExplorerUrls: ['https://scan.winmarchain.io'],
++        rpcUrls: ['https://rpc.winmarchain.io', 'https://rpc.winmarchain.com'], blockExplorerUrls: ['https://scan.winmarchain.io'],
+@@ -192,1 +231,24 @@
++  async function loadConsensusValidators() {
++    const controller = new AbortController();
++    const timer = setTimeout(() => controller.abort(), 10000);
++    async function rpc(method, params) {
++      const response = await fetch('https://rpc.winmarchain.io', {
++        method: 'POST', headers: { 'Content-Type': 'application/json' },
++        body: JSON.stringify({ jsonrpc: '2.0', method, params, id: 1 }),
++        signal: controller.signal, cache: 'no-store',
++      });
++      if (!response.ok) throw new Error('Consensus RPC unavailable');
++      const result = await response.json();
++      if (result.error || result.result == null) throw new Error('Invalid consensus RPC response');
++      return result.result;
++    }
++    try {
++      if (BigInt(await rpc('eth_chainId', [])) !== 12142816n) throw new Error('Wrong chain');
++      const block = await rpc('eth_getBlockByNumber', ['latest', false]);
++      return consensusValidators(block.extraData);
++    } finally {
++      clearTimeout(timer);
++    }
++  }
++
+   async function loadLiveData() {
+@@ -194,2 +256,3 @@
+-      const [statsResponse, blocksResponse] = await Promise.all([
++      const [statsResponse, blocksResponse, validators] = await Promise.all([
+         fetch('/api/v2/stats', { cache: 'no-store' }), fetch('/api/v2/blocks', { cache: 'no-store' }),
++        loadConsensusValidators().catch(() => null),
+@@ -200,1 +263,1 @@
+-      const producers = new Set((blocks.items || []).map((block) => block.miner?.hash?.toLowerCase()).filter((address) => VALIDATORS.has(address)));
++      const producers = new Set((blocks.items || []).map((block) => block.miner?.hash?.toLowerCase()).filter((address) => validators?.has(address)));
+@@ -213,2 +276,2 @@
+-      document.querySelector('#wmc-validators').textContent = `${producers.size} / ${VALIDATORS.size} producing`;
+-      document.querySelector('#wmc-validators-detail').textContent = 'Observed in recent blocks';
++      document.querySelector('#wmc-validators').textContent = validators ? `${producers.size} / ${validators.size} producing` : 'Unavailable';
++      document.querySelector('#wmc-validators-detail').textContent = validators ? 'Recent producers / on-chain validators' : 'Consensus data unavailable';
