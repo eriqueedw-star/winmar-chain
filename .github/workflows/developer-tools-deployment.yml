@@ -10,9 +10,10 @@ on:
         type: choice
         options:
           - token-factory
+          - faucet-v2
           - all
       confirm:
-        description: 'Type DEPLOY_TOKEN_FACTORY for token-factory, or DEPLOY_ALL for all components'
+        description: 'Type the matching deployment confirmation: DEPLOY_TOKEN_FACTORY, DEPLOY_FAUCET_V2, or DEPLOY_ALL'
         required: true
         type: string
 
@@ -26,7 +27,7 @@ concurrency:
 jobs:
   deploy:
     name: Deploy reviewed developer tools to Winmar Chain mainnet
-    if: ${{ (inputs.component == 'token-factory' && inputs.confirm == 'DEPLOY_TOKEN_FACTORY') || (inputs.component == 'all' && inputs.confirm == 'DEPLOY_ALL') }}
+    if: ${{ (inputs.component == 'token-factory' && inputs.confirm == 'DEPLOY_TOKEN_FACTORY') || (inputs.component == 'faucet-v2' && inputs.confirm == 'DEPLOY_FAUCET_V2') || (inputs.component == 'all' && inputs.confirm == 'DEPLOY_ALL') }}
     environment:
       name: production
       url: https://scan.winmarchain.io
@@ -56,9 +57,10 @@ jobs:
           WINMAR_DEPLOY_RPC_BACKUP_URL: https://rpc.winmarchain.com
           WINMAR_DEPLOY_CHAIN_ID: '12142816'
           WINMAR_DEPLOY_PRIVATE_KEY: ${{ secrets.WINMAR_MAINNET_DEPLOYER_PRIVATE_KEY }}
-          WINMAR_FAUCET_CLAIM_AMOUNT: '0.1'
+          WINMAR_FAUCET_EXPECTED_ADMIN: '0x787906DF8ec49C38819ea49569f9BBe68cbDC586'
+          WINMAR_FAUCET_CLAIM_AMOUNT: '0.00001'
           WINMAR_FAUCET_COOLDOWN_SECONDS: '86400'
-          WINMAR_FAUCET_DAILY_CAP: '100'
+          WINMAR_FAUCET_DAILY_CAP: '10'
           WINMAR_ARTIFACT_DIR: build/developer-tools
           WINMAR_DEPLOYMENT_OUTPUT: deployments/developer-tools.json
         run: node scripts/deploy-developer-tools.mjs

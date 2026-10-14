@@ -12,6 +12,7 @@ on:
   pull_request:
     paths:
       - "contracts/**"
+      - "tests/contracts.test.cjs"
       - ".github/workflows/smart-contract-quality.yml"
   workflow_dispatch:
 
@@ -39,8 +40,8 @@ jobs:
           set -euo pipefail
           rm -rf /tmp/winmar-solc
           mkdir -p /tmp/winmar-solc
-          npx --yes solc@0.8.30 --base-path . --include-path contracts --bin --abi contracts/WinmarToken.sol contracts/WinmarTokenFactory.sol contracts/WinmarFaucet.sol contracts/WinmarDocumentRegistry.sol contracts/WinmarBridgeAssetRegistry.sol -o /tmp/winmar-solc
-          for name in WinmarToken WinmarTokenFactory WinmarFaucet WinmarDocumentRegistry WinmarBridgeAssetRegistry; do
+          npx --yes solc@0.8.30 --base-path . --include-path contracts --bin --abi contracts/WinmarToken.sol contracts/WinmarTokenFactory.sol contracts/WinmarFaucet.sol contracts/WinmarFaucetV2.sol contracts/WinmarDocumentRegistry.sol contracts/WinmarBridgeAssetRegistry.sol -o /tmp/winmar-solc
+          for name in WinmarToken WinmarTokenFactory WinmarFaucet WinmarFaucetV2 WinmarDocumentRegistry WinmarBridgeAssetRegistry; do
             find /tmp/winmar-solc -maxdepth 1 -type f -name "*_$name.bin" | grep -q .
           done
           echo "Solidity compilation passed"
