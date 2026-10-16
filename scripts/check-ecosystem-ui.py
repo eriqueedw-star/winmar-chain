@@ -10,6 +10,10 @@ ROOT = pathlib.Path(__file__).resolve().parent.parent
 conf = json.loads((ROOT / "config/developer-tools.json").read_text(encoding="utf-8"))
 assert conf["network"]["chainId"] == 12142816
 assert conf["network"]["rpc"] == "https://rpc.winmarchain.io"
+auth = conf["developerAuth"]
+assert auth["provider"] == "amazon-cognito"
+assert auth["enabled"] is False, "Developer email auth must remain disabled until AWS is provisioned and reviewed"
+assert all(auth[key] is None for key in ("region", "userPoolId", "clientId", "hostedUiDomain", "redirectUri", "apiUrl"))
 assert conf["faucet"]["configured"] is True
 assert conf["faucet"]["deploymentStatus"] == "deployed-paused"
 assert re.fullmatch(r"0x[0-9a-fA-F]{40}", conf["faucet"]["contractAddress"])
@@ -40,6 +44,13 @@ assert "function getRecord(address issuer,bytes32 sha256)" in html
 assert "document.getElementById" in html
 assert "WMC-20 Token Creator" in html
 assert "ERC-20 compatible" in html
+assert "beginEmailSignIn" in html and "code_challenge_method:'S256'" in html
+assert "Verify creator wallet" in html and "wallet.signMessage(challenge.message)" in html
+assert "deployToken" in html and "Verify this creator wallet" in html
+assert "is not active yet" in html
+lambda_source = (ROOT / "infra/developer-auth/function/index.mjs").read_text(encoding="utf-8")
+assert "TransactWriteCommand" in lambda_source and "EIP1271_MAGIC" in lambda_source
+assert "ConditionExpression: \"attribute_not_exists(pk)\"" in lambda_source
 with tempfile.TemporaryDirectory() as folder:
     p = pathlib.Path(folder) / "suite.js"
     p.write_text(scripts[0], encoding="utf-8")

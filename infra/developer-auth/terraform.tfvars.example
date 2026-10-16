@@ -1,0 +1,5 @@
+aws_region            = "eu-north-1"
+environment           = "staging"
+developer_origin      = "https://winmarchain.io"
+cognito_domain_prefix = "winmar-developers-eun1-replace-me"
+lambda_package_path   = "build/function.zip"

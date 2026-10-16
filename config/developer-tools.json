@@ -14,6 +14,17 @@
     "explorer": "https://scan.winmarchain.io",
     "explorerBackup": "https://scan.winmarchain.com"
   },
+  "developerAuth": {
+    "enabled": false,
+    "provider": "amazon-cognito",
+    "region": null,
+    "userPoolId": null,
+    "clientId": null,
+    "hostedUiDomain": null,
+    "redirectUri": null,
+    "apiUrl": null,
+    "chainId": 12142816
+  },
   "faucet": {
     "environment": "mainnet",
     "configured": true,
