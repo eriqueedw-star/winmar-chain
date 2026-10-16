@@ -54,6 +54,10 @@ assert "beginEmailSignIn" in html and "code_challenge_method:'S256'" in html
 assert "Verify creator wallet" in html and "wallet.signMessage(challenge.message)" in html
 assert "deployToken" in html and "Verify this creator wallet" in html
 assert "is not active yet" in html
+assert "PRE-RELEASE · ON-CHAIN ACTIONS DISABLED UNTIL REVIEW" not in html
+assert 'class="site-header-v3"' in html and 'class="site-footer-v3"' in html
+assert 'href="/developers.html" aria-current="page"' in html
+assert 'id="site-mobile-nav"' in html and "classList.toggle('open')" in html
 lambda_source = (ROOT / "infra/developer-auth/function/index.mjs").read_text(encoding="utf-8")
 assert "TransactWriteCommand" in lambda_source and "EIP1271_MAGIC" in lambda_source
 assert "ConditionExpression: \"attribute_not_exists(pk)\"" in lambda_source
