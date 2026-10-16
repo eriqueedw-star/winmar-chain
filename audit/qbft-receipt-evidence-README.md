@@ -3,6 +3,7 @@
 This is a **manual, read-only** workflow. It reads primary and backup Winmar Chain RPC endpoints and creates an evidence artifact. It never signs or sends transactions.
 
 Checks:
+
 - Both endpoints return expected Chain ID 12142816.
 - Attempts `qbft_getValidatorsByBlockNumber("latest")` on both endpoints. If unavailable, status is **unavailable**, not zero validators or failed consensus.
 - Scans up to 120 recent common-height blocks for transaction hashes (maximum three per block), retrieves receipts from both RPC endpoints and verifies transaction hash, block hash, and matching execution status. Reports success versus revert.
