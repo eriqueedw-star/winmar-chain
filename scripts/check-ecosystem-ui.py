@@ -12,8 +12,14 @@ assert conf["network"]["chainId"] == 12142816
 assert conf["network"]["rpc"] == "https://rpc.winmarchain.io"
 auth = conf["developerAuth"]
 assert auth["provider"] == "amazon-cognito"
-assert auth["enabled"] is False, "Developer email auth must remain disabled until AWS is provisioned and reviewed"
-assert all(auth[key] is None for key in ("region", "userPoolId", "clientId", "hostedUiDomain", "redirectUri", "apiUrl"))
+assert auth["enabled"] is True, "Developer email auth must remain enabled after the reviewed AWS deployment"
+assert auth["region"] == "eu-north-1"
+assert auth["userPoolId"] == "eu-north-1_ph3o7VEeZ"
+assert auth["clientId"] == "jshhsqetnl2k2kn11me8o4r4v"
+assert auth["hostedUiDomain"] == "https://eu-north-1ph3o7veez.auth.eu-north-1.amazoncognito.com"
+assert auth["redirectUri"] == "https://winmarchain.io/developers.html"
+assert re.fullmatch(r"https://[a-z0-9]+\.execute-api\.eu-north-1\.amazonaws\.com", auth["apiUrl"])
+assert auth["chainId"] == conf["network"]["chainId"]
 assert conf["faucet"]["configured"] is True
 assert conf["faucet"]["deploymentStatus"] == "deployed-paused"
 assert re.fullmatch(r"0x[0-9a-fA-F]{40}", conf["faucet"]["contractAddress"])
