@@ -20,6 +20,8 @@ h2{margin:0 0 12px;font-size:23px}h3{margin:0 0 14px;font-size:16px}
 .pill{display:inline-block;border:1px solid #876732;border-radius:25px;background:#342714;color:#ffda91;font-weight:700;padding:7px 12px;font-size:11px;margin-top:8px}
 button{cursor:pointer;color:#fff;background:#256dd4;border:1px solid #3385dc;border-radius:9px;padding:12px 15px;font-weight:700;font-size:13px}
 button.secondary{background:#17253a;border-color:#344d67}button:disabled{opacity:.4;cursor:not-allowed}
+.auth-controls{display:flex;align-items:center;justify-content:flex-end;gap:8px;flex-wrap:wrap}.auth-controls .small{margin:0;max-width:210px}
+.auth-state{border:1px solid #304761;background:#0a1727;border-radius:10px;padding:14px;margin:14px 0}.auth-state strong{color:#e8f0fa}.auth-state .muted{margin:6px 0 0}
 .tabs{display:grid;grid-template-columns:repeat(4,1fr);gap:9px;margin:15px 0 19px}
 .tabs button{text-align:left;background:#102033;border-color:#284159;font-size:14px;padding:17px}
 .tabs button[aria-selected=true]{background:#1c3860;border-color:#5c9df2;box-shadow:inset 0 0 0 1px #527bb7}
@@ -49,7 +51,13 @@ footer{border-top:1px solid #293e58;margin-top:30px;padding-top:20px;font-size:1
   <div class="brand"><img alt="Winmar Chain logo" src="https://raw.githubusercontent.com/eriqueedw-star/winmar-chain/main/winmar-chain-logo-framed-v2.png">
     <div><b>WINMAR CHAIN</b><span class="small">INSTITUTIONAL BLOCKCHAIN INFRASTRUCTURE</span></div></div>
   <div class="muted">MAINNET · ID 12142816 · <a href="/wmc.html">WMC</a> · <a href="/wint.html">WINT</a><br><a href="https://scan.winmarchain.io" target="_blank" rel="noopener noreferrer">EXPLORER ↗</a> &nbsp; <a href="https://winmarchain.io" target="_blank" rel="noopener noreferrer">OFFICIAL WEBSITE ↗</a></div>
-  <button id="connect" type="button">Connect Wallet</button>
+  <div class="auth-controls">
+    <span id="developer-account-status" class="small">Developer account not signed in</span>
+    <button id="email-auth" type="button" class="secondary" disabled>Email sign-in setup pending</button>
+    <button id="connect" type="button">Connect Wallet</button>
+    <button id="link-wallet" type="button" class="secondary" disabled>Verify creator wallet</button>
+    <button id="email-signout" type="button" class="secondary" hidden>Sign out</button>
+  </div>
 </header>
 <div class="hero">
   <p class="eyebrow">Winmar Chain / Developer Infrastructure</p>
@@ -75,6 +83,11 @@ footer{border-top:1px solid #293e58;margin-top:30px;padding-top:20px;font-size:1
   <section id="p-creator" class="card" hidden>
     <span class="flag" id="creator-state">FACTORY LIVE · TOKEN CREATION REQUIRES WALLET CONFIRMATION</span><h2>WMC-20 Token Creator</h2>
     <p class="muted">Create a WMC-20 fungible token native to Winmar Chain. ERC-20 compatible for EVM wallets and tools. Gas is paid in native WMC; issuer powers are disclosed before deployment.</p>
+    <div class="auth-state" aria-live="polite">
+      <strong>Developer account &amp; creator wallet</strong>
+      <p id="developer-auth-message" class="muted">Sign in with a verified email, connect your creator wallet, then verify ownership with a non-transaction signature.</p>
+      <p id="linked-wallet-status" class="muted">No creator wallet linked in this account.</p>
+    </div>
     <div class="cols">
       <div class="field"><label for="token-name">Token name</label><input id="token-name" maxlength="80" value="Example Winmar Token"></div>
       <div class="field"><label for="token-symbol">Symbol</label><input id="token-symbol" maxlength="18" value="EWT"></div>
@@ -90,6 +103,7 @@ footer{border-top:1px solid #293e58;margin-top:30px;padding-top:20px;font-size:1
     </div>
     <div class="risk">If <strong>Mintable</strong> or <strong>Pausable</strong> is enabled, the token creator retains owner authority. Creating a token does not make it endorsed or listed by Winmar Chain.</div>
     <button type="button" id="deploy" disabled>Deploy WMC-20 Token</button>
+    <p class="muted">Email access protects this portal workflow only. The factory is public on-chain; a wallet can interact with it directly outside this page.</p>
     <div class="result" id="token-result" role="status">Connect a wallet to create a token through the live Winmar Token Factory.</div>
   </section>
   <section id="p-bridge" class="card" hidden>
@@ -167,7 +181,8 @@ const DOC_ABI = [
   'function getRecord(address issuer,bytes32 sha256) view returns (uint64 anchoredAt,uint64 revokedAt)'
 ];
 const $ = id => document.getElementById(id);
-let conf, provider, signer, account, digest;
+let conf, provider, signer, account, digest, developerSession;
+let linkedWallets = [];
 for (const name of ['faucet','creator','bridge','documents']) {
   $('t-'+name).addEventListener('click',()=>{
     for(const k of ['faucet','creator','bridge','documents']){
@@ -186,7 +201,10 @@ function refresh(){
   const docOk = ready(conf.documentVerifier,'registryAddress');
   $('claim').disabled=!(account&&faucetOk);
   $('faucet-state').textContent=ready(conf.faucet,'contractAddress') ? (conf.faucet.funded ? 'FUNDED · CLAIM GATE STILL REVIEWED' : 'DEPLOYED · PAUSED · NOT FUNDED') : 'NOT DEPLOYED';
-  $('deploy').disabled=!(account&&factoryOk);
+  const linked = !!(developerSession && account && linkedWallets.some(item =>
+    Number(item.chainId) === Number(CHAIN) && String(item.walletAddress).toLowerCase() === account.toLowerCase()));
+  $('deploy').disabled=!(account&&factoryOk&&linked);
+  $('link-wallet').disabled=!(developerSession&&account&&authConfigReady());
   $('creator-state').textContent=factoryOk ? 'FACTORY LIVE · TOKEN CREATION REQUIRES WALLET CONFIRMATION' : 'FACTORY NOT DEPLOYED';
   $('add-network').disabled=!account;
   $('add-wmc20').disabled=!(account&&conf.tokenMaker?.tokenAddress && ethers.isAddress(conf.tokenMaker.tokenAddress));
@@ -195,6 +213,7 @@ function refresh(){
   $('revoke').disabled=!(digest&&account&&docOk);
   $('bridge-state').textContent=conf.bridge?.transfersEnabled ? 'Review required' : 'Transfers locked';
   $('bridge-routes').textContent=String(conf.bridge?.supportedRoutes?.length||0)+' configured';
+  refreshDeveloperAuth();
 }
 async function loadConfig(){
   try {
@@ -203,6 +222,7 @@ async function loadConfig(){
     const x=await response.json();
     if(x.network?.chainId!==12142816 || x.network?.rpc!==RPC)throw new Error('Unexpected network metadata');
     conf=x; msg('config-status','Loaded · factory '+(conf.tokenMaker?.factoryAddress ? conf.tokenMaker.factoryAddress.slice(0,10)+'…' : 'not configured')); refresh();
+    await finishEmailSignIn();
   } catch(e){msg('config-status','Unavailable');msg('document-result','Configuration unavailable: '+eword(e));}
 }
 async function rpcProbe(url){
@@ -243,6 +263,105 @@ async function connect(){
   $('token-holder').value=account;$('issuer').value=account;
   msg('wallet-status',account.slice(0,7)+'…'+account.slice(-5));
   $('connect').textContent='Connected';refresh();
+  if(developerSession) await loadLinkedWallets();
+}
+
+function authConfigReady(){
+  const auth=conf?.developerAuth;
+  return !!(auth?.enabled===true && auth.provider==='amazon-cognito' && auth.region && auth.userPoolId &&
+    auth.clientId && auth.hostedUiDomain && auth.redirectUri && auth.apiUrl);
+}
+function refreshDeveloperAuth(){
+  const enabled=authConfigReady();
+  $('email-auth').disabled=!enabled;
+  $('email-auth').textContent=developerSession ? (developerSession.email||'Signed in') :
+    (enabled?'Sign in / Create account':'Email sign-in setup pending');
+  $('email-signout').hidden=!developerSession;
+  $('developer-account-status').textContent=developerSession ?
+    `Signed in · ${developerSession.email||'verified email'}` : 'Developer account not signed in';
+  if(!enabled){
+    $('developer-auth-message').textContent='Email sign-in is not active yet. Cognito must be deployed and its public settings configured before developer accounts can be used.';
+  } else if(!developerSession){
+    $('developer-auth-message').textContent='Sign in with your verified email, connect your creator wallet, then verify ownership with a non-transaction signature.';
+  } else if(!account){
+    $('developer-auth-message').textContent='Email verified. Connect the creator wallet you want to associate with this account.';
+  } else {
+    $('developer-auth-message').textContent=`Email verified. Connected creator wallet: ${account.slice(0,7)}…${account.slice(-5)}.`;
+  }
+  const matching=account&&linkedWallets.find(item=>Number(item.chainId)===Number(CHAIN)&&String(item.walletAddress).toLowerCase()===account.toLowerCase());
+  $('linked-wallet-status').textContent=matching ? `Verified creator wallet · Winmar Chain · ${matching.walletAddress}` :
+    (linkedWallets.length ? `${linkedWallets.length} wallet(s) linked to this account; connect one to continue.` : 'No creator wallet linked in this account.');
+}
+function base64Url(bytes){return btoa(String.fromCharCode(...new Uint8Array(bytes))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');}
+function decodeJwtPayload(token){
+  const part=token.split('.')[1];if(!part)throw new Error('Cognito returned an invalid identity token.');
+  return JSON.parse(decodeURIComponent(Array.from(atob(part.replace(/-/g,'+').replace(/_/g,'/')),c=>'%'+c.charCodeAt(0).toString(16).padStart(2,'0')).join('')));
+}
+async function beginEmailSignIn(){
+  if(!authConfigReady())throw new Error('Email sign-in is not configured yet.');
+  const auth=conf.developerAuth;
+  const random=new Uint8Array(32);crypto.getRandomValues(random);
+  const state=base64Url(random);
+  const verifier=state+'.'+base64Url(crypto.getRandomValues(new Uint8Array(32)));
+  const oidcNonce=base64Url(crypto.getRandomValues(new Uint8Array(24)));
+  const challenge=base64Url(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(verifier)));
+  sessionStorage.setItem('winmar.oauth.state',state);
+  sessionStorage.setItem('winmar.oauth.verifier',verifier);
+  sessionStorage.setItem('winmar.oauth.nonce',oidcNonce);
+  const url=new URL('/oauth2/authorize',auth.hostedUiDomain);
+  url.search=new URLSearchParams({client_id:auth.clientId,response_type:'code',scope:'openid email',redirect_uri:auth.redirectUri,state,nonce:oidcNonce,code_challenge:challenge,code_challenge_method:'S256'}).toString();
+  location.assign(url.toString());
+}
+async function finishEmailSignIn(){
+  const query=new URLSearchParams(location.search), code=query.get('code'), returnedState=query.get('state');
+  if(!code && !query.has('error'))return;
+  const expectedState=sessionStorage.getItem('winmar.oauth.state');
+  const verifier=sessionStorage.getItem('winmar.oauth.verifier');
+  const expectedNonce=sessionStorage.getItem('winmar.oauth.nonce');
+  sessionStorage.removeItem('winmar.oauth.state');sessionStorage.removeItem('winmar.oauth.verifier');sessionStorage.removeItem('winmar.oauth.nonce');
+  try{
+    if(query.has('error'))throw new Error(query.get('error_description')||query.get('error'));
+    if(!code||!expectedState||returnedState!==expectedState||!verifier)throw new Error('Sign-in response failed the security check. Please try again.');
+    const auth=conf.developerAuth;
+    const response=await fetch(new URL('/oauth2/token',auth.hostedUiDomain),{method:'POST',headers:{'content-type':'application/x-www-form-urlencoded'},body:new URLSearchParams({grant_type:'authorization_code',client_id:auth.clientId,code,redirect_uri:auth.redirectUri,code_verifier:verifier})});
+    const tokens=await response.json();if(!response.ok||!tokens.id_token)throw new Error(tokens.error_description||tokens.error||'Cognito sign-in failed.');
+    const claims=decodeJwtPayload(tokens.id_token);
+    if(claims.nonce!==expectedNonce||claims.email_verified!==true&&claims.email_verified!=='true')throw new Error('Email verification could not be confirmed.');
+    developerSession={idToken:tokens.id_token,email:claims.email||'',sub:claims.sub,expiresAt:Date.now()+Number(tokens.expires_in||3600)*1000};
+    history.replaceState(null,'',location.pathname+location.hash);
+    refresh();await loadLinkedWallets();
+  }catch(error){
+    history.replaceState(null,'',location.pathname+location.hash);
+    msg('developer-auth-message','Sign-in not completed: '+eword(error));
+  }
+}
+async function authApi(path,body){
+  if(!developerSession||developerSession.expiresAt<=Date.now())throw new Error('Developer session expired. Sign in again.');
+  const auth=conf.developerAuth;
+  const response=await fetch(new URL(path,auth.apiUrl),{method:body?'POST':'GET',headers:{authorization:`Bearer ${developerSession.idToken}`,...(body?{'content-type':'application/json'}:{})},body:body?JSON.stringify(body):undefined,cache:'no-store'});
+  const result=await response.json().catch(()=>({}));if(!response.ok)throw new Error(result.error||`Developer account API returned HTTP ${response.status}.`);return result;
+}
+async function loadLinkedWallets(){
+  if(!developerSession||!authConfigReady())return;
+  try{const result=await authApi('/v1/wallets');linkedWallets=Array.isArray(result.wallets)?result.wallets:[];refresh();}
+  catch(error){msg('linked-wallet-status','Could not load verified wallet links: '+eword(error));}
+}
+async function verifyCreatorWallet(){
+  if(!developerSession)throw new Error('Sign in with your verified developer email first.');
+  const wallet=withSigner(), chain=await provider.getNetwork();if(chain.chainId!==CHAIN)throw new Error('Switch to Winmar Chain before verifying this wallet.');
+  const address=await wallet.getAddress();
+  const challenge=await authApi('/v1/wallet/challenge',{walletAddress:address,chainId:Number(CHAIN)});
+  const signature=await wallet.signMessage(challenge.message);
+  const result=await authApi('/v1/wallet/link',{nonce:challenge.nonce,signature});
+  if(!result.linked)throw new Error('Wallet link could not be confirmed.');
+  await loadLinkedWallets();
+  msg('linked-wallet-status',`Verified creator wallet · Winmar Chain · ${result.walletAddress}`);
+}
+function signOutDeveloper(){
+  const auth=conf?.developerAuth;
+  developerSession=null;linkedWallets=[];refresh();
+  if(!authConfigReady())return;
+  const url=new URL('/logout',auth.hostedUiDomain);url.search=new URLSearchParams({client_id:auth.clientId,logout_uri:auth.redirectUri}).toString();location.assign(url.toString());
 }
 async function addWmcNetwork(){
   if(!window.ethereum)throw new Error('Install a compatible EVM wallet.');
@@ -276,6 +395,9 @@ function tokenInputs(){
 }
 async function deployToken(){
   if(!ready(conf?.tokenMaker,'factoryAddress'))throw new Error('Factory not deployed.');
+  if(!developerSession)throw new Error('Sign in with your verified developer email first.');
+  if(!linkedWallets.some(item=>Number(item.chainId)===Number(CHAIN)&&String(item.walletAddress).toLowerCase()===String(account).toLowerCase()))
+    throw new Error('Verify this creator wallet with your signed email account first.');
   const [params,salt]=tokenInputs();
   const factory=new ethers.Contract(conf.tokenMaker.factoryAddress,FACTORY_ABI,withSigner());
   const tx=await factory.createToken(params,salt);
@@ -319,6 +441,9 @@ async function changeDocument(action){
   await tx.wait();msg('document-result','Confirmed: '+SCAN+'/tx/'+tx.hash+'\nIssuer: '+account+'\nAction: '+action);
 }
 $('connect').onclick=()=>connect().catch(e=>msg('wallet-status',eword(e)));
+$('email-auth').onclick=()=>beginEmailSignIn().catch(e=>msg('developer-auth-message',eword(e)));
+$('email-signout').onclick=()=>signOutDeveloper();
+$('link-wallet').onclick=()=>verifyCreatorWallet().catch(e=>msg('linked-wallet-status',eword(e)));
 $('add-network').onclick=()=>addWmcNetwork().catch(e=>msg('wallet-config-result',eword(e)));
 $('add-wmc20').onclick=()=>addWmc20().catch(e=>msg('wallet-config-result',eword(e)));
 $('claim').onclick=()=>claim().catch(e=>msg('faucet-result',eword(e)));
