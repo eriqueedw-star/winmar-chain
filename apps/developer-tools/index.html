@@ -309,7 +309,7 @@ async function beginEmailSignIn(){
   sessionStorage.setItem('winmar.oauth.verifier',verifier);
   sessionStorage.setItem('winmar.oauth.nonce',oidcNonce);
   const url=new URL('/oauth2/authorize',auth.hostedUiDomain);
-  url.search=new URLSearchParams({client_id:auth.clientId,response_type:'code',scope:'openid email profile',redirect_uri:auth.redirectUri,state,nonce:oidcNonce,code_challenge:challenge,code_challenge_method:'S256'}).toString();
+  url.search=new URLSearchParams({client_id:auth.clientId,response_type:'code',scope:'openid email',redirect_uri:auth.redirectUri,state,nonce:oidcNonce,code_challenge:challenge,code_challenge_method:'S256'}).toString();
   location.assign(url.toString());
 }
 async function finishEmailSignIn(){

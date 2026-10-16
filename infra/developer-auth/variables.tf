@@ -5,9 +5,9 @@ variable "aws_region" {
 }
 
 variable "environment" {
-  description = "Isolated deployment name. Production enables Cognito deletion protection."
+  description = "Isolated backend deployment name. Cognito is already provisioned and is not managed here."
   type        = string
-  default     = "staging"
+  default     = "production"
 
   validation {
     condition     = contains(["staging", "production"], var.environment)
@@ -25,13 +25,33 @@ variable "developer_origin" {
   }
 }
 
-variable "cognito_domain_prefix" {
-  description = "Globally unique Cognito managed-login prefix, e.g. winmar-developers-eun1-<suffix>."
+variable "cognito_user_pool_id" {
+  description = "ID of the existing Winmar Developer Accounts Cognito user pool. Terraform must not create a second pool."
   type        = string
 
   validation {
-    condition     = length(var.cognito_domain_prefix) >= 1 && length(var.cognito_domain_prefix) <= 63 && can(regex("^[a-z0-9-]+$", var.cognito_domain_prefix))
-    error_message = "Cognito domain prefix must be 1-63 lowercase letters, numbers, or hyphens."
+    condition     = can(regex("^eu-north-1_[A-Za-z0-9]+$", var.cognito_user_pool_id))
+    error_message = "Use the existing eu-north-1 Cognito user pool ID."
+  }
+}
+
+variable "cognito_client_id" {
+  description = "ID of the existing public Winmar Developer Tools SPA app client."
+  type        = string
+
+  validation {
+    condition     = can(regex("^[a-z0-9]{20,}$", var.cognito_client_id))
+    error_message = "Use the existing Cognito app client ID."
+  }
+}
+
+variable "cognito_hosted_ui_domain" {
+  description = "HTTPS origin of the existing Cognito managed-login domain, without a trailing slash."
+  type        = string
+
+  validation {
+    condition     = can(regex("^https://[a-z0-9-]+[.]auth[.]eu-north-1[.]amazoncognito[.]com$", var.cognito_hosted_ui_domain))
+    error_message = "Use the existing eu-north-1 Cognito managed-login origin."
   }
 }
 

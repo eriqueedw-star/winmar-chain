@@ -13,82 +13,6 @@ provider "aws" {
   region = var.aws_region
 }
 
-resource "aws_cognito_user_pool" "developers" {
-  name                     = "winmar-developers-${var.environment}"
-  username_attributes      = ["email"]
-  auto_verified_attributes = ["email"]
-
-  password_policy {
-    minimum_length                   = 12
-    require_lowercase                = true
-    require_numbers                  = true
-    require_symbols                  = true
-    require_uppercase                = true
-    temporary_password_validity_days = 1
-  }
-
-  account_recovery_setting {
-    recovery_mechanism {
-      name     = "verified_email"
-      priority = 1
-    }
-  }
-
-  email_configuration {
-    email_sending_account = "COGNITO_DEFAULT"
-  }
-
-  verification_message_template {
-    default_email_option = "CONFIRM_WITH_CODE"
-    email_subject        = "Verify your Winmar developer account"
-    email_message        = "Your Winmar developer verification code is {####}. If you did not request this, you can ignore this email."
-  }
-
-  deletion_protection = var.environment == "production" ? "ACTIVE" : "INACTIVE"
-
-  tags = {
-    Project     = "WinmarChain"
-    Environment = var.environment
-    Purpose     = "Developer email authentication"
-  }
-}
-
-resource "aws_cognito_user_pool_client" "developers" {
-  name                                 = "winmar-developer-tools"
-  user_pool_id                         = aws_cognito_user_pool.developers.id
-  generate_secret                      = false
-  prevent_user_existence_errors        = "ENABLED"
-  enable_token_revocation              = true
-  allowed_oauth_flows_user_pool_client = true
-  allowed_oauth_flows                  = ["code"]
-  allowed_oauth_scopes                 = ["openid", "email", "profile"]
-  supported_identity_providers         = ["COGNITO"]
-  callback_urls                        = ["${var.developer_origin}/developers.html"]
-  logout_urls                          = ["${var.developer_origin}/developers.html"]
-
-  explicit_auth_flows = [
-    "ALLOW_REFRESH_TOKEN_AUTH",
-    "ALLOW_USER_SRP_AUTH",
-  ]
-
-  access_token_validity  = 1
-  id_token_validity      = 1
-  refresh_token_validity = 7
-  token_validity_units {
-    access_token  = "hours"
-    id_token      = "hours"
-    refresh_token = "days"
-  }
-
-  read_attributes  = ["email", "email_verified", "name"]
-  write_attributes = ["email", "name"]
-}
-
-resource "aws_cognito_user_pool_domain" "developers" {
-  domain       = var.cognito_domain_prefix
-  user_pool_id = aws_cognito_user_pool.developers.id
-}
-
 resource "aws_dynamodb_table" "wallet_links" {
   name         = "winmar-developer-wallets-${var.environment}"
   billing_mode = "PAY_PER_REQUEST"
@@ -225,8 +149,8 @@ resource "aws_apigatewayv2_authorizer" "cognito" {
   name             = "winmar-developer-cognito"
   identity_sources = ["$request.header.Authorization"]
   jwt_configuration {
-    audience = [aws_cognito_user_pool_client.developers.id]
-    issuer   = "https://cognito-idp.${var.aws_region}.amazonaws.com/${aws_cognito_user_pool.developers.id}"
+    audience = [var.cognito_client_id]
+    issuer   = "https://cognito-idp.${var.aws_region}.amazonaws.com/${var.cognito_user_pool_id}"
   }
 }
 

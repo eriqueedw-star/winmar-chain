@@ -1,15 +1,15 @@
 output "user_pool_id" {
-  value       = aws_cognito_user_pool.developers.id
+  value       = var.cognito_user_pool_id
   description = "Public Cognito User Pool ID for the static developer-tools client."
 }
 
 output "user_pool_client_id" {
-  value       = aws_cognito_user_pool_client.developers.id
+  value       = var.cognito_client_id
   description = "Public Cognito SPA app client ID. It has no client secret."
 }
 
 output "hosted_ui_domain" {
-  value       = "https://${aws_cognito_user_pool_domain.developers.domain}.auth.${var.aws_region}.amazoncognito.com"
+  value       = var.cognito_hosted_ui_domain
   description = "Cognito managed-login origin."
 }
 

@@ -17,11 +17,11 @@
   "developerAuth": {
     "enabled": false,
     "provider": "amazon-cognito",
-    "region": null,
-    "userPoolId": null,
-    "clientId": null,
-    "hostedUiDomain": null,
-    "redirectUri": null,
+    "region": "eu-north-1",
+    "userPoolId": "eu-north-1_ph3o7VEeZ",
+    "clientId": "jshhsqetnl2k2kn11me8o4r4v",
+    "hostedUiDomain": "https://eu-north-1ph3o7veez.auth.eu-north-1.amazoncognito.com",
+    "redirectUri": "https://winmarchain.io/developers.html",
     "apiUrl": null,
     "chainId": 12142816
   },
