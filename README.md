@@ -53,8 +53,14 @@ The repository includes explicit controls for material that is not yet safe to i
 - [WMC-20 Token Creator](docs/TOKEN_MAKER.md)
 - [WMC-20 token standard v1.0.0](docs/standards/WMC-20.md)
 - [Developer tools deployment](docs/DEVELOPER_TOOLS_DEPLOYMENT.md)
+- [Post-quantum security foundation](docs/POST_QUANTUM_SECURITY.md)
+- [Post-quantum claim policy](docs/POST_QUANTUM_CLAIM_POLICY.md)
 
 Unverified production consensus parameters must not be invented or copied into the repository.
+
+## Post-quantum security program
+
+Winmar Chain is adding a staged hybrid classical + post-quantum assurance layer while preserving EVM and QBFT compatibility. Phase 1 introduces the public architecture, evidence requirements, claim controls, and an on-chain post-quantum proof attestation registry. It does **not** yet make ML-DSA a QBFT consensus rule or make every transaction quantum-resistant. See [`docs/POST_QUANTUM_SECURITY.md`](docs/POST_QUANTUM_SECURITY.md).
 
 ## Verification
 
