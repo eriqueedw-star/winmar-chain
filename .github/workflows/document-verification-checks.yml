@@ -57,8 +57,10 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          python3 -m py_compile services/winmar-document-verification/tools/*.py
-          python3 -m unittest discover -s services/winmar-document-verification/tests -p 'test_*.py' -v
+          python3 -m venv /tmp/winmar-document-qa
+          /tmp/winmar-document-qa/bin/python -m pip install --disable-pip-version-check 'Pillow==12.3.0'
+          /tmp/winmar-document-qa/bin/python -m py_compile services/winmar-document-verification/tools/*.py
+          /tmp/winmar-document-qa/bin/python -m unittest discover -s services/winmar-document-verification/tests -p 'test_*.py' -v
 
       - name: Check certificate image fidelity and metadata
         shell: bash
