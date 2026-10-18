@@ -5,7 +5,8 @@ Read-only RPC; no signing, contract deployment, issuer key, payment, or backend
 API authentication. Requires the exact approved PNG asset. Produces a new PDF:
 the original file remains untouched, the original pages remain visually intact,
 and exactly one certificate page is appended. Signed PDFs are rejected because
-copying/merging would invalidate their digital signature.
+copying/merging would invalidate their digital signature. Uses permissively
+licensed pypdf and ReportLab, not a copyleft document-processing engine.
 """
 from __future__ import annotations
 
@@ -278,32 +279,46 @@ def build_pdf(source_path, master_path, output_path, payment_tx, document_type, 
             "Source PDF missing, malformed or exceeds maximum 10 MB")
     doc_id = "0x" + hashlib.sha256(original).hexdigest()
     evidence = verify_document(PublicRpc(), doc_id, payment_tx)
-    import fitz
-    source = fitz.open(stream=original,filetype="pdf")
-    try:
-        require(not source.is_encrypted and 0 < source.page_count <= 500,
-                "Unreadable, encrypted or excessive-page source PDF")
-        require(not source.get_sigflags(), "Digitally signed source PDF cannot be merged without invalidating its signature")
-        page_number=source.page_count+1
-        artwork=make_certificate_image(master,evidence,clean(document_type),clean(subject),page_number)
-        image_bytes=io.BytesIO()
-        artwork.save(image_bytes,format="PNG",optimize=True)
-        result=fitz.open()
-        try:
-            result.insert_pdf(source)
-            page=result.new_page(width=A4[0],height=A4[1])
-            page.insert_image(page.rect,stream=image_bytes.getvalue(),keep_proportion=False)
-            require(result.page_count == page_number, "PDF page-count invariant failed")
-            dest=Path(output_path)
-            require(dest.resolve() != Path(source_path).resolve(), "Cannot overwrite the source document")
-            require(not dest.exists(), "Output path already exists; refusing overwrite")
-            dest.parent.mkdir(parents=True,exist_ok=True)
-            # No incremental update; write a new independently named output.
-            result.save(str(dest),garbage=3,deflate=True)
-        finally:
-            result.close()
-    finally:
-        source.close()
+    # pypdf (BSD) + ReportLab (BSD), rather than a copyleft PDF engine.
+    # Copy original pages into a NEW document without editing their content.
+    from pypdf import PdfReader, PdfWriter
+    from reportlab.lib.utils import ImageReader
+    from reportlab.pdfgen import canvas
+
+    reader = PdfReader(io.BytesIO(original), strict=True)
+    require(not reader.is_encrypted and 0 < len(reader.pages) <= 500,
+            "Unreadable, encrypted or excessive-page source PDF")
+    fields = reader.get_fields() or {}
+    is_signed = any(str(field.get("/FT")) == "/Sig" for field in fields.values())
+    require(not is_signed and b"/ByteRange" not in original,
+            "Signed source PDF cannot be appended without invalidating its signature")
+
+    page_number = len(reader.pages) + 1
+    artwork = make_certificate_image(
+        master, evidence, clean(document_type), clean(subject), page_number)
+    image_bytes = io.BytesIO()
+    artwork.save(image_bytes, format="PNG", optimize=True)
+    certificate_pdf = io.BytesIO()
+    painter = canvas.Canvas(certificate_pdf, pagesize=A4, pageCompression=1)
+    painter.drawImage(ImageReader(io.BytesIO(image_bytes.getvalue())),
+                      0, 0, width=A4[0], height=A4[1], mask="auto")
+    painter.showPage()
+    painter.save()
+    certificate_pdf.seek(0)
+
+    writer = PdfWriter()
+    writer.append(reader, import_outline=False)
+    single_page = PdfReader(certificate_pdf, strict=True)
+    require(len(single_page.pages) == 1, "Expected exactly one certificate page")
+    writer.add_page(single_page.pages[0])
+    require(len(writer.pages) == page_number, "PDF page-count invariant failed")
+    dest = Path(output_path)
+    require(dest.resolve() != Path(source_path).resolve(), "Cannot overwrite the source document")
+    require(not dest.exists(), "Output path already exists; refusing overwrite")
+    dest.parent.mkdir(parents=True, exist_ok=True)
+    # Caller owns the output directory and retention; no remote PDF upload occurs.
+    with dest.open("xb") as handle:
+        writer.write(handle)
     return {"output":str(output_path),"pages":page_number,"sha256":doc_id,"registrationTx":evidence["registration_tx"]}
 
 
