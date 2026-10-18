@@ -28,7 +28,7 @@ let verifiedIssuance = null;
 let pdfDownloadPending = false;
 
 function canIssue() {
-  issueButton.disabled = issuancePending || !(selectedDocumentHash && subjectInput.value.trim() && issuerInput.value.trim());
+  issueButton.disabled = issuancePending || !(selectedDocumentHash && subjectInput.value.trim());
 }
 
 function rpc(method, params = []) {
@@ -112,7 +112,7 @@ input.addEventListener('change', async () => {
 [subjectInput, issuerInput].forEach((field) => field.addEventListener('input', canIssue));
 
 issueButton.addEventListener('click', async () => {
-  if (issuancePending || !selectedDocumentHash || !subjectInput.value.trim() || !issuerInput.value.trim()) return;
+  if (issuancePending || !selectedDocumentHash || !subjectInput.value.trim()) return;
   if (!window.ethereum) {
     walletNote.textContent = 'Install or connect an EVM wallet first. No account registration is required.';
     return;
