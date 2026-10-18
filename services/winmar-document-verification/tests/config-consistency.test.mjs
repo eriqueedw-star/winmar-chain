@@ -9,7 +9,7 @@ const issuer = read('../deployment/authorize-issuer.mjs');
 const apiConfig = read('../.env.example');
 const standard = read('../../../docs/WINMAR_VERIFICATION_STANDARD.md');
 
-const feeContract = '0xcec232bd11f03006ecc80917f5cd55bf247617d';
+const feeContract = '0xcec232bd11f03006ecc80917f5cd55bbf247617d';
 const verificationContract = '0x53fb6ba2997a50d3ddfff5395a3bb9b7b24b7aef';
 const treasury = '0x2d26e199f9be1a907239e403c4fad14c0856e7fd';
 const expectedFeeWei = 2_100_000_000_000_000n;
