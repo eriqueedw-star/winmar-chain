@@ -23,6 +23,7 @@ This branch now contains a read-only frontend handler:
 The handler reads the `bytes32 documentId` from the URL, queries the existing `DocumentVerification` contract at `0x53fB6ba2997A50d3ddFfF5395a3BB9b7b24B7AEF` on Chain ID `12142816`, confirms a successful document-registration transaction, checks current issuer authorization and revocation state, and optionally calculates the selected original PDF's SHA-256 **locally in the browser**. No account, wallet, API key, backend PDF upload or smart-contract write is needed to verify.
 
 **Trust distinction:**
+
 - Without the original PDF: label `ACTIVE ON-CHAIN RECORD FOUND — PDF NOT CHECKED`. This does NOT authenticate an arbitrary file.
 - With the original PDF and matching digest: display `VERIFIED ON-CHAIN`.
 - With mismatching, revoked, missing, unauthorized, unconfirmed or unavailable state: display an unmistakable failure / non-verified state. Fail closed.
