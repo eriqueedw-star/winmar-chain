@@ -4,10 +4,7 @@ Status: Approved baseline
 Scope: Winmar Document Verification  
 Network: Winmar Chain Mainnet (`12142816`)
 
-The supplied `winmar-verification-certificate-master.png` is the pixel-locked
-visual master. Implementations must preserve its layout, spacing, colors,
-icons, QR position, field order, and footer. Only verified runtime values may
-replace the sample field values.
+**DESIGN LOCK — see [`DO_NOT_ALTER_CERTIFICATE_MASTER_DESIGN.md`](DO_NOT_ALTER_CERTIFICATE_MASTER_DESIGN.md).** The project-owner-approved image supplied on 2026-10-19 is the sole visual source of truth (1055×1491 RGBA PNG; original uploaded file SHA-256 `e6f621c211c389398377f251c533b522e3f76117c8428624a5e43407ab5fe5d3`). Current repository assets must be compared against that original; identical file names or passing intra-repository image checks are **not sufficient proof of design approval**. Implementations must preserve its original layout, spacing, colors, logos, typography hierarchy, panels, icons, QR position, field order, and footer. Only independently verified dynamic values may replace the sample field values. Any deviation is a release blocker requiring express design-owner approval.
 
 ## Mandatory issuance access model
 
@@ -110,6 +107,8 @@ the verification transaction is confirmed.
 ## 7. Production gate
 
 Before public issuance is enabled, verify:
+
+- All D-01 through D-16 acceptance gates in `docs/DO_NOT_ALTER_CERTIFICATE_MASTER_DESIGN.md` have passed against the **actual approved owner-uploaded image** and final output PDF.
 
 - Contract addresses and chain ID are pinned in configuration.
 - Issuer authorization is confirmed on-chain.
