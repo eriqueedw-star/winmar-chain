@@ -101,3 +101,33 @@ test('issuer must remain authorized', async () => {
 test('invalid document ID rejected before any RPC call', async () => {
   await assert.rejects(proof.check(async () => { throw Error('RPC must not be called'); }, 'bad', paymentTx), /Invalid document ID/);
 });
+
+test('public Explorer lookup resolves confirmed record without account or payment receipt', async () => {
+  let queriedPayment = false;
+  const base = mockRpc();
+  const lookupRpc = async (method, params) => {
+    if (method === 'eth_getTransactionByHash') queriedPayment = true;
+    if (method === 'eth_blockNumber') return '0x' + (781525).toString(16);
+    return base(method, params);
+  };
+  const result = await proof.lookup(lookupRpc, id);
+  assert.equal(result.status, 'registered');
+  assert.equal(result.issuerWallet, issuer);
+  assert.equal(result.registrationTransactionHash, registrationTx);
+  assert.equal(queriedPayment, false);
+});
+
+test('public Explorer lookup rejects revoked record even without a PDF upload', async () => {
+  const result = await proof.lookup(mockRpc({ revoked: true }), id);
+  assert.equal(result.status, 'revoked');
+});
+
+test('public Explorer lookup rejects unauthorized issuer', async () => {
+  const result = await proof.lookup(mockRpc({ currentIssuer: false }), id);
+  assert.equal(result.status, 'issuer_not_authorized');
+});
+
+test('public Explorer lookup rejects incorrect document ID', async () => {
+  await assert.rejects(proof.lookup(async () => { throw Error('RPC must not be called'); },
+    'invalid-hash'), /Invalid document ID/);
+});
