@@ -8,7 +8,13 @@ Winmar. API hanya menerima dokumen, menghitung hash sumber, meminta otorisasi
 issuer, menunggu receipt on-chain, lalu menghasilkan PDF turunan dengan satu
 halaman sertifikat A4 dan QR Explorer.
 
-## Customer onboarding
+## Two issuance paths, one on-chain verification standard
+
+**Public portal (no registration):** a user connects an EVM wallet, uploads a PDF, pays the 0.0021 WMC fee and waits for a distinct authorized on-chain registration before obtaining the official certificate. No account, login or API key is needed for this self-service path. **There is no off-chain certificate mode.**
+
+**Registered organization (API):** only approved organizations obtain API credentials for embedding issuance within their website, portal or backend. An API key does not exempt documents from wallet payment, on-chain registration, hash matching, or official receipt verification. Enterprise integrations must securely bind a hosted wallet-payment intent or a proven existing payment transaction to the exact document ID, fee, chain and payer. Do not embed API secrets in a browser. Full policy: `docs/DOCUMENT_VERIFICATION_ACCESS_MODEL.md`.
+
+## Customer onboarding (only for organization API access)
 
 Customer wajib memiliki akun organisasi sebelum API access diterbitkan.
 
