@@ -9,6 +9,10 @@ visual master. Implementations must preserve its layout, spacing, colors,
 icons, QR position, field order, and footer. Only verified runtime values may
 replace the sample field values.
 
+## Mandatory issuance access model
+
+This standard applies identically to **public wallet users with no account registration** and **approved organization/API integrators**. Both paths require wallet-confirmed payment, authorized on-chain registration and an exact hash match **before any official certificate is generated**. Organization registration provides API key and website integration privileges only. See `docs/DOCUMENT_VERIFICATION_ACCESS_MODEL.md`. There is **no off-chain, unpaid or provisional certificate mode**.
+
 ## 1. Source document policy
 
 - The uploaded PDF is preserved byte-for-byte as the source document.
