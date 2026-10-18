@@ -1,4 +1,5 @@
 # DO NOT ALTER CERTIFICATE MASTER DESIGN
+
 ## Winmar Document Verification — mandatory visual acceptance and release gate
 
 **Status:** DESIGN LOCK — approved by the project owner, 2026-10-19.  
