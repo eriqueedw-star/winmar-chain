@@ -28,6 +28,8 @@ jobs:
           set -euo pipefail
           node --check services/winmar-document-verification/src/server.mjs
           node --check services/winmar-document-verification/web/app.js
+          node --check services/winmar-document-verification/web/verification-proof.js
+          node --check services/winmar-document-verification/web/vendor/qrcode.min.js
           while IFS= read -r -d '' file; do
             node --check "$file"
           done < <(find services/winmar-document-verification/deployment -maxdepth 1 -name '*.mjs' -print0)
@@ -37,7 +39,7 @@ jobs:
           import subprocess
 
           html = pathlib.Path('services/winmar-document-verification/web/certificate.html').read_text()
-          inline = re.findall(r'<script(?:\s[^>]*)?>(.*?)</script>', html, flags=re.I | re.S)
+          inline = re.findall(r'<script>(.*?)</script>', html, flags=re.I | re.S)
           if len(inline) != 1:
               raise SystemExit('Expected exactly one inline certificate script')
           subprocess.run(['node', '--check', '-'], input=inline[0], text=True, check=True)
