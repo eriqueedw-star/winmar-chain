@@ -91,7 +91,10 @@ input.addEventListener('change', async () => {
     const publicUrl = `${EXPLORER_VERIFY_BASE}${id}`;
     verificationUrl.href = publicUrl;
     verificationUrl.textContent = publicUrl;
-    verificationLink.hidden = false;
+    // A local SHA-256 is not an on-chain certificate; don't expose a verification link yet.
+    verificationLink.hidden = true;
+    const pastPayment = sessionStorage.getItem(`winmar:payment:${id}`);
+    issueButton.textContent = pastPayment ? 'Resume On-chain Verification (No New Fee)' : 'Pay 0.0021 WMC & Verify On-chain';
     previewUrl = URL.createObjectURL(file);
     pdfPreview.src = previewUrl;
     documentPreview.hidden = false;
@@ -106,66 +109,104 @@ input.addEventListener('change', async () => {
 [subjectInput, issuerInput].forEach((field) => field.addEventListener('input', canIssue));
 
 issueButton.addEventListener('click', async () => {
-  if (issuancePending || !window.ethereum || !selectedDocumentHash || !subjectInput.value.trim() || !issuerInput.value.trim()) return;
+  if (issuancePending || !selectedDocumentHash || !subjectInput.value.trim() || !issuerInput.value.trim()) return;
+  if (!window.ethereum) {
+    walletNote.textContent = 'Install or connect an EVM wallet first. No account registration is required.';
+    return;
+  }
   issuancePending = true;
-  const submittedHash = selectedDocumentHash;
+  const digest = selectedDocumentHash;
+  const id = `0x${digest}`;
+  const subject = subjectInput.value.trim();
+  const issuer = issuerInput.value.trim();
+  const storageKey = `winmar:payment:${id}`;
+  const status = document.querySelector('#status-value');
   input.disabled = true;
+  subjectInput.disabled = true;
+  issuerInput.disabled = true;
+  issueButton.disabled = true;
+  certificateDownload.hidden = true;
+  verificationLink.hidden = true;
+  issueProgress.hidden = false;
   try {
-    issueProgress.hidden = false;
-    issueProgressText.textContent = 'Confirm the transaction in your wallet…';
-    certificateDownload.hidden = true;
-    issueButton.disabled = true;
-    const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
     const chainId = await window.ethereum.request({ method: 'eth_chainId' });
-    if (chainId !== MAINNET_CHAIN_ID) throw new Error('Switch wallet to Winmar Chain Mainnet first.');
-    // Document ID is the SHA-256 digest, so the payment event and the
-    // authorized issuer registration refer to the same immutable record.
-    const data = `0x8609cad1${selectedDocumentHash}`;
-    // The contract anchors the immutable PDF hash. Subject and applicant issuer
-    // are retained as issuance metadata for the certificate/receipt worker.
-    const issuanceMetadata = {
-      documentId: `0x${selectedDocumentHash}`,
-      subject: subjectInput.value.trim(),
-      issuer: issuerInput.value.trim(),
-    };
-    window.sessionStorage.setItem(`winmar:issuance:${selectedDocumentHash}`, JSON.stringify(issuanceMetadata));
-    const tx = await window.ethereum.request({ method: 'eth_sendTransaction', params: [{ from: accounts[0], to: DOCUMENT_FEE_CONTRACT, value: DOCUMENT_FEE_WEI, data }] });
-    document.querySelector('#status-value').textContent = `Payment submitted · ${tx.slice(0, 10)}...`;
-    document.querySelector('#status-value').className = 'status pending';
-    issueButton.textContent = 'Recording on Winmar Chain…';
-    issueProgressText.textContent = 'Recording document and waiting for blockchain receipt…';
-
-    let receipt;
-    for (let attempt = 0; attempt < 40; attempt += 1) {
-      await new Promise((resolve) => setTimeout(resolve, 3000));
-      receipt = await rpc('eth_getTransactionReceipt', [tx]);
-      if (receipt) break;
+    if (String(chainId).toLowerCase() !== MAINNET_CHAIN_ID) {
+      throw new Error('Please switch your wallet to Winmar Chain Mainnet (12142816).');
     }
-    if (!receipt) throw new Error('Receipt is still pending. Please check the transaction in the explorer.');
-    if (receipt.status !== '0x1') throw new Error('The blockchain transaction failed. No certificate was generated.');
-    const blockData = await rpc('eth_getBlockByNumber', [receipt.blockNumber, false]);
-    const issuedAt = `${new Date(Number(BigInt(blockData.timestamp)) * 1000).toISOString().replace('T', ' ').replace('.000Z', ' UTC')}`;
+    const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+    if (!accounts?.[0]) throw new Error('Wallet account unavailable.');
+    let paymentTx = sessionStorage.getItem(storageKey);
+    if (!/^0x[0-9a-f]{64}$/i.test(paymentTx || '')) {
+      issueProgressText.textContent = 'Approve the 0.0021 WMC fee and network gas in your wallet…';
+      status.textContent = 'Awaiting wallet payment approval';
+      status.className = 'status pending';
+      paymentTx = await window.ethereum.request({
+        method: 'eth_sendTransaction',
+        params: [{ from: accounts[0], to: DOCUMENT_FEE_CONTRACT,
+          value: DOCUMENT_FEE_WEI, data: `0x8609cad1${digest}` }],
+      });
+      if (!/^0x[0-9a-f]{64}$/i.test(paymentTx || '')) {
+        throw new Error('Wallet returned no valid payment transaction reference.');
+      }
+      // Keep the payment reference before waiting on a separate issuer transaction.
+      // Resuming must never silently charge the customer twice.
+      sessionStorage.setItem(storageKey, paymentTx);
+      sessionStorage.setItem(`winmar:issuance:${digest}`, JSON.stringify({
+        documentId: id, subject, issuer, payerWallet: accounts[0],
+      }));
+    }
+    issueButton.textContent = 'Awaiting on-chain registration…';
+    let proof;
+    for (let attempt = 0; attempt < 250; attempt += 1) {
+      proof = await window.WinmarVerificationProof.check(rpc, id, paymentTx);
+      if (proof.status === 'verified') break;
+      status.textContent = proof.status === 'payment_pending'
+        ? 'Payment pending'
+        : 'Payment confirmed · registration pending';
+      status.className = 'status pending';
+      issueProgressText.textContent = proof.status === 'payment_pending'
+        ? 'Waiting for payment receipt. Do not pay again.'
+        : 'Waiting for authorized document registration. Do not pay again.';
+      await new Promise((resolve) => setTimeout(resolve, 3500));
+    }
+    if (proof?.status !== 'verified') {
+      throw new Error('Registration is still pending. Resume with your existing payment; do not pay again.');
+    }
+    if (digest !== selectedDocumentHash) {
+      throw new Error('The selected document changed. Reopen the exact original PDF.');
+    }
+    // Certificate renderer must ALSO independently validate chain proof.
     const params = new URLSearchParams({
-      documentId: `0x${selectedDocumentHash}`,
-      subject: subjectInput.value.trim(), issuer: issuerInput.value.trim(), issuedAt,
-      sha256: selectedDocumentHash, tx, block: String(Number(BigInt(receipt.blockNumber))), issuerWallet: accounts[0],
+      documentId: proof.documentId, subject, issuer,
+      issuedAt: proof.issuedAt, sha256: proof.sha256,
+      tx: proof.registrationTransactionHash, paymentTx: proof.paymentTransactionHash,
+      block: String(proof.registrationBlockNumber), issuerWallet: proof.issuerWallet,
     });
     certificateDownload.href = `./certificate.html?${params.toString()}`;
+    certificateDownload.textContent = 'View Verified Certificate';
     certificateDownload.hidden = false;
-    issueProgressText.textContent = 'Receipt confirmed. Certificate is ready.';
-    document.querySelector('#status-value').textContent = 'Recorded on-chain';
-    document.querySelector('#status-value').className = 'status confirmed';
-    issueButton.textContent = 'Document Generated';
+    verificationUrl.href = proof.verificationUrl;
+    verificationUrl.textContent = proof.verificationUrl;
+    verificationLink.hidden = false;
+    issueProgressText.textContent = 'Payment and separate document registration both confirmed.';
+    status.textContent = 'VERIFIED ON-CHAIN';
+    status.className = 'status confirmed';
+    issueButton.textContent = 'Verified On-chain';
   } catch (error) {
-    document.querySelector('#status-value').textContent = error.message || 'Payment cancelled';
-    document.querySelector('#status-value').className = 'status pending';
-    issueProgress.hidden = true;
-    issueButton.disabled = false;
-    issueButton.textContent = 'Generate Document';
+    const pastPayment = sessionStorage.getItem(storageKey);
+    status.textContent = error?.message || 'Document not issued';
+    status.className = 'status pending';
+    issueProgressText.textContent = pastPayment
+      ? `Payment ${pastPayment} saved. Resume without a second fee.`
+      : 'No official certificate was issued.';
+    issueButton.textContent = pastPayment
+      ? 'Resume On-chain Verification (No New Fee)'
+      : 'Pay 0.0021 WMC & Verify On-chain';
   } finally {
     issuancePending = false;
     input.disabled = false;
-    if (selectedDocumentHash !== submittedHash) certificateDownload.hidden = true;
+    subjectInput.disabled = false;
+    issuerInput.disabled = false;
     canIssue();
   }
 });
