@@ -24,6 +24,8 @@ let selectedDocumentHash = '';
 let previewUrl = '';
 let fileSelectionVersion = 0;
 let issuancePending = false;
+let verifiedIssuance = null;
+let pdfDownloadPending = false;
 
 function canIssue() {
   issueButton.disabled = issuancePending || !(selectedDocumentHash && subjectInput.value.trim() && issuerInput.value.trim());
@@ -61,6 +63,7 @@ input.addEventListener('change', async () => {
   const version = ++fileSelectionVersion;
   const file = input.files?.[0];
   selectedDocumentHash = '';
+  verifiedIssuance = null;
   hashValue.textContent = 'Waiting for PDF';
   documentIdValue.textContent = 'Waiting for PDF';
   verificationLink.hidden = true;
@@ -129,6 +132,15 @@ issueButton.addEventListener('click', async () => {
   verificationLink.hidden = true;
   issueProgress.hidden = false;
   try {
+    // Never charge a new customer if approved visual master or local PDF engine
+    // is missing. Existing paid users may still resume the on-chain proof.
+    if (!window.PDFLib?.PDFDocument || !window.WinmarPdfAssembler?.build ||
+        !window.WinmarCertificateRenderer?.loadApprovedMaster) {
+      throw new Error('Official PDF generator is unavailable. No payment was requested.');
+    }
+    if (!sessionStorage.getItem(storageKey)) {
+      await window.WinmarCertificateRenderer.loadApprovedMaster();
+    }
     const chainId = await window.ethereum.request({ method: 'eth_chainId' });
     if (String(chainId).toLowerCase() !== MAINNET_CHAIN_ID) {
       throw new Error('Please switch your wallet to Winmar Chain Mainnet (12142816).');
@@ -175,15 +187,15 @@ issueButton.addEventListener('click', async () => {
     if (digest !== selectedDocumentHash) {
       throw new Error('The selected document changed. Reopen the exact original PDF.');
     }
-    // Certificate renderer must ALSO independently validate chain proof.
-    const params = new URLSearchParams({
-      documentId: proof.documentId, subject, issuer,
-      issuedAt: proof.issuedAt, sha256: proof.sha256,
-      tx: proof.registrationTransactionHash, paymentTx: proof.paymentTransactionHash,
-      block: String(proof.registrationBlockNumber), issuerWallet: proof.issuerWallet,
-    });
-    certificateDownload.href = `./certificate.html?${params.toString()}`;
-    certificateDownload.textContent = 'View Verified Certificate';
+    // The official file must be assembled from the user's ORIGINAL PDF,
+    // independently checked against on-chain registration and approved artwork.
+    // No HTML-only, query-string-only, or mock certificate is issued.
+    verifiedIssuance = {
+      file: input.files[0], paymentTransactionHash: paymentTx,
+      expectedDocumentId: proof.documentId, subject,
+      documentType: 'Document Verification Record',
+    };
+    certificateDownload.textContent = 'Download Verified PDF';
     certificateDownload.hidden = false;
     verificationUrl.href = proof.verificationUrl;
     verificationUrl.textContent = proof.verificationUrl;
@@ -208,6 +220,39 @@ issueButton.addEventListener('click', async () => {
     subjectInput.disabled = false;
     issuerInput.disabled = false;
     canIssue();
+  }
+});
+
+certificateDownload.addEventListener('click', async () => {
+  if (pdfDownloadPending || !verifiedIssuance) return;
+  pdfDownloadPending = true;
+  certificateDownload.disabled = true;
+  certificateDownload.textContent = 'Creating verified PDF…';
+  try {
+    const result = await window.WinmarPdfAssembler.build({
+      ...verifiedIssuance, rpc,
+    });
+    if (verifiedIssuance.expectedDocumentId !== result.documentId) {
+      throw new Error('Document reference changed during PDF generation.');
+    }
+    const blob = new Blob([result.bytes], { type: 'application/pdf' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `WINMAR-VERIFIED-${result.documentId.slice(2, 14).toUpperCase()}.pdf`;
+    document.body.append(link);
+    link.click();
+    link.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 60000);
+    issueProgressText.textContent = `Verified PDF ready: ${result.pageCount} pages; original PDF + 1 certificate page.`;
+  } catch (error) {
+    issueProgress.hidden = false;
+    issueProgressText.textContent = error?.message ||
+      'No official PDF generated. Contact Winmar support with your existing payment transaction.';
+  } finally {
+    certificateDownload.disabled = false;
+    certificateDownload.textContent = 'Download Verified PDF';
+    pdfDownloadPending = false;
   }
 });
 
