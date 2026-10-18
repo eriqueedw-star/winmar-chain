@@ -23,7 +23,7 @@ def approve_exact_master(path: str | Path) -> bytes:
             "Certificate master FAIL: uploaded approved original PNG required. "
             "Do not fall back to a repository image, similar artwork, or a regenerated template."
         )
-    if not raw.startswith(b"\\x89PNG\\r\\n\\x1a\\n"):
+    if not raw.startswith(b"\x89PNG\r\n\x1a\n"):
         raise ValueError("Certificate master FAIL: invalid PNG signature")
     # IHDR dimensions at PNG bytes 16:24, big-endian.
     width = int.from_bytes(raw[16:20], "big")
