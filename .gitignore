@@ -30,6 +30,11 @@ temp/
 Thumbs.db
 desktop.ini
 
+# Document issuer receipt worker: never commit runtime cursor, lock, or temp files
+services/winmar-document-verification/deployment/receipt-worker-state.json
+services/winmar-document-verification/deployment/receipt-worker-state.json.lock
+services/winmar-document-verification/deployment/receipt-worker-state.json.*.tmp
+
 # Logs and archives
 *.log
 *.zip
