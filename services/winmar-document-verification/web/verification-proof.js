@@ -127,7 +127,12 @@
       throw new Error('Confirmed transaction lacks a matching FeePaid event');
     }
 
-    const record = await getRecord(rpc, hash);
+    let record;
+    try { record = await getRecord(rpc, hash); } catch {
+      // Some contract versions revert for an as-yet-unknown document ID.
+      // A successful payment is NOT sufficient to issue an official certificate.
+      return { status: 'registration_pending', paymentTransactionHash };
+    }
     if (!record) return { status: 'registration_pending', paymentTransactionHash };
     if (record.hash !== hash) throw new Error('On-chain hash does not match source PDF');
     if (record.revokedAt !== 0n) throw new Error('On-chain document has been revoked');
