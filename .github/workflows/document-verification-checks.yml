@@ -32,6 +32,8 @@ jobs:
           node --check services/winmar-document-verification/web/pdf-assembler.js
           node --check services/winmar-document-verification/web/certificate-renderer.js
           node --check services/winmar-document-verification/web/verify.js
+          node --check services/winmar-document-verification/deployment/receipt-worker-core.mjs
+          node --check services/winmar-document-verification/deployment/receipt-worker.mjs
           node --check services/winmar-document-verification/web/vendor/pdf-lib-1.17.1.min.js
           node --check services/winmar-document-verification/web/verification-proof.js
           node --check services/winmar-document-verification/web/vendor/qrcode.min.js
