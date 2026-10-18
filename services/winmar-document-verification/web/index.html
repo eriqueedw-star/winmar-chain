@@ -62,9 +62,9 @@
           <div class="issuer-fields">
             <label for="document-subject">Subject</label>
             <input id="document-subject" type="text" maxlength="160" autocomplete="organization" placeholder="Who or what the document concerns">
-            <label for="document-issuer">Issuer</label>
-            <input id="document-issuer" type="text" maxlength="160" autocomplete="organization" placeholder="Organization requesting issuance">
-            <small>Issuer is the applicant requesting publication, not Winmar Chain.</small>
+            <label for="document-issuer">Applicant / Organization (optional)</label>
+            <input id="document-issuer" type="text" maxlength="160" autocomplete="organization" placeholder="Optional reference, not the on-chain issuer">
+            <small>The official on-chain issuer is the authorized wallet recorded by the contract. This optional applicant name is not an attested identity.</small>
           </div>
           <dl class="record-list"><div><dt>DOCUMENT ID</dt><dd id="document-id-value">Waiting for PDF</dd></div><div><dt>SHA-256</dt><dd id="hash-value">Waiting for PDF</dd></div><div><dt>NETWORK</dt><dd>Winmar Chain Mainnet</dd></div><div><dt>CHAIN ID</dt><dd>12142816</dd></div><div><dt>STATUS</dt><dd><span class="status pending" id="status-value">Not issued</span></dd></div></dl>
           <button class="button primary full" id="issue-button" disabled>Pay 0.0021 WMC &amp; Verify On-chain</button>
@@ -74,7 +74,7 @@
         </div>
       </div>
       <div class="wallet-bar" id="wallet">
-        <div><span class="wallet-label">ISSUER WALLET</span><strong id="wallet-address">Not connected</strong><small id="wallet-network">Connect a wallet to read your WMC balance.</small></div>
+        <div><span class="wallet-label">PAYER WALLET</span><strong id="wallet-address">Not connected</strong><small id="wallet-network">Connect a wallet to read your WMC balance.</small></div>
         <div class="wallet-balance"><span>WMC BALANCE</span><strong id="wallet-balance">-</strong></div>
         <button class="button wallet-button" id="connect-wallet">Connect Wallet</button>
       </div>
