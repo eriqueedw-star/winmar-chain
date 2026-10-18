@@ -1,7 +1,8 @@
 # Winmar Document Verification API
 
-Standalone service for registered organizations that anchor PDF SHA-256
-digests on Winmar Chain and generate a verified A4 certificate page.
+Winmar Document Verification has two access paths: **wallet-based public issuance without a platform account**, and **approved-organization API access for embedding issuance in a customer website**. Both paths anchor the original PDF SHA-256 on Winmar Chain after a wallet-paid fee; no off-chain or unpaid certificate is issued. The organization API key enables integration, not a bypass around the on-chain contract, fee, or authorized issuer. See `../../docs/DOCUMENT_VERIFICATION_ACCESS_MODEL.md`.
+
+This isolated API service targets registered organizations that anchor PDF SHA-256 digests and generate approved A4 certificates **only after successful registration and verification**.
 
 ## Current scaffold
 
