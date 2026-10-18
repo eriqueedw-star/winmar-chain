@@ -42,10 +42,12 @@ jobs:
           import subprocess
 
           html = pathlib.Path('services/winmar-document-verification/web/certificate.html').read_text()
-          inline = re.findall(r'<script>(.*?)</script>', html, flags=re.I | re.S)
-          if len(inline) != 1:
-              raise SystemExit('Expected exactly one inline certificate script')
-          subprocess.run(['node', '--check', '-'], input=inline[0], text=True, check=True)
+          # The legacy certificate.html route must NEVER issue a verified
+          # certificate from untrusted query-string data.
+          if '<canvas' in html.lower() or 'new urlsearchparams' in html.lower():
+              raise SystemExit('Unsafe legacy query-string certificate renderer')
+          for code in re.findall(r'<script>(.*?)</script>', html, flags=re.I | re.S):
+              subprocess.run(['node', '--check', '-'], input=code, text=True, check=True)
           PY
 
       - name: Test mainnet proof, binary master gate and browser PDF assembly
