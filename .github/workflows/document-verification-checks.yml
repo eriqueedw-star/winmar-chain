@@ -48,6 +48,13 @@ jobs:
       - name: Test deployed-address and fee configuration consistency
         run: node --test services/winmar-document-verification/tests/*.test.mjs
 
+      - name: Check verified PDF builder, asset gate and on-chain proof tests
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 -m py_compile services/winmar-document-verification/tools/*.py
+          python3 -m unittest discover -s services/winmar-document-verification/tests -p 'test_*.py' -v
+
       - name: Check certificate image fidelity and metadata
         shell: bash
         run: |
