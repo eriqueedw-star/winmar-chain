@@ -1,6 +1,8 @@
 # Winmar Document Verification — initial product specification
 
-## Default behavior
+## Default behavior — public wallet issuance and organization API
+
+Platform account registration is **not required** for issuance through the public portal. Every user must connect a wallet, upload the original PDF, pay the existing 0.0021 WMC application fee, and wait for authorized registration of the file hash on Winmar Chain. **No off-chain certificate is ever issued.** Organizations may separately register and be approved for scoped API integration into their own websites; the same fee, signer, contract and on-chain checks remain mandatory. See `docs/DOCUMENT_VERIFICATION_ACCESS_MODEL.md`.
 
 The user uploads one PDF. The service preserves the uploaded PDF as the source
 document, computes its SHA-256 digest before any output is generated, and
