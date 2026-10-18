@@ -55,9 +55,14 @@ def pixel_diff(original, rendered):
     for x0, y0, x1, y1 in MASKS:
         m.rectangle((x0, y0, x1 - 1, y1 - 1), fill=1)
     diff = ImageChops.difference(master, actual)
-    outside = Image.new("RGBA", APPROVED_DIMS, (0, 0, 0, 0))
-    outside.paste(diff, mask=ImageChops.invert(mask.convert("L")))
-    return outside.getbbox(), hashlib.sha256(actual.tobytes()).hexdigest()
+    outside_mask = ImageChops.invert(mask.convert("L"))
+    # Compare ALL channels including alpha; rgba.getbbox() alone would
+    # accidentally ignore RGB differences when the alpha difference is zero.
+    channels = [ImageChops.multiply(channel, outside_mask) for channel in diff.split()]
+    combined = channels[0]
+    for channel in channels[1:]:
+        combined = ImageChops.lighter(combined, channel)
+    return combined.getbbox(), hashlib.sha256(actual.tobytes()).hexdigest()
 
 
 def main():
