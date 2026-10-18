@@ -3,47 +3,21 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Winmar Document Authenticity Certificate</title>
-  <style>
-    :root{color-scheme:light}*{box-sizing:border-box}html,body{margin:0;min-height:100%;background:#071b40}body{display:grid;place-items:center;padding:24px}.certificate{display:block;width:min(1055px,100%);height:auto}canvas{display:block;width:100%;height:auto}@media print{@page{size:A4 portrait;margin:0}html,body{background:#fff}body{display:block;padding:0}.certificate{width:210mm;max-width:none}}
-  </style>
+  <title>Winmar Document Certificate</title>
+  <link rel="stylesheet" href="./styles.css">
 </head>
 <body>
-  <main class="certificate"><canvas id="certificate-canvas" width="1055" height="1491" aria-label="Winmar document authenticity certificate"></canvas></main>
-  <script>
-    const q = new URLSearchParams(location.search);
-    const value = (key, fallback='Awaiting on-chain record') => q.get(key) || fallback;
-    const id = value('documentId', 'WMC-2026-PENDING');
-    const subject = value('subject');
-    const issuer = value('issuer');
-    const issuedAt = value('issuedAt');
-    const hash = value('sha256');
-    const tx = value('tx');
-    const block = value('block');
-    const issuerWallet = value('issuerWallet');
-    document.title = `Winmar Document Authenticity Certificate — ${id}`;
-
-    const canvas = document.getElementById('certificate-canvas');
-    const ctx = canvas.getContext('2d');
-    const img = new Image();
-    img.src = './winmar-verification-certificate-public.png';
-
-    function cover(x, y, w, h, fill='#fff') { ctx.fillStyle=fill; ctx.fillRect(x,y,w,h); }
-    function text(x, y, value, size=16, color='#1d2c6b', weight='400') {
-      ctx.fillStyle=color; ctx.font=`${weight} ${size}px Arial, sans-serif`; ctx.textBaseline='middle'; ctx.fillText(value, x, y);
-    }
-    function field(x, y, w, value, fill='#fff') { cover(x,y,w,30,fill); text(x+5,y+15,value,16,'#1d2c6b','400'); }
-    img.onload = () => {
-      ctx.drawImage(img,0,0);
-      // Only data fields are replaced. All artwork, layout, icons, QR and footer geometry remain from the master.
-      field(582,112,200,id,'#fff'); field(582,184,200,issuedAt,'#fff');
-      field(344,494,580,id,'#f7fbff'); field(344,539,580,'Document Verification Record','#f7fbff');
-      field(344,584,580,subject,'#f7fbff'); field(344,629,580,issuer,'#f7fbff'); field(344,674,580,issuedAt,'#f7fbff');
-      field(354,984,575,hash,'#fff'); field(354,1030,575,tx,'#fff'); field(354,1075,575,block,'#fff');
-      field(354,1120,575,issuedAt,'#fff'); field(354,1165,575,issuerWallet,'#fff');
-      field(354,1254,575,`https://scan.winmarchain.io/verify/${encodeURIComponent(id)}`,'#fff');
-      field(101,1366,230,id,'#fff');
-    };
-  </script>
+  <header class="site-header">
+    <a class="brand" href="./index.html" aria-label="Winmar Document Verification home">
+      <img src="./winmar-chain-logo-framed-v2.png" alt="Winmar Chain logo">
+      <span><strong>WINMAR CHAIN</strong><small>Where the world settles value</small></span>
+    </a>
+  </header>
+  <main class="register-section">
+    <div class="eyebrow">DOCUMENT CERTIFICATE</div>
+    <h1>Your certificate is created after on-chain confirmation.</h1>
+    <p>Open the issuer workspace, select the original PDF, and complete verification. The downloaded PDF keeps the original pages and adds the Winmar certificate as its final page.</p>
+    <a class="button primary" href="./index.html#issue">Open issuer workspace</a>
+  </main>
 </body>
 </html>

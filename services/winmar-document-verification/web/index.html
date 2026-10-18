@@ -22,21 +22,23 @@
         <a href="https://winmarchain.io/whitepaper.html">Whitepaper</a>
       </div>
       <a class="explorer-button" href="https://scan.winmarchain.io/" rel="noreferrer">Explorer ↗</a>
-      <button class="menu-button" id="menu-button" aria-label="Open navigation" aria-expanded="false">☰</button>
+      <button class="menu-button" id="menu-button" type="button" aria-label="Open navigation" aria-controls="nav-drawer" aria-expanded="false">☰</button>
     </nav>
   </header>
   <div class="nav-drawer" id="nav-drawer" hidden>
     <a href="https://winmarchain.io/network.html">Network</a>
     <a href="https://winmarchain.io/technology.html">Technology</a>
+    <a href="https://winmarchain.io/developers.html">Developers</a>
     <a href="https://winmarchain.io/governance.html">Governance</a>
     <a href="https://winmarchain.io/whitepaper.html">Whitepaper</a>
+    <a href="./" aria-current="page">Document Verification</a>
     <a href="https://scan.winmarchain.io/" rel="noreferrer">Primary explorer ↗</a>
   </div>
 
   <main>
     <section class="hero">
       <div class="eyebrow">WINMAR DOCUMENT VERIFICATION</div>
-      <h1>Make every document<br><span>verifiable on-chain.</span></h1>
+      <h1>Make every document <span>verifiable on-chain.</span></h1>
       <p class="lede">Anchor the original PDF's SHA-256 fingerprint on Winmar Chain and generate a professional A4 certificate with a QR link to the Explorer.</p>
       <div class="hero-actions"><a class="button primary" href="#issue">Issue a document</a><a class="button ghost" href="#verify">Verify a document</a></div>
       <div class="trust-row"><span>SHA-256 fingerprint</span><span>Immutable record</span><span>Explorer-linked QR</span></div>
@@ -69,8 +71,9 @@
           <dl class="record-list"><div><dt>DOCUMENT ID</dt><dd id="document-id-value">Waiting for PDF</dd></div><div><dt>SHA-256</dt><dd id="hash-value">Waiting for PDF</dd></div><div><dt>NETWORK</dt><dd>Winmar Chain Mainnet</dd></div><div><dt>CHAIN ID</dt><dd>12142816</dd></div><div><dt>STATUS</dt><dd><span class="status pending" id="status-value">Not issued</span></dd></div></dl>
           <button class="button primary full" id="issue-button" disabled>Generate Document</button>
           <div class="issue-progress" id="issue-progress" hidden><span class="spinner" aria-hidden="true"></span><span id="issue-progress-text">Waiting for transaction confirmation…</span></div>
-          <a class="button primary full certificate-download" id="certificate-download" hidden target="_blank" rel="noreferrer">Download Certificate</a>
+          <button class="button primary full certificate-download" id="certificate-download" type="button" hidden>Download Verified PDF</button>
           <p class="fine-print">The source PDF stays unchanged. A verified certificate is generated only after the payment and on-chain registration receipts are confirmed.</p>
+          <p class="fine-print">Subject and issuer names are supplied by the applicant. The chain record verifies the original PDF fingerprint.</p>
         </div>
       </div>
       <div class="wallet-bar" id="wallet">
@@ -79,12 +82,12 @@
         <button class="button wallet-button" id="connect-wallet">Connect Wallet</button>
       </div>
       <p class="wallet-note" id="wallet-note">No wallet connection requested. Connecting only reads the selected account and balance; payment requires a separate wallet confirmation.</p>
-      <p class="verification-link" id="verification-link" hidden><span>PUBLIC VERIFICATION URL</span><a id="verification-url" target="_blank" rel="noreferrer"></a></p>
+      <p class="verification-link" id="verification-link" hidden><span>ON-CHAIN RECORD</span><a id="verification-url" target="_blank" rel="noreferrer"></a></p>
     </section>
 
     <section class="verify-section" id="verify">
-      <div class="verify-copy"><div class="eyebrow">PUBLIC VERIFICATION</div><h2>Verify by document ID or QR.</h2><p>Scan the QR on a Winmar certificate or enter its document ID. The Explorer compares the source file's SHA-256 with the immutable record.</p></div>
-      <div class="verify-card"><label for="document-id">Document ID</label><div class="verify-input"><input id="document-id" placeholder="0x..." autocomplete="off"><button class="button primary" id="verify-button">Verify</button></div><div class="verify-result" id="verify-result">No verification requested.</div></div>
+      <div class="verify-copy"><div class="eyebrow">PUBLIC VERIFICATION</div><h2>Verify the on-chain record.</h2><p>Scan the QR on a Winmar certificate to open its confirmed registration transaction. You can also enter a document ID to check the recorded SHA-256.</p></div>
+      <div class="verify-card"><label for="document-id">Document ID / SHA-256</label><div class="verify-input"><input id="document-id" placeholder="0x followed by 64 characters" autocomplete="off"><button class="button primary" id="verify-button" type="button">Verify</button></div><div class="verify-result" id="verify-result" aria-live="polite">No verification requested.</div></div>
     </section>
 
     <section class="register-section" id="register"><div class="eyebrow">OFFICIAL ACCESS</div><h2>Built for registered organizations.</h2><p>Customers receive scoped API access only after organization and issuer review. Your private keys stay outside the customer dashboard.</p><a class="button ghost" href="mailto:partnerships@winmarchain.io">Request organization review</a></section>
@@ -97,6 +100,6 @@
     <div class="footer-group"><h3>NETWORK</h3><a href="https://scan.winmarchain.io/" rel="noreferrer">Primary explorer ↗</a><a href="https://scan.winmarchain.com/" rel="noreferrer">Backup explorer ↗</a><a href="https://winmarchain.io/privacy.html">Privacy policy</a></div>
     <div class="footer-bottom"><span>© 2026 Winmar Chain</span><strong>Capital · Technology · Intelligence</strong></div>
   </footer>
-  <script src="./app.js"></script>
+  <script src="./app.bundle.js" defer></script>
 </body>
 </html>

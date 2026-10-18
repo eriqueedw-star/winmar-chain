@@ -3,9 +3,20 @@
   "private": true,
   "version": "0.1.0",
   "type": "module",
-  "engines": { "node": ">=22" },
+  "engines": {
+    "node": ">=22"
+  },
   "scripts": {
+    "build:web": "esbuild web/app.js --bundle --minify --format=iife --platform=browser --outfile=web/app.bundle.js",
+    "release:web": "npm run build:web && node scripts/package-web.mjs",
     "start": "node src/server.mjs",
     "dev": "node --watch src/server.mjs"
+  },
+  "dependencies": {
+    "pdf-lib": "^1.17.1",
+    "qrcode": "^1.5.4"
+  },
+  "devDependencies": {
+    "esbuild": "^0.28.2"
   }
 }

@@ -1,191 +1,328 @@
-const input = document.querySelector('#file-input');
-const fileStatus = document.querySelector('#file-status');
-const hashValue = document.querySelector('#hash-value');
-const issueButton = document.querySelector('#issue-button');
-const verifyButton = document.querySelector('#verify-button');
-const documentId = document.querySelector('#document-id');
-const verifyResult = document.querySelector('#verify-result');
-const documentPreview = document.querySelector('#document-preview');
-const pdfPreview = document.querySelector('#pdf-preview');
-const documentIdValue = document.querySelector('#document-id-value');
-const verificationLink = document.querySelector('#verification-link');
-const verificationUrl = document.querySelector('#verification-url');
-const subjectInput = document.querySelector('#document-subject');
-const issuerInput = document.querySelector('#document-issuer');
-const issueProgress = document.querySelector('#issue-progress');
-const issueProgressText = document.querySelector('#issue-progress-text');
-const certificateDownload = document.querySelector('#certificate-download');
-const rpcStatus = document.querySelector('#rpc-status');
-const DOCUMENT_FEE_CONTRACT = '0xcEC232bd11F03006ECC80917F5cD55bBf247617D';
-const DOCUMENT_FEE_WEI = '0x775f05a074000';
-const MAINNET_CHAIN_ID = '0xb948e0';
-const EXPLORER_VERIFY_BASE = 'https://scan.winmarchain.io/verify/';
-let selectedDocumentHash = '';
-let previewUrl = '';
+import { PDFDocument } from 'pdf-lib';
+import { makeVerifiedPdf } from './certificate-renderer.js';
 
+const $ = (selector) => document.querySelector(selector);
+const ui = {
+  input: $('#file-input'), fileStatus: $('#file-status'), hash: $('#hash-value'),
+  issue: $('#issue-button'), verify: $('#verify-button'), verifyInput: $('#document-id'),
+  verifyResult: $('#verify-result'), preview: $('#document-preview'), pdfPreview: $('#pdf-preview'),
+  documentId: $('#document-id-value'), verificationLink: $('#verification-link'),
+  verificationUrl: $('#verification-url'), subject: $('#document-subject'), issuer: $('#document-issuer'),
+  progress: $('#issue-progress'), progressText: $('#issue-progress-text'),
+  download: $('#certificate-download'), rpcStatus: $('#rpc-status'),
+  connect: $('#connect-wallet'), walletAddress: $('#wallet-address'),
+  walletBalance: $('#wallet-balance'), walletNetwork: $('#wallet-network'),
+  walletNote: $('#wallet-note'), menu: $('#menu-button'), drawer: $('#nav-drawer'),
+  status: $('#status-value'),
+};
+
+const RPC_URL = 'https://rpc.winmarchain.io/';
+const CHAIN_ID = '0xb948e0';
+const FEE_CONTRACT = '0xcEC232bd11F03006ECC80917F5cD55bBf247617D';
+const VERIFICATION_CONTRACT = '0x53fB6ba2997A50d3ddFfF5395a3BB9b7b24B7AEF';
+const FEE_PAID_TOPIC = '0x3e8af3edd4cc6c38e4b22a0110ebdcaa13f693b0954b418c7fddcae70f8f864d';
+const REGISTERED_TOPIC = '0x5b89de9f4846bfc83db0a655fd2c69d1a30f49b5f2b09c485c167d39374210f2';
+const VERIFY_SELECTOR = '0xb10d6b41';
+const EXPLORER_TX = 'https://scan.winmarchain.io/tx/';
+const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+let selectedFile = null;
+let selectedHash = '';
+let previewUrl = '';
+let pendingPayment = null;
+let confirmedRecord = null;
+
+function validHash(value) { return /^0x[0-9a-fA-F]{64}$/.test(value); }
 function canIssue() {
-  issueButton.disabled = !(selectedDocumentHash && subjectInput.value.trim() && issuerInput.value.trim());
+  ui.issue.disabled = !(selectedFile && selectedHash && ui.subject.value.trim() && ui.issuer.value.trim()) || Boolean(confirmedRecord);
+}
+function setStatus(message, confirmed = false) {
+  ui.status.textContent = message;
+  ui.status.className = `status ${confirmed ? 'confirmed' : 'pending'}`;
+}
+function showProgress(message) { ui.progress.hidden = false; ui.progressText.textContent = message; }
+function shortAddress(value) { return `${value.slice(0, 6)}…${value.slice(-4)}`; }
+function weiToWmc(hex) {
+  const amount = BigInt(hex);
+  const whole = amount / 1000000000000000000n;
+  const fraction = (amount % 1000000000000000000n).toString().padStart(18, '0').slice(0, 6).replace(/0+$/, '');
+  return `${whole}${fraction ? `.${fraction}` : ''} WMC`;
 }
 
-function rpc(method, params = []) {
-  return fetch('https://rpc.winmarchain.io/', {
-    method: 'POST', headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ jsonrpc: '2.0', id: Date.now(), method, params }),
-  }).then((response) => response.json()).then((payload) => {
+async function rpc(method, params = []) {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 15000);
+  try {
+    const response = await fetch(RPC_URL, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ jsonrpc: '2.0', id: Date.now(), method, params }),
+      signal: controller.signal,
+    });
+    if (!response.ok) throw new Error(`RPC returned HTTP ${response.status}`);
+    const payload = await response.json();
     if (payload.error) throw new Error(payload.error.message || 'RPC error');
     return payload.result;
-  });
+  } finally { clearTimeout(timeout); }
+}
+
+async function checkChain() {
+  const chain = await rpc('eth_chainId');
+  if (chain.toLowerCase() !== CHAIN_ID) throw new Error('RPC is not connected to Winmar Chain Mainnet.');
 }
 
 async function refreshRpcStatus() {
   try {
-    const chainId = await rpc('eth_chainId');
-    if (chainId !== MAINNET_CHAIN_ID) throw new Error(`Unexpected chain ${chainId}`);
-    rpcStatus.textContent = 'WINMAR CHAIN · RPC CONNECTED';
-    rpcStatus.className = 'environment rpc-status connected';
+    await checkChain();
+    ui.rpcStatus.textContent = 'WINMAR CHAIN · RPC CONNECTED';
+    ui.rpcStatus.className = 'environment rpc-status connected';
   } catch {
-    rpcStatus.textContent = 'WINMAR CHAIN · RPC OFFLINE';
-    rpcStatus.className = 'environment rpc-status disconnected';
+    ui.rpcStatus.textContent = 'WINMAR CHAIN · RPC OFFLINE';
+    ui.rpcStatus.className = 'environment rpc-status disconnected';
   }
 }
 
 async function sha256(file) {
-  const bytes = await file.arrayBuffer();
-  const digest = await crypto.subtle.digest('SHA-256', bytes);
-  return [...new Uint8Array(digest)].map((b) => b.toString(16).padStart(2, '0')).join('');
+  const digest = await crypto.subtle.digest('SHA-256', await file.arrayBuffer());
+  return `0x${[...new Uint8Array(digest)].map((byte) => byte.toString(16).padStart(2, '0')).join('')}`;
 }
 
-input.addEventListener('change', async () => {
-  const file = input.files?.[0];
-  if (!file) return;
-  if (file.type !== 'application/pdf') { fileStatus.textContent = 'Only PDF files are accepted'; issueButton.disabled = true; return; }
-  if (file.size > 10 * 1024 * 1024) { fileStatus.textContent = 'File exceeds the 10 MB limit'; issueButton.disabled = true; return; }
-  fileStatus.textContent = `Selected: ${file.name} (${Math.ceil(file.size / 1024)} KB)`;
-  hashValue.textContent = 'Computing...';
-  selectedDocumentHash = await sha256(file);
-  hashValue.textContent = selectedDocumentHash;
-  const id = `0x${selectedDocumentHash}`;
-  documentIdValue.textContent = id;
-  const publicUrl = `${EXPLORER_VERIFY_BASE}${id}`;
-  verificationUrl.href = publicUrl;
-  verificationUrl.textContent = publicUrl;
-  verificationLink.hidden = false;
-  if (previewUrl) URL.revokeObjectURL(previewUrl);
-  previewUrl = URL.createObjectURL(file);
-  pdfPreview.src = previewUrl;
-  documentPreview.hidden = false;
-  canIssue();
-  documentPreview.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-});
+function decodeDocument(result) {
+  if (!/^0x[0-9a-fA-F]{320}$/.test(result || '')) throw new Error('Invalid verification record from RPC.');
+  const words = result.slice(2).match(/.{64}/g);
+  return {
+    hash: `0x${words[0]}`,
+    issuerWallet: `0x${words[1].slice(24)}`,
+    issuedAt: Number(BigInt(`0x${words[2]}`)),
+    revokedAt: Number(BigInt(`0x${words[3]}`)),
+  };
+}
 
-[subjectInput, issuerInput].forEach((field) => field.addEventListener('input', canIssue));
+async function getDocument(documentId) {
+  const result = await rpc('eth_call', [{ to: VERIFICATION_CONTRACT, data: `${VERIFY_SELECTOR}${documentId.slice(2)}` }, 'latest']);
+  return decodeDocument(result);
+}
 
-issueButton.addEventListener('click', async () => {
-  if (!window.ethereum || !selectedDocumentHash || !subjectInput.value.trim() || !issuerInput.value.trim()) return;
-  try {
-    issueProgress.hidden = false;
-    issueProgressText.textContent = 'Confirm the transaction in your wallet…';
-    certificateDownload.hidden = true;
-    issueButton.disabled = true;
-    const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
-    const chainId = await window.ethereum.request({ method: 'eth_chainId' });
-    if (chainId !== MAINNET_CHAIN_ID) throw new Error('Switch wallet to Winmar Chain Mainnet first.');
-    // Document ID is the SHA-256 digest, so the payment event and the
-    // authorized issuer registration refer to the same immutable record.
-    const data = `0x8609cad1${selectedDocumentHash}`;
-    // The contract anchors the immutable PDF hash. Subject and applicant issuer
-    // are retained as issuance metadata for the certificate/receipt worker.
-    const issuanceMetadata = {
-      documentId: `0x${selectedDocumentHash}`,
-      subject: subjectInput.value.trim(),
-      issuer: issuerInput.value.trim(),
-    };
-    window.sessionStorage.setItem(`winmar:issuance:${selectedDocumentHash}`, JSON.stringify(issuanceMetadata));
-    const tx = await window.ethereum.request({ method: 'eth_sendTransaction', params: [{ from: accounts[0], to: DOCUMENT_FEE_CONTRACT, value: DOCUMENT_FEE_WEI, data }] });
-    document.querySelector('#status-value').textContent = `Payment submitted · ${tx.slice(0, 10)}...`;
-    document.querySelector('#status-value').className = 'status pending';
-    issueButton.textContent = 'Recording on Winmar Chain…';
-    issueProgressText.textContent = 'Recording document and waiting for blockchain receipt…';
+async function walletAccount() {
+  if (!window.ethereum) throw new Error('No compatible wallet was found. Open this page in a browser with an EVM wallet.');
+  const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+  if (!accounts?.[0]) throw new Error('Select a wallet account first.');
+  const chain = await window.ethereum.request({ method: 'eth_chainId' });
+  if (chain.toLowerCase() !== CHAIN_ID) throw new Error('Switch your wallet to Winmar Chain Mainnet first.');
+  return accounts[0];
+}
 
-    let receipt;
-    for (let attempt = 0; attempt < 40; attempt += 1) {
-      await new Promise((resolve) => setTimeout(resolve, 3000));
-      receipt = await rpc('eth_getTransactionReceipt', [tx]);
-      if (receipt) break;
+async function waitForReceipt(txHash, attempts = 50) {
+  for (let attempt = 0; attempt < attempts; attempt += 1) {
+    const receipt = await rpc('eth_getTransactionReceipt', [txHash]);
+    if (receipt) return receipt;
+    await wait(3000);
+  }
+  throw new Error('Transaction is still pending. Keep its hash and resume verification here.');
+}
+
+function confirmFeeReceipt(receipt, documentId, payer) {
+  if (receipt.status !== '0x1' || receipt.to?.toLowerCase() !== FEE_CONTRACT.toLowerCase()) {
+    throw new Error('Document payment was not confirmed by the fee contract.');
+  }
+  const paid = receipt.logs?.some((log) =>
+    log.address?.toLowerCase() === FEE_CONTRACT.toLowerCase() &&
+    log.topics?.[0]?.toLowerCase() === FEE_PAID_TOPIC &&
+    log.topics?.[1]?.toLowerCase() === documentId.toLowerCase() &&
+    log.topics?.[2]?.slice(-40).toLowerCase() === payer.slice(2).toLowerCase());
+  if (!paid) throw new Error('FeePaid event does not match this PDF and wallet.');
+}
+
+async function waitForRegistration(documentId, fromBlock) {
+  for (let attempt = 0; attempt < 60; attempt += 1) {
+    const logs = await rpc('eth_getLogs', [{
+      address: VERIFICATION_CONTRACT,
+      fromBlock, toBlock: 'latest', topics: [REGISTERED_TOPIC, documentId],
+    }]);
+    const log = logs?.find((entry) => entry.topics?.[2]?.toLowerCase() === documentId.toLowerCase());
+    if (log) {
+      const receipt = await rpc('eth_getTransactionReceipt', [log.transactionHash]);
+      if (receipt?.status !== '0x1') throw new Error('Document registration transaction failed.');
+      const record = await getDocument(documentId);
+      if (record.hash.toLowerCase() !== documentId.toLowerCase() || record.revokedAt !== 0) {
+        throw new Error('The registered fingerprint is missing or revoked.');
+      }
+      const block = await rpc('eth_getBlockByNumber', [log.blockNumber, false]);
+      const blockTimestamp = Number(BigInt(block.timestamp));
+      if (record.issuedAt !== blockTimestamp) throw new Error('Registration timestamp does not match its block.');
+      return { registrationTx: log.transactionHash, blockNumber: Number(BigInt(log.blockNumber)), issuedAt: record.issuedAt, issuerWallet: record.issuerWallet };
     }
-    if (!receipt) throw new Error('Receipt is still pending. Please check the transaction in the explorer.');
-    if (receipt.status !== '0x1') throw new Error('The blockchain transaction failed. No certificate was generated.');
-    const blockData = await rpc('eth_getBlockByNumber', [receipt.blockNumber, false]);
-    const issuedAt = `${new Date(Number(BigInt(blockData.timestamp)) * 1000).toISOString().replace('T', ' ').replace('.000Z', ' UTC')}`;
-    const params = new URLSearchParams({
-      documentId: `0x${selectedDocumentHash}`,
-      subject: subjectInput.value.trim(), issuer: issuerInput.value.trim(), issuedAt,
-      sha256: selectedDocumentHash, tx, block: String(Number(BigInt(receipt.blockNumber))), issuerWallet: accounts[0],
-    });
-    certificateDownload.href = `./certificate.html?${params.toString()}`;
-    certificateDownload.hidden = false;
-    issueProgressText.textContent = 'Receipt confirmed. Certificate is ready.';
-    document.querySelector('#status-value').textContent = 'Recorded on-chain';
-    document.querySelector('#status-value').className = 'status confirmed';
-    issueButton.textContent = 'Document Generated';
-  } catch (error) {
-    document.querySelector('#status-value').textContent = error.message || 'Payment cancelled';
-    document.querySelector('#status-value').className = 'status pending';
-    issueProgress.hidden = true;
-    issueButton.disabled = false;
-    issueButton.textContent = 'Generate Document';
+    await wait(3000);
   }
-});
-
-verifyButton.addEventListener('click', () => {
-  const value = documentId.value.trim();
-  verifyResult.textContent = value ? `Open the public verification record: ${EXPLORER_VERIFY_BASE}${value}` : 'Enter a document ID first.';
-  if (value) window.open(`${EXPLORER_VERIFY_BASE}${value}`, '_blank', 'noopener,noreferrer');
-});
-
-const connectWalletButton = document.querySelector('#connect-wallet');
-const walletAddress = document.querySelector('#wallet-address');
-const walletBalance = document.querySelector('#wallet-balance');
-const walletNetwork = document.querySelector('#wallet-network');
-const walletNote = document.querySelector('#wallet-note');
-const menuButton = document.querySelector('#menu-button');
-const navDrawer = document.querySelector('#nav-drawer');
-
-function shortAddress(value) { return `${value.slice(0, 6)}...${value.slice(-4)}`; }
-function weiToWmc(hex) {
-  const value = BigInt(hex);
-  const whole = value / 1000000000000000000n;
-  const fraction = (value % 1000000000000000000n).toString().padStart(18, '0').slice(0, 6).replace(/0+$/, '');
-  return `${whole}${fraction ? `.${fraction}` : ''} WMC`;
+  throw new Error('Payment confirmed; registration is still pending. Use Resume verification to check again.');
 }
 
-menuButton.addEventListener('click', () => {
-  const open = navDrawer.hidden;
-  navDrawer.hidden = !open;
-  menuButton.setAttribute('aria-expanded', String(open));
-  menuButton.setAttribute('aria-label', open ? 'Close navigation' : 'Open navigation');
+function resetForFile() {
+  selectedFile = null;
+  selectedHash = '';
+  pendingPayment = null;
+  confirmedRecord = null;
+  ui.download.hidden = true;
+  ui.verificationLink.hidden = true;
+  ui.preview.hidden = true;
+  ui.progress.hidden = true;
+  setStatus('Not issued');
+  ui.issue.textContent = 'Generate Document';
+  if (previewUrl) URL.revokeObjectURL(previewUrl);
+  previewUrl = '';
+  ui.pdfPreview.removeAttribute('src');
+  canIssue();
+}
+
+ui.input.addEventListener('change', async () => {
+  resetForFile();
+  const file = ui.input.files?.[0];
+  if (!file) { ui.fileStatus.textContent = 'No document selected'; return; }
+  if (file.size > 10 * 1024 * 1024) { ui.fileStatus.textContent = 'File exceeds the 10 MB limit.'; return; }
+  try {
+    const header = new Uint8Array(await file.slice(0, 5).arrayBuffer());
+    if (String.fromCharCode(...header) !== '%PDF-') throw new Error('Only valid PDF files are accepted.');
+    const pdf = await PDFDocument.load(await file.arrayBuffer());
+    if (!pdf.getPageCount()) throw new Error('This PDF has no pages.');
+    selectedHash = await sha256(file);
+    selectedFile = file;
+    ui.fileStatus.textContent = `Selected: ${file.name} (${Math.ceil(file.size / 1024)} KB · ${pdf.getPageCount()} pages)`;
+    ui.hash.textContent = selectedHash;
+    ui.documentId.textContent = selectedHash;
+    previewUrl = URL.createObjectURL(file);
+    ui.pdfPreview.src = previewUrl;
+    ui.preview.hidden = false;
+    canIssue();
+    ui.preview.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  } catch (error) {
+    ui.fileStatus.textContent = error.message || 'This PDF could not be opened.';
+    ui.hash.textContent = 'Waiting for PDF';
+    ui.documentId.textContent = 'Waiting for PDF';
+  }
 });
 
-connectWalletButton.addEventListener('click', async () => {
-  if (!window.ethereum) {
-    walletNote.textContent = 'No compatible wallet detected. Install a wallet extension that supports EVM networks.';
-    return;
-  }
+[ui.subject, ui.issuer].forEach((field) => field.addEventListener('input', canIssue));
+
+ui.issue.addEventListener('click', async () => {
+  if (!selectedFile || !selectedHash || !ui.subject.value.trim() || !ui.issuer.value.trim()) return;
+  ui.issue.disabled = true;
+  ui.download.hidden = true;
   try {
-    connectWalletButton.disabled = true;
-    const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
-    const chainId = await window.ethereum.request({ method: 'eth_chainId' });
-    const balance = await window.ethereum.request({ method: 'eth_getBalance', params: [accounts[0], 'latest'] });
-    walletAddress.textContent = shortAddress(accounts[0]);
-    walletBalance.textContent = weiToWmc(balance);
-    walletNetwork.textContent = chainId === '0xb948e0' ? 'Winmar Chain Mainnet · Chain ID 12142816' : `Wrong network · detected ${chainId}`;
-    walletNote.textContent = chainId === '0xb948e0' ? 'Wallet connected. The document fee and network gas will only be charged after an explicit transaction confirmation.' : 'Please switch to Winmar Chain Mainnet before issuing a document.';
-    connectWalletButton.textContent = 'Wallet connected';
-  } catch {
-    walletNote.textContent = 'Wallet connection was cancelled or unavailable.';
-  } finally {
-    connectWalletButton.disabled = false;
+    await checkChain();
+    let payment = pendingPayment;
+    if (!payment) {
+      const payer = await walletAccount();
+      const [feeCode, verificationCode, feeResult] = await Promise.all([
+        rpc('eth_getCode', [FEE_CONTRACT, 'latest']),
+        rpc('eth_getCode', [VERIFICATION_CONTRACT, 'latest']),
+        rpc('eth_call', [{ to: FEE_CONTRACT, data: '0xe22efe1b' }, 'latest']),
+      ]);
+      if (feeCode === '0x' || verificationCode === '0x') throw new Error('Verification contracts are unavailable on this network.');
+      const fee = BigInt(feeResult);
+      if (fee <= 0n) throw new Error('The document fee is unavailable.');
+      showProgress('Confirm the document transaction in your wallet…');
+      const txHash = await window.ethereum.request({
+        method: 'eth_sendTransaction', params: [{
+          from: payer, to: FEE_CONTRACT, value: `0x${fee.toString(16)}`,
+          data: `0x8609cad1${selectedHash.slice(2)}`,
+        }],
+      });
+      payment = { txHash, payer, documentId: selectedHash };
+      pendingPayment = payment;
+      ui.input.disabled = true;
+      ui.subject.readOnly = true;
+      ui.issuer.readOnly = true;
+      setStatus(`Payment submitted · ${txHash.slice(0, 12)}…`);
+    }
+    showProgress('Confirming payment on Winmar Chain…');
+    const paymentReceipt = await waitForReceipt(payment.txHash);
+    confirmFeeReceipt(paymentReceipt, payment.documentId, payment.payer);
+    showProgress('Payment confirmed. Waiting for document registration…');
+    ui.issue.textContent = 'Recording on Winmar Chain…';
+    const registration = await waitForRegistration(payment.documentId, paymentReceipt.blockNumber);
+    confirmedRecord = {
+      ...registration, documentId: payment.documentId,
+      subject: ui.subject.value.trim(), issuer: ui.issuer.value.trim(),
+      explorerUrl: `${EXPLORER_TX}${registration.registrationTx}`,
+    };
+    ui.verificationUrl.href = confirmedRecord.explorerUrl;
+    ui.verificationUrl.textContent = confirmedRecord.explorerUrl;
+    ui.verificationLink.hidden = false;
+    ui.download.hidden = false;
+    ui.issue.textContent = 'Document Recorded';
+    ui.progress.hidden = true;
+    setStatus('Verified on-chain', true);
+  } catch (error) {
+    const message = error?.message || 'The request could not be completed.';
+    setStatus(message);
+    ui.progress.hidden = true;
+    ui.issue.textContent = pendingPayment ? 'Resume verification' : 'Generate Document';
+    canIssue();
   }
+});
+
+ui.download.addEventListener('click', async () => {
+  if (!selectedFile || !confirmedRecord) return;
+  ui.download.disabled = true;
+  try {
+    const record = await getDocument(confirmedRecord.documentId);
+    if (record.hash.toLowerCase() !== confirmedRecord.documentId.toLowerCase() || record.revokedAt !== 0) {
+      throw new Error('Document record is missing or revoked. Download cancelled.');
+    }
+    const output = await makeVerifiedPdf(selectedFile, confirmedRecord);
+    const blob = new Blob([output.bytes], { type: 'application/pdf' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `${output.reportId}-verified.pdf`;
+    document.body.append(link);
+    link.click();
+    link.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 60000);
+  } catch (error) { setStatus(error.message || 'Could not create the verified PDF.'); }
+  finally { ui.download.disabled = false; }
+});
+
+ui.verify.addEventListener('click', async () => {
+  const value = ui.verifyInput.value.trim();
+  const id = value.startsWith('0x') ? value : `0x${value}`;
+  if (!validHash(id)) { ui.verifyResult.textContent = 'Enter the full SHA-256 document ID (64 hexadecimal characters).'; return; }
+  ui.verify.disabled = true;
+  ui.verifyResult.textContent = 'Checking the Winmar Chain record…';
+  try {
+    await checkChain();
+    const record = await getDocument(id);
+    if (record.hash.toLowerCase() !== id.toLowerCase()) throw new Error('Recorded hash does not match the document ID.');
+    const issuedAt = new Date(record.issuedAt * 1000).toISOString().replace('T', ' ').slice(0, 19);
+    ui.verifyResult.textContent = `${record.revokedAt ? 'Revoked' : 'Registered'} on-chain · ${issuedAt} UTC · issuer wallet ${record.issuerWallet}.`;
+  } catch { ui.verifyResult.textContent = 'No confirmed verification record was found for this document ID.'; }
+  finally { ui.verify.disabled = false; }
+});
+
+ui.menu.addEventListener('click', () => {
+  ui.drawer.hidden = !ui.drawer.hidden;
+  ui.menu.setAttribute('aria-expanded', String(!ui.drawer.hidden));
+  ui.menu.setAttribute('aria-label', ui.drawer.hidden ? 'Open navigation' : 'Close navigation');
+});
+document.addEventListener('keydown', (event) => {
+  if (event.key === 'Escape' && !ui.drawer.hidden) ui.menu.click();
+});
+document.addEventListener('click', (event) => {
+  if (!ui.drawer.hidden && !ui.drawer.contains(event.target) && !ui.menu.contains(event.target)) ui.menu.click();
+});
+
+ui.connect.addEventListener('click', async () => {
+  try {
+    ui.connect.disabled = true;
+    const account = await walletAccount();
+    const balance = await window.ethereum.request({ method: 'eth_getBalance', params: [account, 'latest'] });
+    ui.walletAddress.textContent = shortAddress(account);
+    ui.walletBalance.textContent = weiToWmc(balance);
+    ui.walletNetwork.textContent = 'Winmar Chain Mainnet · Chain ID 12142816';
+    ui.walletNote.textContent = 'Wallet connected. A separate confirmation is required to issue a document.';
+    ui.connect.textContent = 'Wallet connected';
+  } catch (error) { ui.walletNote.textContent = error.message || 'Wallet connection was cancelled.'; }
+  finally { ui.connect.disabled = false; }
 });
 
 refreshRpcStatus();
+setInterval(refreshRpcStatus, 60000);
