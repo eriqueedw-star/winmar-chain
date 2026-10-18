@@ -85,8 +85,8 @@
       requireState(bitmap && bitmap.width === 110, 'QR generator returned no canvas.');
       // Top-right QR white area INSIDE the ORIGINAL border and label.
       ctx.fillStyle = '#ffffff';
-      ctx.fillRect(833, 83, 112, 112);
-      ctx.drawImage(bitmap, 834, 84, 110, 110);
+      ctx.fillRect(831, 83, 113, 114);
+      ctx.drawImage(bitmap, 832, 84, 110, 110);
     } finally {
       offscreen.remove();
     }
@@ -137,13 +137,20 @@
     field(ctx, 339, 658, 564, issueDate, { background: '#f7fbff' });
     field(ctx, 339, 700, 564, 'PDF (SHA-256 Verified)', { background: '#f7fbff' });
 
-    // A full 64-digit SHA is written in TWO rows exactly as in the master.
+    // TWO non-overlapping lines fit the master's fingerprint row.
     ctx.fillStyle = '#ffffff';
-    ctx.fillRect(347, 958, 541, 41);
-    field(ctx, 347, 957, 540, verified.sha256.toUpperCase().slice(0, 32),
-      { background: '#ffffff', size: 15 });
-    field(ctx, 347, 976, 540, verified.sha256.toUpperCase().slice(32),
-      { background: '#ffffff', size: 15 });
+    ctx.fillRect(347, 958, 541, 42);
+    ctx.font = '400 15px Arial, sans-serif';
+    ctx.textBaseline = 'middle';
+    ctx.textAlign = 'left';
+    ctx.fillStyle = '#1d2c6b';
+    const shaPart1 = verified.sha256.toUpperCase().slice(0, 32);
+    const shaPart2 = verified.sha256.toUpperCase().slice(32);
+    requireState(ctx.measureText(shaPart1).width <= 527 &&
+      ctx.measureText(shaPart2).width <= 527,
+      'SHA-256 cannot fit approved certificate fingerprint rows.');
+    ctx.fillText(shaPart1, 352, 969);
+    ctx.fillText(shaPart2, 352, 987);
     field(ctx, 347, 1010, 540, verified.registrationTransactionHash, { size: 12 });
     field(ctx, 347, 1053, 540, `#${verified.registrationBlockNumber}`);
     field(ctx, 347, 1096, 540, dateWithTime);
