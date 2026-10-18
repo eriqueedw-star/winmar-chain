@@ -64,8 +64,10 @@ test('browser PDF assembler preserves source pages visually and adds only one A4
   });
   const checked = await PDFDocument.load(result.bytes);
   assert.equal(checked.getPageCount(), 3, 'N pages -> N+1');
-  assert.deepEqual(checked.getPage(0).getSize(), { width: 432, height: 640 });
-  assert.deepEqual(checked.getPage(1).getSize(), { width: 500, height: 600 });
+  assert.equal(checked.getPage(0).getWidth(), 432);
+  assert.equal(checked.getPage(0).getHeight(), 640);
+  assert.equal(checked.getPage(1).getWidth(), 500);
+  assert.equal(checked.getPage(1).getHeight(), 600);
   assert.ok(Math.abs(checked.getPage(2).getWidth() - 595.27559) < 0.02);
   assert.ok(Math.abs(checked.getPage(2).getHeight() - 841.88976) < 0.02);
   assert.equal(proofCalls, 1, 'On-chain status rechecked at download time');
