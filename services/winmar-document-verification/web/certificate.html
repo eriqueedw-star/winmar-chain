@@ -3,135 +3,26 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Winmar Document Authenticity Certificate</title>
+  <meta name="robots" content="noindex">
+  <title>Winmar Document Verification — Download through the official portal</title>
   <style>
-    :root{color-scheme:light}*{box-sizing:border-box}html,body{margin:0;min-height:100%;background:#071b40;color:#fff;font-family:Arial,sans-serif}body{display:grid;place-items:center;padding:24px}.certificate{display:block;width:min(1055px,100%);height:auto}canvas{display:block;width:100%;height:auto}.certificate[hidden],#certificate-state[hidden]{display:none}#certificate-state{max-width:670px;padding:26px;border:1px solid #547095;border-radius:8px;line-height:1.55;background:#0e2850}#qr-render{position:absolute;visibility:hidden;width:0;height:0;overflow:hidden}@media print{@page{size:A4 portrait;margin:0}html,body{background:#fff}body{display:block;padding:0}.certificate{width:210mm;max-width:none}#certificate-state{display:none}}
+    :root { color-scheme: dark; }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; min-height: 100%; font: 16px/1.6 Arial, sans-serif; background: #071b40; color: #fff; }
+    body { display: grid; min-height: 100vh; place-items: center; padding: 24px; }
+    main { width: min(610px,100%); padding: 32px; border: 1px solid #315ca0; border-radius: 12px; background: #0c2855; }
+    h1 { margin: 0 0 12px; font-size: clamp(23px, 5vw, 32px); }
+    p { color: #d6e5ff; }
+    a { display: inline-block; padding: 11px 17px; margin-top: 8px; border-radius: 6px; color: #fff; border: 1px solid #4289ff; text-decoration: none; }
+    a:focus-visible { outline: 3px solid #ffce55; outline-offset: 3px; }
   </style>
 </head>
 <body>
-  <div id="certificate-state" role="status" aria-live="polite">Checking the original PDF fingerprint, paid transaction and separate on-chain document registration…</div>
-  <main class="certificate" hidden><canvas id="certificate-canvas" width="1055" height="1491" aria-label="Winmar document authenticity certificate"></canvas></main>
-  <div id="qr-render" aria-hidden="true"></div>
-  <script src="./verification-proof.js"></script>
-  <script src="./vendor/qrcode.min.js"></script>
-  <script>
-    'use strict';
-    const q = new URLSearchParams(location.search);
-    const state = document.querySelector('#certificate-state');
-    const certificate = document.querySelector('.certificate');
-    const canvas = document.querySelector('#certificate-canvas');
-    const ctx = canvas.getContext('2d');
-    const EXPLORER = 'https://scan.winmarchain.io/verify/';
-    function fail(message) {
-      certificate.hidden = true;
-      state.hidden = false;
-      state.textContent = 'Certificate not available: ' + message;
-    }
-    function rpc(method, params = []) {
-      return fetch('https://rpc.winmarchain.io/', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ jsonrpc: '2.0', id: Date.now(), method, params }),
-      }).then((response) => {
-        if (!response.ok) throw new Error('Winmar Chain RPC unavailable');
-        return response.json();
-      }).then((body) => {
-        if (body.error) throw new Error(body.error.message || 'RPC error');
-        return body.result;
-      });
-    }
-    function sourceImage() {
-      return new Promise((resolve, reject) => {
-        const img = new Image();
-        img.onload = () => resolve(img);
-        img.onerror = () => reject(new Error('Approved certificate artwork could not be loaded'));
-        img.src = './winmar-verification-certificate-public.png';
-      });
-    }
-    function cover(x, y, w, h, fill='#fff') { ctx.fillStyle=fill; ctx.fillRect(x,y,w,h); }
-    function text(x, y, value, size=16, color='#1d2c6b', weight='400', maxWidth=575) {
-      const str = String(value ?? '');
-      ctx.fillStyle=color;
-      ctx.font=`${weight} ${size}px Arial, sans-serif`;
-      ctx.textBaseline='middle';
-      // Fit verified runtime values inside the approved field without changing layout.
-      ctx.fillText(str, x, y, maxWidth);
-    }
-    function field(x, y, w, value, fill='#fff') {
-      cover(x,y,w,30,fill);
-      text(x+5,y+15,value,16,'#1d2c6b','400',w-10);
-    }
-    function drawQr(publicUrl) {
-      if (typeof QRCode !== 'function') throw new Error('Local QR encoder unavailable');
-      const host = document.querySelector('#qr-render');
-      host.textContent = '';
-      // QR occupies the image master's existing upper-right scan area.
-      new QRCode(host, {
-        text: publicUrl, width: 108, height: 108,
-        colorDark: '#000000', colorLight: '#ffffff',
-        correctLevel: QRCode.CorrectLevel.M,
-      });
-      const qrCanvas = host.querySelector('canvas');
-      if (!qrCanvas) throw new Error('QR drawing failed');
-      // Preserve every artwork element; replace ONLY the existing example QR
-      // pixels within the existing reserved QR position.
-      cover(858,84,119,119,'#fff');
-      ctx.drawImage(qrCanvas,863,89,109,109);
-    }
-    async function render() {
-      const id = q.get('documentId');
-      const sha = q.get('sha256');
-      const registrationTx = q.get('tx');
-      const paymentTx = q.get('paymentTx');
-      if (!/^0x[0-9a-fA-F]{64}$/.test(id || '') ||
-          !/^[0-9a-fA-F]{64}$/.test(sha || '') ||
-          sha.toLowerCase() !== id.slice(2).toLowerCase() ||
-          !/^0x[0-9a-fA-F]{64}$/.test(registrationTx || '') ||
-          !/^0x[0-9a-fA-F]{64}$/.test(paymentTx || '')) {
-        throw new Error('A valid original PDF hash and two transaction references are required');
-      }
-
-      // Reject hand-edited URLs; the certificate must be corroborated independently.
-      const proof = await window.WinmarVerificationProof.check(rpc, id, paymentTx);
-      if (proof.status !== 'verified') throw new Error('Document registration has not yet been confirmed');
-      if (proof.registrationTransactionHash.toLowerCase() !== registrationTx.toLowerCase()) {
-        throw new Error('Registration transaction does not match the on-chain document');
-      }
-      const claimedWallet = q.get('issuerWallet');
-      if (claimedWallet && claimedWallet.toLowerCase() !== proof.issuerWallet) {
-        throw new Error('Issuer wallet does not match the blockchain');
-      }
-      const type = 'Document Verification Record';
-      const subject = (q.get('subject') || 'Original PDF fingerprint record').slice(0, 160);
-      // Do not use arbitrary applicant-supplied issuer names as a verified issuer.
-      const issuer = 'Authorized Winmar Chain Issuer';
-      const block = String(proof.registrationBlockNumber);
-      const timestamp = proof.issuedAt;
-      const hash = proof.sha256.toUpperCase();
-      const publicUrl = EXPLORER + proof.documentId;
-
-      const img = await sourceImage();
-      ctx.drawImage(img,0,0,1055,1491);
-      // Artwork and field coordinates are locked to the approved visual master.
-      field(582,112,200,proof.documentId,'#fff'); field(582,184,200,timestamp,'#fff');
-      field(344,494,580,proof.documentId,'#f7fbff');
-      field(344,539,580,type,'#f7fbff');
-      field(344,584,580,subject,'#f7fbff');
-      field(344,629,580,issuer,'#f7fbff');
-      field(344,674,580,timestamp,'#f7fbff');
-      field(354,984,575,hash,'#fff');
-      field(354,1030,575,proof.registrationTransactionHash,'#fff');
-      field(354,1075,575,block,'#fff');
-      field(354,1120,575,timestamp,'#fff');
-      field(354,1165,575,proof.issuerWallet,'#fff');
-      field(354,1254,575,publicUrl,'#fff');
-      field(101,1366,230,proof.documentId,'#fff');
-      drawQr(publicUrl);
-      document.title = 'Winmar Document Authenticity Certificate — ' + proof.documentId;
-      state.hidden = true;
-      certificate.hidden = false;
-    }
-    render().catch((error) => fail(error?.message || 'On-chain verification failed'));
-  </script>
+  <main>
+    <h1>Download your verified Winmar certificate</h1>
+    <p>For your security, an official Document Authenticity Certificate is generated only after the original PDF's SHA-256, the paid Winmar Chain transaction, the separate document-registration receipt, and the approved certificate master are independently verified.</p>
+    <p>An editable URL cannot issue a certificate. Use the original PDF and wallet payment reference through the public portal. No Winmar account registration is required.</p>
+    <a href="./index.html#issue">Open official document issuance portal</a>
+  </main>
 </body>
 </html>
