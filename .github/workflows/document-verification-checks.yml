@@ -28,6 +28,9 @@ jobs:
           set -euo pipefail
           node --check services/winmar-document-verification/src/server.mjs
           node --check services/winmar-document-verification/web/app.js
+          node --check services/winmar-document-verification/web/pdf-assembler.js
+          node --check services/winmar-document-verification/web/certificate-renderer.js
+          node --check services/winmar-document-verification/web/vendor/pdf-lib-1.17.1.min.js
           node --check services/winmar-document-verification/web/verification-proof.js
           node --check services/winmar-document-verification/web/vendor/qrcode.min.js
           while IFS= read -r -d '' file; do
@@ -45,7 +48,7 @@ jobs:
           subprocess.run(['node', '--check', '-'], input=inline[0], text=True, check=True)
           PY
 
-      - name: Test deployed-address and fee configuration consistency
+      - name: Test mainnet proof, binary master gate and browser PDF assembly
         run: node --test services/winmar-document-verification/tests/*.test.mjs
 
       - name: Check verified PDF builder, asset gate and on-chain proof tests
