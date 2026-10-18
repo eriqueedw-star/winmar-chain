@@ -8,17 +8,19 @@ import test from 'node:test';
 const read = (filename) => readFileSync(new URL(filename, import.meta.url), 'utf8');
 const sandbox = { console, crypto: webcrypto, File, TextDecoder, Uint8Array, Blob, ArrayBuffer };
 sandbox.globalThis = sandbox;
+const context = vm.createContext(sandbox);
+const pageDimensions = (width, height) => vm.runInContext(`[${width}, ${height}]`, context);
 
-vm.runInNewContext(read('../web/vendor/pdf-lib-1.17.1.min.js'), sandbox, { timeout: 10000 });
+vm.runInContext(read('../web/vendor/pdf-lib-1.17.1.min.js'), context, { timeout: 10000 });
 const PDFDocument = sandbox.PDFLib?.PDFDocument;
 assert.equal(typeof PDFDocument, 'function', 'Bundled PDF engine must load without external network');
 
-vm.runInNewContext(read('../web/pdf-assembler.js'), sandbox, { timeout: 10000 });
-vm.runInNewContext(read('../web/certificate-renderer.js'), sandbox, { timeout: 10000 });
+vm.runInContext(read('../web/pdf-assembler.js'), context, { timeout: 10000 });
+vm.runInContext(read('../web/certificate-renderer.js'), context, { timeout: 10000 });
 
 test('self-hosted browser PDF engine is complete and can load/save a real PDF', async () => {
   const pdf = await PDFDocument.create();
-  pdf.addPage([500, 600]);
+  pdf.addPage(pageDimensions(500, 600));
   const bytes = await pdf.save();
   const loaded = await PDFDocument.load(bytes);
   assert.equal(loaded.getPageCount(), 1);
@@ -35,8 +37,8 @@ test('approved certificate asset fails closed if repository still serves older P
 
 test('browser PDF assembler preserves source pages visually and adds only one A4 page', async () => {
   const original = await PDFDocument.create();
-  original.addPage([432, 640]);
-  original.addPage([500, 600]);
+  original.addPage(pageDimensions(432, 640));
+  original.addPage(pageDimensions(500, 600));
   const originalBytes = await original.save();
   const digest = createHash('sha256').update(originalBytes).digest('hex');
   const paymentTx = '0x' + '11'.repeat(32);
@@ -73,7 +75,7 @@ test('browser PDF assembler preserves source pages visually and adds only one A4
 
 test('PDF assembler rejects mismatched SHA-256 before attempting blockchain proof', async () => {
   const original = await PDFDocument.create();
-  original.addPage([500, 600]);
+  original.addPage(pageDimensions(500, 600));
   const bytes = await original.save();
   const file = new File([bytes], 'source.pdf', { type: 'application/pdf' });
   await assert.rejects(sandbox.WinmarPdfAssembler.build({
@@ -85,7 +87,7 @@ test('PDF assembler rejects mismatched SHA-256 before attempting blockchain proo
 
 test('PDF assembler rejects existing signature markers before output', async () => {
   const original = await PDFDocument.create();
-  original.addPage([500, 600]);
+  original.addPage(pageDimensions(500, 600));
   const source = await original.save();
   const signedMarker = new TextEncoder().encode('\n/ByteRange [0 4 8 12]\n');
   const combined = new Uint8Array(source.length + signedMarker.length);
