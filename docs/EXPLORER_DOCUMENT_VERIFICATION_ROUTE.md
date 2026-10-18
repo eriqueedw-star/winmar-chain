@@ -41,7 +41,7 @@ location ^~ /document-verification/ {
 }
 
 # Serve a static verification entrypoint for exact document ID paths.
-location ~ ^/verify/0x[0-9A-Fa-f]{64}/?$ {
+location ~ "^/verify/0x[0-9A-Fa-f]{64}/?$" {
     root /var/www/winmar-document-verification;
     try_files /verify.html =404;
     add_header Cache-Control "no-store" always;
