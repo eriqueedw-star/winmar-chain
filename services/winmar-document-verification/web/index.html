@@ -69,7 +69,7 @@
           <dl class="record-list"><div><dt>DOCUMENT ID</dt><dd id="document-id-value">Waiting for PDF</dd></div><div><dt>SHA-256</dt><dd id="hash-value">Waiting for PDF</dd></div><div><dt>NETWORK</dt><dd>Winmar Chain Mainnet</dd></div><div><dt>CHAIN ID</dt><dd>12142816</dd></div><div><dt>STATUS</dt><dd><span class="status pending" id="status-value">Not issued</span></dd></div></dl>
           <button class="button primary full" id="issue-button" disabled>Pay 0.0021 WMC &amp; Verify On-chain</button>
           <div class="issue-progress" id="issue-progress" hidden><span class="spinner" aria-hidden="true"></span><span id="issue-progress-text">Waiting for transaction confirmation…</span></div>
-          <a class="button primary full certificate-download" id="certificate-download" hidden target="_blank" rel="noreferrer">Download Certificate</a>
+          <button type="button" class="button primary full certificate-download" id="certificate-download" hidden>Download Verified PDF</button>
           <p class="fine-print">No platform registration is required. Your wallet pays 0.0021 WMC plus network gas. No official certificate is issued until the separate on-chain document registration is confirmed.</p>
         </div>
       </div>
@@ -97,7 +97,11 @@
     <div class="footer-group"><h3>NETWORK</h3><a href="https://scan.winmarchain.io/" rel="noreferrer">Primary explorer ↗</a><a href="https://scan.winmarchain.com/" rel="noreferrer">Backup explorer ↗</a><a href="https://winmarchain.io/privacy.html">Privacy policy</a></div>
     <div class="footer-bottom"><span>© 2026 Winmar Chain</span><strong>Capital · Technology · Intelligence</strong></div>
   </footer>
+  <script src="./vendor/qrcode.min.js"></script>
+  <script src="./vendor/pdf-lib-1.17.1.min.js"></script>
   <script src="./verification-proof.js"></script>
+  <script src="./certificate-renderer.js"></script>
+  <script src="./pdf-assembler.js"></script>
   <script src="./app.js"></script>
 </body>
 </html>
