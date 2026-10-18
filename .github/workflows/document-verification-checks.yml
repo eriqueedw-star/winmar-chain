@@ -1,0 +1,87 @@
+name: Document Verification integration checks
+
+on:
+  pull_request:
+    paths:
+      - 'services/winmar-document-verification/**'
+      - 'docs/DOCUMENT_VERIFICATION_*.md'
+      - 'docs/WINMAR_VERIFICATION_STANDARD.md'
+      - 'docs/document-verification-api.openapi.yaml'
+      - 'assets/winmar-verification-certificate-*.png'
+      - '.github/workflows/document-verification-checks.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  document-verification:
+    name: JavaScript syntax, contract config and asset integrity
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Check JavaScript syntax
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --check services/winmar-document-verification/src/server.mjs
+          node --check services/winmar-document-verification/web/app.js
+          while IFS= read -r -d '' file; do
+            node --check "$file"
+          done < <(find services/winmar-document-verification/deployment -maxdepth 1 -name '*.mjs' -print0)
+          python3 - <<'PY'
+          import pathlib
+          import re
+          import subprocess
+
+          html = pathlib.Path('services/winmar-document-verification/web/certificate.html').read_text()
+          inline = re.findall(r'<script(?:\\s[^>]*)?>(.*?)</script>', html, flags=re.I | re.S)
+          if len(inline) != 1:
+              raise SystemExit('Expected exactly one inline certificate script')
+          subprocess.run(['node', '--check', '-'], input=inline[0], text=True, check=True)
+          PY
+
+      - name: Test deployed-address and fee configuration consistency
+        run: node --test services/winmar-document-verification/tests/*.test.mjs
+
+      - name: Check certificate image fidelity and metadata
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          import struct
+
+          assets = Path('assets')
+          web = Path('services/winmar-document-verification/web')
+          for name in ('winmar-verification-certificate-master.png', 'winmar-verification-certificate-public.png'):
+              if (assets / name).read_bytes() != (web / name).read_bytes():
+                  raise SystemExit(f'Brand master mismatch: {name}')
+          paths = list(assets.glob('winmar-verification-certificate-*.png')) + list(web.glob('*.png'))
+          forbidden = {b'tEXt', b'zTXt', b'iTXt', b'eXIf'}
+          for path in paths:
+              data = path.read_bytes()
+              if not data.startswith(b'\\x89PNG\\r\\n\\x1a\\n'):
+                  raise SystemExit(f'Invalid PNG: {path}')
+              offset = 8
+              found = set()
+              complete = False
+              while offset < len(data):
+                  if offset + 12 > len(data):
+                      raise SystemExit(f'Truncated PNG: {path}')
+                  size = struct.unpack('>I', data[offset:offset + 4])[0]
+                  kind = data[offset + 4:offset + 8]
+                  if offset + 12 + size > len(data):
+                      raise SystemExit(f'Invalid PNG chunk: {path}')
+                  if kind in forbidden:
+                      found.add(kind.decode('latin-1'))
+                  offset += 12 + size
+                  if kind == b'IEND':
+                      complete = True
+                      break
+              if not complete or found:
+                  raise SystemExit(f'PNG metadata/format review required: {path}; sensitive chunk types: {sorted(found)}')
+          print(f'PASS: {len(paths)} PNG files checked; certificate copies match approved originals')
+          PY
