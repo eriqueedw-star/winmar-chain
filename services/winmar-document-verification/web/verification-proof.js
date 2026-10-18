@@ -158,8 +158,55 @@
     };
   }
 
+  async function lookup(rpc, originalDocumentId) {
+    const hash = docId(originalDocumentId);
+    const network = await rpc('eth_chainId');
+    if (String(network).toLowerCase() !== MAINNET_CHAIN_ID) {
+      throw new Error('Winmar Chain Mainnet is unavailable or incorrect.');
+    }
+
+    // Public document lookup is read-only; it does NOT require a wallet,
+    // payment transaction hash or an account. Registered != file-matched.
+    let record;
+    try {
+      record = await getRecord(rpc, hash);
+    } catch {
+      // Failed contract calls must not be represented as success or as proof
+      // that a real document is missing.
+      throw new Error('On-chain record could not be read. Try again later.');
+    }
+    if (!record) return { status: 'not_registered', documentId: hash };
+    if (record.hash !== hash) throw new Error('The on-chain document hash is inconsistent.');
+    if (record.revokedAt !== 0n) return { status: 'revoked', documentId: hash };
+    if (!(await authorized(rpc, record.issuer))) {
+      return { status: 'issuer_not_authorized', documentId: hash };
+    }
+
+    // Deployed contract creation is public evidence at block 781002.
+    // The initial client route is intended for a review deployment; production
+    // indexers should replace long-range log scans before public scaling.
+    const event = await registrationEvent(rpc, hash, record.issuer, '0xbeaca');
+    if (!event) return { status: 'registration_unconfirmed', documentId: hash };
+    const block = await rpc('eth_getBlockByNumber', [event.blockNumber, false]);
+    if (!block?.timestamp || BigInt(block.timestamp) !== record.issuedAt) {
+      throw new Error('Document registration block timestamp does not match on-chain data.');
+    }
+
+    return {
+      status: 'registered',
+      documentId: hash,
+      sha256: hash.slice(2),
+      issuerWallet: record.issuer,
+      registrationTransactionHash: event.transactionHash,
+      registrationBlockNumber: Number(BigInt(event.blockNumber)),
+      issuedAt: new Date(Number(record.issuedAt) * 1000).toISOString()
+        .replace('T', ' ').replace('.000Z', ' UTC'),
+      verificationUrl: 'https://scan.winmarchain.io/verify/' + hash,
+    };
+  }
+
   root.WinmarVerificationProof = {
-    check, docId, decodeDocument,
+    lookup, check, docId, decodeDocument,
     // Exposed for deterministic, transaction-free unit tests.
     constants: { MAINNET_CHAIN_ID, FEE_ADDRESS, VERIFICATION_ADDRESS, TREASURY_ADDRESS,
       FEE_WEI, FEE_SELECTOR, FEE_EVENT, REGISTERED_EVENT },
