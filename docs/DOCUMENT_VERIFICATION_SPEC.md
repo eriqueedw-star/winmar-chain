@@ -54,9 +54,28 @@ issuer address, and non-revoked status are authoritative.
 - Treat the certificate as a derived artifact and keep the source digest
   immutable.
 
-## Implementation gate
+## Implementation status and production acceptance
 
-Before production implementation, review the smart-contract interface, issuer
-key custody, PDF merge library, upload limits, retention policy, and Explorer
-route. The current repository does not yet contain the document-verification
-application or contract; this file is the agreed behavior baseline.
+This specification is the agreed behavior baseline. The same feature branch also
+contains the initial document-verification service, web UI, API schema, certificate
+assets, and contract deployment tooling. Their presence does **not** establish
+production readiness or a deployed, independently verified contract.
+
+The service README explicitly documents that issuance currently returns
+`501 issuance_not_ready` until the tenant database, upload scanner, issuer signer,
+receipt worker, and PDF generation pipeline are integrated. This status must not
+be represented as successful live issuance in user-facing documentation.
+
+Before enabling public issuance, verify and record:
+
+- [ ] The issuer authorization model, key custody, and contract addresses.
+- [ ] Deployment receipts and verified contract source on `scan.winmarchain.io`.
+- [ ] Original PDF hash matching the confirmed on-chain record.
+- [ ] Payment confirmation, retry/idempotency behavior, and failed-payment handling.
+- [ ] A4 certificate merge and QR resolving to a working Explorer verification page.
+- [ ] Revocation, duplicate IDs, unauthorized issuers, and hash mismatch tests.
+- [ ] Upload malware scanning, limits, retention/deletion policy, and privacy review.
+- [ ] End-to-end staging evidence with a sample PDF, followed by an approved release.
+
+Keep public issuance disabled until all applicable gates are complete. Do not
+place issuer keys, customer PDFs, or private operational details in Git.
