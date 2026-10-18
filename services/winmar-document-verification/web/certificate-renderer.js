@@ -52,12 +52,37 @@
     }
   }
 
+  // The approved PNG has subtle white/blue gradients in the data panels.
+  // Solid white rectangle overlays would visibly change its original design.
+  // Remove only the sample text pixels by reconstructing the existing
+  // background vertically from the adjacent owner-approved artwork rows.
+  function eraseSampleValue(ctx, x, y, width, height) {
+    requireState(x >= 1 && y >= 3 && width > 0 && height > 0 &&
+      x + width <= WIDTH && y + height + 3 < HEIGHT,
+      'Replacement data rectangle is outside the approved certificate.');
+    const top = ctx.getImageData(x, y - 2, width, 1).data;
+    const bottom = ctx.getImageData(x, y + height + 2, width, 1).data;
+    const fill = ctx.createImageData(width, height);
+    for (let row = 0; row < height; row++) {
+      const ratio = (row + 1) / (height + 1);
+      for (let column = 0; column < width; column++) {
+        const from = column * 4;
+        const target = (row * width + column) * 4;
+        for (let channel = 0; channel < 4; channel++) {
+          fill.data[target + channel] = Math.round(
+            top[from + channel] * (1 - ratio) +
+            bottom[from + channel] * ratio);
+        }
+      }
+    }
+    ctx.putImageData(fill, x, y);
+  }
+
   function field(ctx, x, y, width, value, options = {}) {
-    const { background = '#ffffff', size = 16, weight = '400', color = '#1d2c6b' } = options;
+    const { size = 16, weight = '400', color = '#1d2c6b' } = options;
     const str = String(value ?? '').trim();
     requireState(str.length > 0 && !/[\u0000-\u001f]/.test(str), 'Missing certificate data.');
-    ctx.fillStyle = background;
-    ctx.fillRect(x, y, width, 30);
+    eraseSampleValue(ctx, x, y, width, 30);
     ctx.textBaseline = 'middle';
     ctx.textAlign = 'left';
     ctx.fillStyle = color;
@@ -138,8 +163,7 @@
     field(ctx, 339, 700, 564, 'PDF (SHA-256 Verified)', { background: '#f7fbff' });
 
     // TWO non-overlapping lines fit the master's fingerprint row.
-    ctx.fillStyle = '#ffffff';
-    ctx.fillRect(347, 958, 541, 42);
+    eraseSampleValue(ctx, 347, 958, 541, 42);
     ctx.font = '400 15px Arial, sans-serif';
     ctx.textBaseline = 'middle';
     ctx.textAlign = 'left';
