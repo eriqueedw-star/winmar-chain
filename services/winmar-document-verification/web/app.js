@@ -31,10 +31,12 @@ let selectedHash = '';
 let previewUrl = '';
 let pendingPayment = null;
 let confirmedRecord = null;
+let fileSelectionVersion = 0;
+let issuancePending = false;
 
 function validHash(value) { return /^0x[0-9a-fA-F]{64}$/.test(value); }
 function canIssue() {
-  ui.issue.disabled = !(selectedFile && selectedHash && ui.subject.value.trim() && ui.issuer.value.trim()) || Boolean(confirmedRecord);
+  ui.issue.disabled = issuancePending || !(selectedFile && selectedHash && ui.subject.value.trim() && ui.issuer.value.trim()) || Boolean(confirmedRecord);
 }
 function setStatus(message, confirmed = false) {
   ui.status.textContent = message;
@@ -174,16 +176,21 @@ function resetForFile() {
 }
 
 ui.input.addEventListener('change', async () => {
+  const version = ++fileSelectionVersion;
   resetForFile();
   const file = ui.input.files?.[0];
   if (!file) { ui.fileStatus.textContent = 'No document selected'; return; }
-  if (file.size > 10 * 1024 * 1024) { ui.fileStatus.textContent = 'File exceeds the 10 MB limit.'; return; }
+  if (!file.size || file.size > 10 * 1024 * 1024) { ui.fileStatus.textContent = 'PDF must be between 1 byte and 10 MB.'; return; }
   try {
     const header = new Uint8Array(await file.slice(0, 5).arrayBuffer());
+    if (version !== fileSelectionVersion) return;
     if (String.fromCharCode(...header) !== '%PDF-') throw new Error('Only valid PDF files are accepted.');
     const pdf = await PDFDocument.load(await file.arrayBuffer());
+    if (version !== fileSelectionVersion) return;
     if (!pdf.getPageCount()) throw new Error('This PDF has no pages.');
-    selectedHash = await sha256(file);
+    const digest = await sha256(file);
+    if (version !== fileSelectionVersion) return;
+    selectedHash = digest;
     selectedFile = file;
     ui.fileStatus.textContent = `Selected: ${file.name} (${Math.ceil(file.size / 1024)} KB · ${pdf.getPageCount()} pages)`;
     ui.hash.textContent = selectedHash;
@@ -194,6 +201,7 @@ ui.input.addEventListener('change', async () => {
     canIssue();
     ui.preview.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
   } catch (error) {
+    if (version !== fileSelectionVersion) return;
     ui.fileStatus.textContent = error.message || 'This PDF could not be opened.';
     ui.hash.textContent = 'Waiting for PDF';
     ui.documentId.textContent = 'Waiting for PDF';
@@ -203,7 +211,12 @@ ui.input.addEventListener('change', async () => {
 [ui.subject, ui.issuer].forEach((field) => field.addEventListener('input', canIssue));
 
 ui.issue.addEventListener('click', async () => {
-  if (!selectedFile || !selectedHash || !ui.subject.value.trim() || !ui.issuer.value.trim()) return;
+  if (issuancePending || !selectedFile || !selectedHash || !ui.subject.value.trim() || !ui.issuer.value.trim()) return;
+  issuancePending = true;
+  const submittedHash = selectedHash;
+  ui.input.disabled = true;
+  ui.subject.readOnly = true;
+  ui.issuer.readOnly = true;
   ui.issue.disabled = true;
   ui.download.hidden = true;
   try {
@@ -256,6 +269,17 @@ ui.issue.addEventListener('click', async () => {
     setStatus(message);
     ui.progress.hidden = true;
     ui.issue.textContent = pendingPayment ? 'Resume verification' : 'Generate Document';
+  } finally {
+    issuancePending = false;
+    if (!pendingPayment) {
+      ui.input.disabled = false;
+      ui.subject.readOnly = false;
+      ui.issuer.readOnly = false;
+    }
+    if (selectedHash !== submittedHash) {
+      confirmedRecord = null;
+      ui.download.hidden = true;
+    }
     canIssue();
   }
 });
