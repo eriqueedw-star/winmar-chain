@@ -22,9 +22,11 @@ const MAINNET_CHAIN_ID = '0xb948e0';
 const EXPLORER_VERIFY_BASE = 'https://scan.winmarchain.io/verify/';
 let selectedDocumentHash = '';
 let previewUrl = '';
+let fileSelectionVersion = 0;
+let issuancePending = false;
 
 function canIssue() {
-  issueButton.disabled = !(selectedDocumentHash && subjectInput.value.trim() && issuerInput.value.trim());
+  issueButton.disabled = issuancePending || !(selectedDocumentHash && subjectInput.value.trim() && issuerInput.value.trim());
 }
 
 function rpc(method, params = []) {
@@ -56,32 +58,58 @@ async function sha256(file) {
 }
 
 input.addEventListener('change', async () => {
+  const version = ++fileSelectionVersion;
   const file = input.files?.[0];
-  if (!file) return;
-  if (file.type !== 'application/pdf') { fileStatus.textContent = 'Only PDF files are accepted'; issueButton.disabled = true; return; }
-  if (file.size > 10 * 1024 * 1024) { fileStatus.textContent = 'File exceeds the 10 MB limit'; issueButton.disabled = true; return; }
+  selectedDocumentHash = '';
+  hashValue.textContent = 'Waiting for PDF';
+  documentIdValue.textContent = 'Waiting for PDF';
+  verificationLink.hidden = true;
+  certificateDownload.hidden = true;
+  document.querySelector('#status-value').textContent = 'Not issued';
+  document.querySelector('#status-value').className = 'status pending';
+  if (previewUrl) URL.revokeObjectURL(previewUrl);
+  previewUrl = '';
+  pdfPreview.removeAttribute('src');
+  documentPreview.hidden = true;
+  canIssue();
+  if (!file) { fileStatus.textContent = 'No document selected'; return; }
+  if (file.type !== 'application/pdf' || !file.name.toLowerCase().endsWith('.pdf')) {
+    fileStatus.textContent = 'Only PDF files are accepted'; return;
+  }
+  if (file.size === 0 || file.size > 10 * 1024 * 1024) {
+    fileStatus.textContent = 'PDF must be between 1 byte and 10 MB'; return;
+  }
   fileStatus.textContent = `Selected: ${file.name} (${Math.ceil(file.size / 1024)} KB)`;
   hashValue.textContent = 'Computing...';
-  selectedDocumentHash = await sha256(file);
-  hashValue.textContent = selectedDocumentHash;
-  const id = `0x${selectedDocumentHash}`;
-  documentIdValue.textContent = id;
-  const publicUrl = `${EXPLORER_VERIFY_BASE}${id}`;
-  verificationUrl.href = publicUrl;
-  verificationUrl.textContent = publicUrl;
-  verificationLink.hidden = false;
-  if (previewUrl) URL.revokeObjectURL(previewUrl);
-  previewUrl = URL.createObjectURL(file);
-  pdfPreview.src = previewUrl;
-  documentPreview.hidden = false;
-  canIssue();
-  documentPreview.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  try {
+    const digest = await sha256(file);
+    if (version !== fileSelectionVersion) return;
+    selectedDocumentHash = digest;
+    hashValue.textContent = digest;
+    const id = `0x${digest}`;
+    documentIdValue.textContent = id;
+    const publicUrl = `${EXPLORER_VERIFY_BASE}${id}`;
+    verificationUrl.href = publicUrl;
+    verificationUrl.textContent = publicUrl;
+    verificationLink.hidden = false;
+    previewUrl = URL.createObjectURL(file);
+    pdfPreview.src = previewUrl;
+    documentPreview.hidden = false;
+    canIssue();
+  } catch {
+    if (version !== fileSelectionVersion) return;
+    fileStatus.textContent = 'Unable to read PDF. Please select another file.';
+    hashValue.textContent = 'Hash unavailable';
+  }
 });
 
 [subjectInput, issuerInput].forEach((field) => field.addEventListener('input', canIssue));
 
 issueButton.addEventListener('click', async () => {
-  if (!window.ethereum || !selectedDocumentHash || !subjectInput.value.trim() || !issuerInput.value.trim()) return;
+  if (issuancePending || !window.ethereum || !selectedDocumentHash || !subjectInput.value.trim() || !issuerInput.value.trim()) return;
+  issuancePending = true;
+  const submittedHash = selectedDocumentHash;
+  input.disabled = true;
   try {
     issueProgress.hidden = false;
     issueProgressText.textContent = 'Confirm the transaction in your wallet…';
@@ -134,13 +162,23 @@ issueButton.addEventListener('click', async () => {
     issueProgress.hidden = true;
     issueButton.disabled = false;
     issueButton.textContent = 'Generate Document';
+  } finally {
+    issuancePending = false;
+    input.disabled = false;
+    if (selectedDocumentHash !== submittedHash) certificateDownload.hidden = true;
+    canIssue();
   }
 });
 
 verifyButton.addEventListener('click', () => {
   const value = documentId.value.trim();
-  verifyResult.textContent = value ? `Open the public verification record: ${EXPLORER_VERIFY_BASE}${value}` : 'Enter a document ID first.';
-  if (value) window.open(`${EXPLORER_VERIFY_BASE}${value}`, '_blank', 'noopener,noreferrer');
+  if (!/^0x[0-9a-fA-F]{64}$/.test(value)) {
+    verifyResult.textContent = 'Enter a valid document ID (0x followed by 64 hexadecimal characters).';
+    return;
+  }
+  const url = `${EXPLORER_VERIFY_BASE}${value}`;
+  verifyResult.textContent = 'Opening the public Explorer record. Verify the source PDF hash and record status there.';
+  window.open(url, '_blank', 'noopener,noreferrer');
 });
 
 const connectWalletButton = document.querySelector('#connect-wallet');
