@@ -63,6 +63,10 @@ if [[ ! -f "$tmp/site/document-verification/verify.js" ||
   exit 2
 fi
 
+# mktemp -d creates mode 0700 even with umask 022; the public Nginx
+# worker cannot traverse that directory. Permit read/traverse of reviewed,
+# checksum-pinned static UI bytes, but never make the release world-writable.
+chmod 0755 -- "$tmp"
 # These release directories are immutable; never replace a reviewed version.
 mv -nT -- "$tmp" "$destination"
 if [[ ! -f "$destination/site/verify.html" ]]; then
