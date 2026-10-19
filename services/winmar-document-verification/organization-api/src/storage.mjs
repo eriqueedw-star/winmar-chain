@@ -102,10 +102,20 @@ export class IntentStore {
     // Fail closed for corrupt/partially written claims. Do not reset/remove
     // claims automatically; a restart must never release a paid reference.
     let found;
-    try {
-      found = JSON.parse(await readFile(claimPath, 'utf8'));
-    } catch {
-      throw fail('Payment reservation requires operator reconciliation', 503);
+    // With two concurrent writers, the second request may observe an
+    // exclusive reservation before its owner has finished writing JSON.
+    // A short, bounded wait distinguishes that expected race from a truly
+    // corrupt persisted claim. Never erase a partially written claim.
+    for (let attempt = 0; attempt < 8; attempt++) {
+      try {
+        found = JSON.parse(await readFile(claimPath, 'utf8'));
+        break;
+      } catch {
+        if (attempt === 7) {
+          throw fail('Payment reservation requires operator reconciliation', 503);
+        }
+        await new Promise(resolve => setTimeout(resolve, 10));
+      }
     }
     if (found.transactionHash !== txHash ||
         typeof found.tenantId !== 'string' ||
