@@ -1,7 +1,7 @@
 import { mkdir, readFile, open, rename, unlink } from 'node:fs/promises';
 import path from 'node:path';
 import { createHash } from 'node:crypto';
-import { fail } from './core.mjs';
+import { fail, normalizeHash } from './core.mjs';
 
 /*
  * Reference single-deployment durable store. Source PDFs and API secrets
@@ -73,6 +73,50 @@ export class IntentStore {
     return result;
   }
 
+  // Claim each payment transaction ONCE across all organizations/intents,
+  // not merely once inside a tenant. A successful blockchain payment can
+  // otherwise be replayed as multiple independent organization issuances.
+  //
+  // This reference implementation is safe for one process and one shared
+  // local filesystem only. Production must use a transactional DB unique
+  // index on (chain_id, payment_tx_hash) with durable migrations/backfill.
+  async claimPayment(paymentTxHash, tenantId, intentId) {
+    const txHash = normalizeHash(paymentTxHash, 'payment transaction hash');
+    const directory = path.join(this.root, '_payment_claims');
+    await mkdir(directory, { recursive: true, mode: 0o700 });
+    const claimPath = path.join(directory, txHash.slice(2) + '.json');
+    const holder = { transactionHash: txHash, tenantId, intentId };
+    try {
+      const fd = await open(claimPath, 'wx', 0o600);
+      try {
+        await fd.writeFile(JSON.stringify(holder) + '\n', 'utf8');
+        await fd.sync();
+      } finally {
+        await fd.close();
+      }
+      return;
+    } catch (error) {
+      if (error?.code !== 'EEXIST') throw error;
+    }
+
+    // Fail closed for corrupt/partially written claims. Do not reset/remove
+    // claims automatically; a restart must never release a paid reference.
+    let found;
+    try {
+      found = JSON.parse(await readFile(claimPath, 'utf8'));
+    } catch {
+      throw fail('Payment reservation requires operator reconciliation', 503);
+    }
+    if (found.transactionHash !== txHash ||
+        typeof found.tenantId !== 'string' ||
+        typeof found.intentId !== 'string') {
+      throw fail('Invalid saved payment reservation', 503);
+    }
+    if (found.tenantId !== tenantId || found.intentId !== intentId) {
+      throw fail('Payment transaction already linked to another intent', 409);
+    }
+  }
+
   async attachValidatedProof(tenantId, id, { paymentTxHash, registrationTxHash = null }) {
     const validId = validIntentId(id);
     const file = path.join(await this.directory(tenantId), validId + '.json');
@@ -93,6 +137,11 @@ export class IntentStore {
           existing.registrationTxHash !== registrationTxHash) {
         throw fail('Intent bound to a different registration transaction', 409);
       }
+      // Persist a global payment-transaction claim before committing the
+      // intent. If writing the intent fails, its own claim remains retryable
+      // by the SAME intent; another intent cannot steal or reuse the fee.
+      // Never use this local claim store as a multi-host production ledger.
+      await this.claimPayment(paymentTxHash, tenantId, validId);
       const updated = {
         ...existing,
         paymentTxHash,
