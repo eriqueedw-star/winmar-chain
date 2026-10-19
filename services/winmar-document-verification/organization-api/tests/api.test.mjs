@@ -253,3 +253,35 @@ test('registered but revoked record cannot be reported as active', async t => {
   const current=await getIntent(f,created.body.intentId);
   assert.equal(current.body.certificateIssued,false);
 });
+
+test('HTTP rejects reusing one confirmed fee transaction across two organizations', async t => {
+  const f = await withApi(t);
+  const orgOne = await intent(f, f.key1, 'org_one_paid_request_001');
+  const orgTwo = await intent(f, f.key2, 'org_two_paid_request_001');
+  assert.equal(orgOne.status, 201);
+  assert.equal(orgTwo.status, 201);
+
+  const paid = await confirm(f, orgOne.body.intentId, null, f.key1);
+  assert.equal(paid.status, 202);
+  assert.equal(paid.body.status, 'payment_confirmed_registration_pending');
+
+  const replay = await confirm(f, orgTwo.body.intentId, null, f.key2);
+  assert.equal(replay.status, 409);
+  assert.match(replay.body.error, /another intent/);
+  assert.equal(replay.body.certificateIssued, false);
+  const unchanged = await getIntent(f, orgTwo.body.intentId, f.key2);
+  assert.equal(unchanged.body.paymentTxHash, null);
+});
+
+test('HTTP accepts continuing a paid but unregistered intent without paying twice', async t => {
+  const f = await withApi(t);
+  const created = await intent(f);
+  const first = await confirm(f, created.body.intentId, null, f.key1);
+  assert.equal(first.status, 202);
+  const resume = await confirm(f, created.body.intentId, regTx, f.key1);
+  assert.equal(resume.status, 200);
+  assert.equal(resume.body.status, 'registered');
+  assert.equal(resume.body.paymentTxHash, payTx);
+  assert.equal(resume.body.registrationTxHash, regTx);
+  assert.equal(resume.body.certificateIssued, false);
+});
