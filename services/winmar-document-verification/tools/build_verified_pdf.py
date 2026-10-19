@@ -267,7 +267,7 @@ def make_certificate_image(master_bytes, evidence, title, subject, issuer, page_
     # QR stores the complete canonical route; the fixed, single-line artwork
     # can only carry a short human-readable reference without redesigning it.
     display_url = "scan.winmarchain.io/verify/" + evidence["sha256"][:10] + "..."
-    write((349,1265,808,1298),display_url,11,color="#086cfa")
+    write((349,1265,768,1298),display_url,11,color="#086cfa")
     write((98,1377,348,1409),short_id,16,bold=True)
     write((487,1377,640,1409),str(page_number)+" of "+str(page_number),17,bold=True)
 
