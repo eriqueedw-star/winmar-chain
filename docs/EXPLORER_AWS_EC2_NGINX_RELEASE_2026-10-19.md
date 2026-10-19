@@ -12,19 +12,16 @@ The EC2 host already runs a healthy Nginx service (`nginx -t` PASS,
 
 - `/etc/nginx/sites-enabled/scan.winmarchain.io`
 - Port 80 redirects to TLS.
-- HTTPS `server_name scan.winmarchain.io` includes:
-  - `/etc/nginx/snippets/winmar-security-common.conf`
-  - `/etc/nginx/snippets/winmar-csp-scan-report-only.conf`
-- Existing Explorer `location /` proxies **unchanged** to
-  `http://127.0.0.1:8080` with its existing Host, forwarded headers,
-  WebSocket upgrade, compression and branding `sub_filter`.
-- Other existing locations serve only approved brand/env/icon assets.
-- No existing `/verify/<documentId>` or `/document-verification/` location
-  was shown in the operator's active `nginx -T` output.
-- The current **Report-Only** CSP's `connect-src` does NOT list
-  `https://rpc.winmarchain.io`. It may emit policy violations (without
-  enforcing blocks); an approved scoped CSP revision must include the RPC
-  before full launch, after checking effective inheritance.
+- HTTPS `server_name scan.winmarchain.io` already uses protected,
+  organization-managed security-header and CSP includes.
+- Existing Explorer `location /` remains the Blockscout reverse proxy.
+  It MUST NOT be altered by deploying this additional static verifier.
+- Other existing locations serve brand/environment/icon assets and must remain
+  untouched. No existing verification-specific route was found in the operator's
+  read-only configuration check.
+- Before launch, independently review CSP `connect-src` and RPC browser CORS
+  to permit `https://rpc.winmarchain.io` if required, without weakening the
+  inherited security policy.
 
 **Do not publicly commit sensitive server addresses, login sessions, credentials,
 or private Nginx files.** The above is only the route-level configuration
