@@ -54,6 +54,24 @@ class ExplorerReleaseTests(unittest.TestCase):
             self.assertFalse(any(".env" in x or x.endswith(".pdf") or
                                  "private" in x.lower() for x in packaged))
 
+    def test_production_nginx_fragment_only_adds_isolated_static_routes(self):
+        snippet = (ROOT / "deployment" / "explorer" /
+                   "scan.winmarchain.io.document-verification.locations.conf").read_text()
+        directives = "\n".join(line.strip() for line in snippet.splitlines()
+                               if line.strip() and not line.lstrip().startswith("#"))
+        self.assertIn("location ^~ /document-verification/", directives)
+        self.assertIn('location ~ "^/verify/0x[0-9A-Fa-f]{64}/?$"', directives)
+        self.assertEqual(directives.count("location "), 2)
+        self.assertEqual(directives.count("limit_except GET"), 2)
+        self.assertEqual(directives.count("try_files"), 2)
+        self.assertIn("root /srv/winmar-document-verification/current;", directives)
+        for forbidden in ("add_header", "proxy_pass", "ssl_certificate",
+                          "listen ", "server_name", "rewrite ", "return 301",
+                          "eth_sendTransaction", "proxy_set_header"):
+            self.assertNotIn(forbidden, directives)
+        # 'current' must target the artifact's site directory.
+        self.assertIn("releases/<reviewed-commit>/site", snippet)
+
     def test_refuses_existing_release_directory_without_overwriting(self):
         with tempfile.TemporaryDirectory() as td:
             out = Path(td) / "dist"
