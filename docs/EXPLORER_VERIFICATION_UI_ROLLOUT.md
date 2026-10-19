@@ -47,6 +47,17 @@ Use one designated operator, with a current configuration backup, a tested rollb
 
 First place the exact reviewed artifact files in a versioned release directory, e.g. `/srv/winmar-document-verification/releases/<reviewed-git-sha>/`. **The artifact contains a nested `site/` directory. Point the `current` symlink to the reviewed release's `site/` directory, not the release directory itself.** The web root in this example is `/srv/winmar-document-verification/current` and must therefore contain `verify.html` and `document-verification/verify.js` directly. Validate the SHA256SUMS relative to the release root before switching the symlink.
 
+**Optional audited staging helper** (operator machine / Ubuntu, no production mutation):
+
+```bash
+bash scripts/stage-document-verification-explorer.sh \\
+  /secure/downloaded/winmar-explorer-artifact \\
+  /srv/winmar-document-verification/releases \\
+  <full-reviewed-40-character-git-sha>
+```
+
+The script validates the complete release `SHA256SUMS`, refuses overwrites and stops after creating `releases/<sha>/site/`. It **does not** switch a `current` symlink, change Nginx, or reload any service. The operator must separately review and authorize the live route and atomically point `current` at the staged **`site/`** directory. GitHub CI rehearses this script against a disposable, isolated release root.
+
 **Within the existing `server_name scan.winmarchain.io` TLS server block**, add the following *before any conflicting location policy*, then run `nginx -t` prior to a reload:
 
 ```nginx
