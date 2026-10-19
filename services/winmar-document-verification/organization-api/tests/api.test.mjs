@@ -10,6 +10,7 @@ import { IntentStore } from '../src/storage.mjs';
 import {
   NETWORK, indexedAddress, sha256, parseApprovedClients,
   authenticateBearer, validatePayment, validateRegistration, normalizeWallet,
+  findRegistrationTransaction,
 } from '../src/core.mjs';
 
 const samplePdf = Buffer.from('%PDF-1.7\n1 0 obj\n<<>>\nendobj\n%%EOF\n');
@@ -35,7 +36,8 @@ const registrationLog = {
   data: '0x',
 };
 function rpcFixture({ pendingPayment = false, pendingRegistration = false,
-                      revoked = false, badFee = false, badNetwork = false } = {}) {
+                      revoked = false, badFee = false, badNetwork = false,
+                      discoverRegistration = false, malformedEvent = false } = {}) {
   return async (method, params = []) => {
     if (method === 'eth_chainId') return badNetwork ? '0x1' : NETWORK.chainId;
     if (method === 'eth_getTransactionReceipt') {
@@ -61,6 +63,20 @@ function rpcFixture({ pendingPayment = false, pendingRegistration = false,
         ? '0x' + digest + issuer.slice(2).padStart(64,'0') +
           word(timestamp) + word(1) + '0'.repeat(64)
         : registeredRecord;
+    }
+    if (method === 'eth_blockNumber') return '0x80';
+    if (method === 'eth_getLogs') {
+      if (!discoverRegistration) return [];
+      return [{
+        address: NETWORK.registryContract,
+        transactionHash: regTx,
+        topics: malformedEvent
+          ? [NETWORK.documentRegisteredTopic, '0x' + '0'.repeat(64), documentId,
+             indexedAddress(issuer)]
+          : [NETWORK.documentRegisteredTopic, documentId, documentId,
+             indexedAddress(issuer)],
+        blockNumber: '0x66',
+      }];
     }
     if (method === 'eth_getBlockByNumber') {
       return { timestamp: '0x' + timestamp.toString(16) };
@@ -284,4 +300,48 @@ test('HTTP accepts continuing a paid but unregistered intent without paying twic
   assert.equal(resume.body.paymentTxHash, payTx);
   assert.equal(resume.body.registrationTxHash, regTx);
   assert.equal(resume.body.certificateIssued, false);
+});
+
+test('bounded log discovery finds an issuer-worker registration receipt without a wallet signer', async () => {
+  const found = await findRegistrationTransaction(rpcFixture({ discoverRegistration: true }), {
+    documentId, paymentBlock: '0x64',
+  });
+  assert.equal(found, regTx);
+});
+
+test('registration discovery reports pending when the paid document is not yet anchored', async () => {
+  const found = await findRegistrationTransaction(rpcFixture(), {
+    documentId, paymentBlock: '0x64',
+  });
+  assert.equal(found, null);
+});
+
+test('registration discovery fails closed on malformed contract logs', async () => {
+  await assert.rejects(
+    findRegistrationTransaction(rpcFixture({ discoverRegistration: true, malformedEvent: true }), {
+      documentId, paymentBlock: '0x64',
+    }), /Malformed on-chain registration event/);
+});
+
+test('HTTP automatically reconciles issuer-worker TX after wallet payment, without client TX copy', async t => {
+  const f = await withApi(t, rpcFixture({ discoverRegistration: true }));
+  const created = await intent(f);
+  assert.equal(created.status, 201);
+  const confirmed = await confirm(f, created.body.intentId);
+  assert.equal(confirmed.status, 200);
+  assert.equal(confirmed.body.status, 'registered');
+  assert.equal(confirmed.body.paymentTxHash, payTx);
+  assert.equal(confirmed.body.registrationTxHash, regTx);
+  assert.equal(confirmed.body.certificateIssued, false);
+});
+
+test('HTTP fails closed on a malformed registration event and retains already confirmed payment', async t => {
+  const f = await withApi(t, rpcFixture({ discoverRegistration: true, malformedEvent: true }));
+  const created = await intent(f);
+  const confirmResult = await confirm(f, created.body.intentId);
+  assert.equal(confirmResult.status, 503);
+  assert.equal(confirmResult.body.certificateIssued, false);
+  const current = await getIntent(f, created.body.intentId);
+  assert.equal(current.body.paymentTxHash, payTx);
+  assert.equal(current.body.status, 'payment_confirmed_registration_pending');
 });
