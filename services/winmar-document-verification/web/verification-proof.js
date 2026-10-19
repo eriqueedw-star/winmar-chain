@@ -113,6 +113,80 @@
     return null;
   }
 
+  // The Explorer already indexes DocumentRegistered logs. For QR lookups,
+  // use its SAME-ORIGIN public index to identify candidate transactions in
+  // one page instead of scanning from deployment block in 500-block batches.
+  // Never trust the indexer as the source of verification: require the actual
+  // RPC receipt, matching contract event, issuer and current contract state.
+  async function indexedRegistrationEvent(rpc, hash, issuer) {
+    if (typeof root.fetch !== 'function') {
+      // Unit-test/nonbrowser fallback only; normal Explorer UI has fetch.
+      return registrationEvent(rpc, hash, issuer, '0xbeaca');
+    }
+    const endpoint = 'https://scan.winmarchain.io/api/v2/addresses/' +
+      VERIFICATION_ADDRESS + '/logs';
+    const expectedTopics = [REGISTERED_EVENT, hash, hash,
+      '0x' + issuer.slice(2).padStart(64, '0')];
+    let pageParams = null;
+    const seen = new Set();
+    for (let page = 0; page < 25; page++) {
+      const target = new URL(endpoint);
+      if (pageParams) {
+        for (const [key, value] of Object.entries(pageParams)) {
+          if (!/^(block_number|index|items_count)$/.test(key) ||
+              !/^[0-9]{1,15}$/.test(String(value))) {
+            throw new Error('Malformed Explorer log pagination cursor.');
+          }
+          target.searchParams.set(key, String(value));
+        }
+      }
+      if (seen.has(target.href)) {
+        throw new Error('Explorer log pagination repeated unexpectedly.');
+      }
+      seen.add(target.href);
+      const response = await root.fetch(target.href, {
+        cache: 'no-store', credentials: 'omit', mode: 'cors',
+      });
+      if (!response?.ok) throw new Error('Explorer registration index is unavailable.');
+      const data = await response.json();
+      if (!data || !Array.isArray(data.items) || data.items.length > 100) {
+        throw new Error('Explorer returned invalid registration-log data.');
+      }
+      for (const row of data.items) {
+        const topics = row?.topics;
+        if (!Array.isArray(topics) || topics.length !== 4 ||
+            topics.some((topic, i) => String(topic).toLowerCase() !== expectedTopics[i])) {
+          continue;
+        }
+        const address = typeof row.address === 'string' ?
+          row.address : row.address?.hash;
+        if (String(address).toLowerCase() !== VERIFICATION_ADDRESS ||
+            !/^0x[0-9a-f]{64}$/i.test(row.transaction_hash || '')) continue;
+        const receipt = await rpc('eth_getTransactionReceipt', [row.transaction_hash]);
+        if (!receiptOk(receipt, VERIFICATION_ADDRESS) ||
+            String(receipt.blockHash).toLowerCase() !== String(row.block_hash).toLowerCase()) {
+          continue;
+        }
+        const matching = (receipt.logs || []).some((event) =>
+          String(event.address).toLowerCase() === VERIFICATION_ADDRESS &&
+          (event.topics || []).length === 4 &&
+          event.topics.every((topic, i) => String(topic).toLowerCase() === expectedTopics[i]));
+        if (!matching) continue;
+        return {
+          transactionHash: row.transaction_hash.toLowerCase(),
+          blockNumber: receipt.blockNumber,
+        };
+      }
+      if (!data.next_page_params) return null;
+      if (typeof data.next_page_params !== 'object' ||
+          Array.isArray(data.next_page_params)) {
+        throw new Error('Invalid Explorer log continuation.');
+      }
+      pageParams = data.next_page_params;
+    }
+    throw new Error('Explorer log search is too large; review indexed document lookup.');
+  }
+
   // Before asking the wallet to pay, refuse a duplicate registration or
   // uncertain registry state. A second fee for the same original PDF hash
   // would be irrecoverable if the one-record-per-hash contract refuses it.
@@ -219,7 +293,7 @@
     // Deployed contract creation is public evidence at block 781002.
     // The initial client route is intended for a review deployment; production
     // indexers should replace long-range log scans before public scaling.
-    const event = await registrationEvent(rpc, hash, record.issuer, '0xbeaca');
+    const event = await indexedRegistrationEvent(rpc, hash, record.issuer);
     if (!event) return { status: 'registration_unconfirmed', documentId: hash };
     const block = await rpc('eth_getBlockByNumber', [event.blockNumber, false]);
     if (!block?.timestamp || BigInt(block.timestamp) !== record.issuedAt) {

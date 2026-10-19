@@ -3,7 +3,7 @@ import { readFileSync } from 'node:fs';
 import test from 'node:test';
 import vm from 'node:vm';
 
-const sandbox = { console };
+const sandbox = { console, URL, URLSearchParams };
 sandbox.globalThis = sandbox;
 vm.runInNewContext(readFileSync(new URL('../web/verification-proof.js', import.meta.url), 'utf8'), sandbox);
 const proof = sandbox.WinmarVerificationProof;
@@ -172,4 +172,77 @@ test('partially initialized registry record is NOT mistaken for safe unregistere
   };
   await assert.rejects(proof.preflightNewPayment(rpc, id),
     /Cannot check document registry/);
+});
+
+test('public Explorer uses indexed logs, not a 31,000-block browser RPC scan', async () => {
+  let scans = 0;
+  let indexedRequests = 0;
+  sandbox.fetch = async (url) => {
+    indexedRequests++;
+    assert.match(String(url), /\/api\/v2\/addresses\/0x53fb6ba2997a50d3ddfff5395a3bb9b7b24b7aef\/logs/);
+    return { ok: true, json: async () => ({
+      items: [{
+        address: { hash: C.VERIFICATION_ADDRESS },
+        transaction_hash: registrationTx,
+        block_hash: registrationBlockHash,
+        topics: registrationLog.topics,
+        block_number: 781524,
+      }],
+      next_page_params: null,
+    }) };
+  };
+  try {
+    const real = mockRpc();
+    const verified = await proof.lookup(async (method, params) => {
+      if (method === 'eth_getLogs') scans++;
+      return real(method, params);
+    }, id);
+    assert.equal(verified.status, 'registered');
+    assert.equal(verified.registrationTransactionHash, registrationTx);
+    assert.equal(indexedRequests, 1);
+    assert.equal(scans, 0, 'No brute-force block-range RPC scans in browser');
+  } finally {
+    delete sandbox.fetch;
+  }
+});
+
+test('Explorer indexed event cannot fake a registration without a matching RPC receipt', async () => {
+  sandbox.fetch = async () => ({ ok: true, json: async () => ({
+    items: [{
+      address: { hash: C.VERIFICATION_ADDRESS },
+      transaction_hash: '0x' + 'cd'.repeat(32),
+      block_hash: registrationBlockHash,
+      topics: registrationLog.topics,
+      block_number: 781524,
+    }],
+    next_page_params: null,
+  }) });
+  try {
+    const result = await proof.lookup(mockRpc(), id);
+    assert.equal(result.status, 'registration_unconfirmed');
+  } finally {
+    delete sandbox.fetch;
+  }
+});
+
+test('Explorer indexed lookup refuses malformed pagination and never marks a PDF verified', async () => {
+  sandbox.fetch = async () => ({ ok: true, json: async () => ({
+    items: [], next_page_params: { unexpected_redirect: 'https://unsafe.invalid' },
+  }) });
+  try {
+    await assert.rejects(proof.lookup(mockRpc(), id),
+      /Malformed Explorer log pagination cursor/);
+  } finally {
+    delete sandbox.fetch;
+  }
+});
+
+test('Explorer lookup fails closed on unavailable indexer, without scanning arbitrary blocks', async () => {
+  sandbox.fetch = async () => ({ ok: false, status: 503 });
+  try {
+    await assert.rejects(proof.lookup(mockRpc(), id),
+      /Explorer registration index is unavailable/);
+  } finally {
+    delete sandbox.fetch;
+  }
 });

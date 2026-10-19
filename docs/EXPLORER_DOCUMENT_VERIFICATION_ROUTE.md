@@ -12,7 +12,7 @@ On 2026-10-19 a read-only visit to the real sample registration route returned H
 
 ## Proposed static handler (review-only, not production config)
 
-This branch now contains a read-only frontend handler:
+This branch now contains a read-only frontend handler and a CI-created static deploy artifact (without production publish):
 
 - `services/winmar-document-verification/web/verify.html`
 - `services/winmar-document-verification/web/verify.css`
@@ -58,7 +58,7 @@ Consider a dedicated Blockscout frontend route or an indexed verification backen
 - Permit `connect-src https://rpc.winmarchain.io` and verify the RPC CORS policy actually accepts requests from `https://scan.winmarchain.io`.
 - Keep `script-src 'self'` and `style-src 'self'`; all assets are bundled. No inline JavaScript and no external Google Fonts/QR endpoint.
 - Use TLS, deny directory listing, and never proxy private validator management interfaces.
-- Apply rate limiting to RPC / indexed read APIs before a high-traffic production launch. The initial on-browser log scan is not suitable for unbounded historic-chain growth.
+- Apply rate limiting to RPC / indexed read APIs before a high-traffic production launch. The current Explorer-only QR lookup **first discovers candidate registration events through the public Blockscout address-log index** at `/api/v2/addresses/<registry>/logs`, then independently validates its transaction receipt, emitted topics, issuer authorization, current non-revoked contract record and block timestamp using Winmar RPC. This avoids large historic-block scans during normal Explorer page loads. It searches a maximum of 25 index pages and fails closed on index or RPC errors. The older RPC scan remains only for non-browser test fallback and the issuance-specific verifier.
 - The certificate master remains a **separate immutable approved asset**; do not render or generate certificates inside this Explorer route.
 
 ## Acceptance criteria — do not release before all PASS
@@ -74,5 +74,7 @@ Consider a dedicated Blockscout frontend route or an indexed verification backen
 - [ ] Works on phone and desktop, with appropriate Explorer CSP, RPC CORS, and safe server routing.
 - [ ] No alteration to validator fleet, contract, treasury, fee, genesis or existing Explorer root routes.
 - [ ] Ops approval, rollback instructions, and sanitized deployment evidence are attached.
+
+**Handoff:** see `docs/EXPLORER_VERIFICATION_UI_ROLLOUT.md` and CI workflow `Package Winmar Explorer Document Verification UI` for exact asset layout, operator review, rollback and post-deploy validation. The document record already exists on-chain; only the public page route is missing.
 
 **No production Nginx change, backend deploy, or Blockchain transaction is performed by this specification or draft PR.**
