@@ -39,7 +39,7 @@ class TestImmutableArtwork(unittest.TestCase):
         self.assertIsNone(self.compare([(840, 100, (0, 0, 0, 255))]))
 
     def test_sha_data_box_only_passes(self):
-        self.assertIsNone(self.compare([(350, 968, (0, 0, 0, 255))]))
+        self.assertIsNone(self.compare([(350, 1003, (0, 0, 0, 255))]))
 
     def test_original_logo_must_not_change(self):
         self.assertIsNotNone(self.compare([(99, 110, (0, 0, 0, 255))]))

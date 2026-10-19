@@ -15,6 +15,7 @@ import hashlib
 import io
 import json
 import re
+import sys
 import urllib.request
 from datetime import datetime, timezone
 from pathlib import Path
@@ -197,20 +198,27 @@ def make_certificate_image(master_bytes, evidence, title, subject, issuer, page_
 
     image = Image.open(io.BytesIO(master_bytes)).convert("RGBA")
     # Text replacement is restricted to approved sample-data rectangles.
-    # Smoothly interpolate each rectangle's background from intact top/bottom
-    # neighboring rows; never fill a section border or static icon.
+    # Use an opaque, approved panel tone: sampling neighbouring rows can copy
+    # anti-aliased pixels from the master sample text back into a new record.
+    # Never fill a section border or static icon.
     def clear_dynamic(box):
         x0,y0,x1,y1=box
-        for y in range(y0,y1):
-            scale=(y-y0+1)/(y1-y0+1)
-            for x in range(x0,x1):
-                a=image.getpixel((x,y0-2))
-                b=image.getpixel((x,y1+2))
-                image.putpixel((x,y),tuple(round(a[c]*(1-scale)+b[c]*scale) for c in range(4)))
+        # Summary sample glyphs extend into the lower part of their cells.
+        # Clear only that value-cell remainder, never the label column.
+        if 480 <= y0 < 750:
+            y1 = min(image.height, y1 + 35)
+        ImageDraw.Draw(image).rectangle((x0, y0, x1 - 1, y1 - 1), fill="#f7fbff")
 
     def font(size, bold=False):
-        for name in (("DejaVuSans-Bold.ttf" if bold else "DejaVuSans.ttf"),
-                     ("LiberationSans-Bold.ttf" if bold else "LiberationSans-Regular.ttf")):
+        # The browser renderer uses Arial. Resolve the same reviewed family on
+        # Windows, then the existing Linux CI families. Never silently fall
+        # back to an arbitrary system font.
+        names = []
+        if sys.platform.startswith("win"):
+            names.append(str(Path("C:/Windows/Fonts") / ("arialbd.ttf" if bold else "arial.ttf")))
+        names.extend(("DejaVuSans-Bold.ttf" if bold else "DejaVuSans.ttf",
+                      "LiberationSans-Bold.ttf" if bold else "LiberationSans-Regular.ttf"))
+        for name in names:
             try:
                 return ImageFont.truetype(name,size)
             except OSError:
@@ -247,18 +255,20 @@ def make_certificate_image(master_bytes, evidence, title, subject, issuer, page_
     write((340,702,907,728),"PDF (SHA-256 Verified)",17)
 
     sha=evidence["sha256"].upper()
-    clear_dynamic((348,954,897,994))
-    draw.text((349,954),sha[:32],font=font(15),fill="#32468e")
-    draw.text((349,973),sha[32:],font=font(15),fill="#32468e")
-    write((348,1014,898,1040),evidence["registration_tx"],12)
-    write((348,1054,898,1083),"#"+str(evidence["block_number"]),17)
-    write((348,1097,898,1126),utc_date,16)
-    write((348,1140,898,1170),evidence["issuer_wallet"],14)
-    write((348,1182,898,1215),"Winmar Chain Mainnet",17)
-    # Keep the original Explorer button and its icon; only replace link text.
-    write((349,1230,768,1263),evidence["verification_url"],11,color="#086cfa")
-    write((98,1342,348,1374),short_id,16,bold=True)
-    write((487,1342,640,1374),str(page_number)+" of "+str(page_number),17,bold=True)
+    clear_dynamic((348,989,897,1029))
+    draw.text((349,989),sha[:32],font=font(15),fill="#32468e")
+    draw.text((349,1008),sha[32:],font=font(15),fill="#32468e")
+    write((348,1049,898,1075),evidence["registration_tx"],12)
+    write((348,1089,898,1118),"#"+str(evidence["block_number"]),17)
+    write((348,1132,898,1161),utc_date,16)
+    write((348,1175,898,1205),evidence["issuer_wallet"],14)
+    write((348,1217,898,1250),"Winmar Chain Mainnet",17)
+    # QR stores the complete canonical route; the fixed, single-line artwork
+    # can only carry a short human-readable reference without redesigning it.
+    display_url = "scan.winmarchain.io/verify/" + evidence["sha256"][:10] + "..."
+    write((349,1265,808,1298),display_url,11,color="#086cfa")
+    write((98,1377,348,1409),short_id,16,bold=True)
+    write((487,1377,640,1409),str(page_number)+" of "+str(page_number),17,bold=True)
 
     qr=qrcode.QRCode(error_correction=qrcode.constants.ERROR_CORRECT_M,border=0)
     qr.add_data(evidence["verification_url"])

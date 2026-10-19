@@ -53,36 +53,21 @@
   }
 
   // The approved PNG has subtle white/blue gradients in the data panels.
-  // Solid white rectangle overlays would visibly change its original design.
-  // Remove only the sample text pixels by reconstructing the existing
-  // background vertically from the adjacent owner-approved artwork rows.
+  // Reconstructing from neighbouring pixels can re-introduce anti-aliased
+  // sample text, so use the approved panel tone inside dynamic boxes only.
   function eraseSampleValue(ctx, x, y, width, height) {
     requireState(x >= 1 && y >= 3 && width > 0 && height > 0 &&
       x + width <= WIDTH && y + height + 3 < HEIGHT,
       'Replacement data rectangle is outside the approved certificate.');
-    const top = ctx.getImageData(x, y - 2, width, 1).data;
-    const bottom = ctx.getImageData(x, y + height + 2, width, 1).data;
-    const fill = ctx.createImageData(width, height);
-    for (let row = 0; row < height; row++) {
-      const ratio = (row + 1) / (height + 1);
-      for (let column = 0; column < width; column++) {
-        const from = column * 4;
-        const target = (row * width + column) * 4;
-        for (let channel = 0; channel < 4; channel++) {
-          fill.data[target + channel] = Math.round(
-            top[from + channel] * (1 - ratio) +
-            bottom[from + channel] * ratio);
-        }
-      }
-    }
-    ctx.putImageData(fill, x, y);
+    ctx.fillStyle = '#f7fbff';
+    ctx.fillRect(x, y, width, height);
   }
 
   function field(ctx, x, y, width, value, options = {}) {
-    const { size = 16, weight = '400', color = '#1d2c6b' } = options;
+    const { size = 16, weight = '400', color = '#1d2c6b', clearHeight = 30 } = options;
     const str = String(value ?? '').trim();
     requireState(str.length > 0 && !/[\u0000-\u001f]/.test(str), 'Missing certificate data.');
-    eraseSampleValue(ctx, x, y, width, 30);
+    eraseSampleValue(ctx, x, y, width, clearHeight);
     ctx.textBaseline = 'middle';
     ctx.textAlign = 'left';
     ctx.fillStyle = color;
@@ -156,15 +141,15 @@
     // brand artwork, fixed text, badge, title, status panel, lines or footer.
     field(ctx, 567, 109, 216, report, { weight: '600' });
     field(ctx, 567, 182, 216, issueDate, { weight: '600' });
-    field(ctx, 339, 483, 564, report, { background: '#f7fbff', weight: '600' });
-    field(ctx, 339, 526, 564, docType, { background: '#f7fbff' });
-    field(ctx, 339, 570, 564, subject, { background: '#f7fbff' });
-    field(ctx, 339, 614, 564, issuer, { background: '#f7fbff', weight: '600' });
-    field(ctx, 339, 658, 564, issueDate, { background: '#f7fbff' });
-    field(ctx, 339, 700, 564, 'PDF (SHA-256 Verified)', { background: '#f7fbff' });
+    field(ctx, 339, 483, 564, report, { weight: '600', clearHeight: 65 });
+    field(ctx, 339, 526, 564, docType, { clearHeight: 67 });
+    field(ctx, 339, 570, 564, subject, { clearHeight: 65 });
+    field(ctx, 339, 614, 564, issuer, { weight: '600', clearHeight: 64 });
+    field(ctx, 339, 658, 564, issueDate, { clearHeight: 65 });
+    field(ctx, 339, 700, 564, 'PDF (SHA-256 Verified)', { clearHeight: 63 });
 
     // TWO non-overlapping lines fit the master's fingerprint row.
-    eraseSampleValue(ctx, 347, 958, 541, 42);
+    eraseSampleValue(ctx, 347, 989, 541, 40);
     ctx.font = '400 15px Arial, sans-serif';
     ctx.textBaseline = 'middle';
     ctx.textAlign = 'left';
@@ -174,16 +159,19 @@
     requireState(ctx.measureText(shaPart1).width <= 527 &&
       ctx.measureText(shaPart2).width <= 527,
       'SHA-256 cannot fit approved certificate fingerprint rows.');
-    ctx.fillText(shaPart1, 352, 969);
-    ctx.fillText(shaPart2, 352, 987);
-    field(ctx, 347, 1010, 540, verified.registrationTransactionHash, { size: 12 });
-    field(ctx, 347, 1053, 540, `#${verified.registrationBlockNumber}`);
-    field(ctx, 347, 1096, 540, dateWithTime);
-    field(ctx, 347, 1138, 540, verified.issuerWallet);
-    field(ctx, 347, 1180, 540, 'Winmar Chain Mainnet');
-    field(ctx, 347, 1229, 419, verificationUrl, { size: 11, color: '#086cfa' });
-    field(ctx, 97, 1342, 254, report, { size: 14, weight: '600' });
-    field(ctx, 487, 1342, 151, verified.pageLabel, { size: 15, weight: '600' });
+    ctx.fillText(shaPart1, 352, 1004);
+    ctx.fillText(shaPart2, 352, 1022);
+    field(ctx, 347, 1049, 540, verified.registrationTransactionHash, { size: 12 });
+    field(ctx, 347, 1089, 540, `#${verified.registrationBlockNumber}`);
+    field(ctx, 347, 1132, 540, dateWithTime);
+    field(ctx, 347, 1175, 540, verified.issuerWallet);
+    field(ctx, 347, 1217, 540, 'Winmar Chain Mainnet');
+    // The QR contains the complete, canonical verification URL. The printed
+    // reference must remain within the owner-locked one-line artwork box.
+    const displayVerificationUrl = `scan.winmarchain.io/verify/${id.slice(0, 12)}…`;
+    field(ctx, 347, 1265, 459, displayVerificationUrl, { size: 11, color: '#086cfa' });
+    field(ctx, 97, 1377, 254, report, { size: 14, weight: '600' });
+    field(ctx, 487, 1377, 151, verified.pageLabel, { size: 15, weight: '600' });
 
     qr(ctx, verificationUrl);
     return canvas;
