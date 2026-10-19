@@ -199,3 +199,56 @@ export async function validateRegistration(rpc,
     certificateIssued: false,
   };
 }
+
+/**
+ * Discover the distinct authorized registration transaction without requiring
+ * an organization to copy its hash manually from Explorer. This performs
+ * READ-ONLY bounded log queries. Confirmation still requires validateRegistration.
+ *
+ * Historic lookback is deliberately capped to protect the public RPC; for
+ * older payments callers can supply the actual registration transaction hash.
+ */
+export async function findRegistrationTransaction(rpc, { documentId, paymentBlock }) {
+  const doc = normalizeHash(documentId, 'document ID');
+  let paidHeight, head;
+  try {
+    paidHeight = BigInt(paymentBlock);
+    head = BigInt(await rpc('eth_blockNumber'));
+  } catch {
+    throw fail('Unable to determine confirmed Winmar Chain block height', 503);
+  }
+  if (paidHeight < 0n || head < 0n) throw fail('Invalid blockchain heights', 503);
+  const finalHead = head - 2n;
+  if (finalHead < paidHeight) return null;
+  const lookback = 2000n;
+  const chunk = 250n;
+  const first = paidHeight > finalHead - lookback + 1n
+    ? paidHeight : finalHead - lookback + 1n;
+  for (let from = first; from <= finalHead; from += chunk) {
+    const to = from + chunk - 1n < finalHead ? from + chunk - 1n : finalHead;
+    const logs = await rpc('eth_getLogs', [{
+      address: NETWORK.registryContract,
+      fromBlock: '0x' + from.toString(16),
+      toBlock: '0x' + to.toString(16),
+      topics: [NETWORK.documentRegisteredTopic, doc, doc],
+    }]);
+    if (!Array.isArray(logs) || logs.length > 20) {
+      throw fail('Unreliable blockchain registration event response', 503);
+    }
+    for (const log of logs) {
+      if (String(log?.address || '').toLowerCase() !== NETWORK.registryContract ||
+          !Array.isArray(log.topics) || log.topics.length !== 4 ||
+          log.topics[0]?.toLowerCase() !== NETWORK.documentRegisteredTopic ||
+          log.topics[1]?.toLowerCase() !== doc ||
+          log.topics[2]?.toLowerCase() !== doc ||
+          typeof log.transactionHash !== 'string' ||
+          !HEX32.test(log.transactionHash)) {
+        throw fail('Malformed on-chain registration event', 503);
+      }
+      // Candidate ONLY: caller MUST validate the distinct receipt, issuer,
+      // event, block timestamp, non-revoked contract state and payment order.
+      return log.transactionHash.toLowerCase();
+    }
+  }
+  return null;
+}
