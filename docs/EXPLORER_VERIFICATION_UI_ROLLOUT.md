@@ -66,7 +66,8 @@ location ^~ /document-verification/ {
     root /srv/winmar-document-verification/current;
     limit_except GET HEAD { deny all; }
     try_files $uri =404;
-    add_header X-Content-Type-Options nosniff always;
+    # Do NOT add ad-hoc add_header here: doing so can suppress inherited
+    # HSTS/CSP/other security headers from the parent Nginx server block.
 }
 
 # Exact document-ID path only, preserving the visible URL for QR scans.
@@ -76,8 +77,7 @@ location ~ "^/verify/0x[0-9A-Fa-f]{64}/?$" {
     root /srv/winmar-document-verification/current;
     limit_except GET HEAD { deny all; }
     try_files /verify.html =404;
-    add_header Cache-Control "no-store" always;
-    add_header X-Content-Type-Options nosniff always;
+    expires -1;  # prevent caching while preserving inherited security headers
 }
 ```
 
@@ -89,6 +89,8 @@ location ~ "^/verify/0x[0-9A-Fa-f]{64}/?$" {
 ```
 
 Do not approve deployment if the first path accidentally resolves to `current/site/verify.html`: that indicates the symlink points to the wrong directory and both routes will 404.
+
+**Critical Nginx header inheritance:** placing `add_header` inside these new `location` blocks can suppress all parent `add_header` directives on older Nginx releases. This includes HSTS, CSP, X-Frame-Options and other inherited controls. The example intentionally avoids location-specific `add_header` and instead uses `expires -1` for the HTML. Before activation, validate effective response headers for **both new paths**. If important headers currently exist only in Blockscout's `location /`, migrate/redeclare them through the existing approved server security-header policy rather than weakening protection. Do not modify unrelated headers, upstream routes, or TLS defaults.
 
 **Never replace the Explorer's general `location /` or Blockscout upstream.** Maintain existing TLS/HSTS/security headers and existing API/upstream routes. If the reverse proxy is not Nginx, implement the **same two static routes** using its supported route rules. Existing asset CORS/content-security policies should not be weakened globally.
 
