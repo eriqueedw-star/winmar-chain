@@ -149,6 +149,18 @@ issueButton.addEventListener('click', async () => {
     if (!accounts?.[0]) throw new Error('Wallet account unavailable.');
     let paymentTx = sessionStorage.getItem(storageKey);
     if (!/^0x[0-9a-f]{64}$/i.test(paymentTx || '')) {
+      // Do not request a second fee for a document already recorded on-chain.
+      // RPC failure is UNKNOWN, never a reason to send a payment anyway.
+      if (!window.WinmarVerificationProof?.preflightNewPayment) {
+        throw new Error('Document registry preflight unavailable. No payment requested.');
+      }
+      issueProgressText.textContent = 'Checking the live document registry before payment…';
+      const initial = await window.WinmarVerificationProof.preflightNewPayment(rpc, id);
+      if (initial.status !== 'not_registered') {
+        throw new Error(initial.status === 'already_registered'
+          ? 'This exact PDF is already recorded on Winmar Chain. Do not pay again; verify the existing record.'
+          : 'This document has an inactive or revoked registry record. No payment requested.');
+      }
       issueProgressText.textContent = 'Approve the 0.0021 WMC fee and network gas in your wallet…';
       status.textContent = 'Awaiting wallet payment approval';
       status.className = 'status pending';
