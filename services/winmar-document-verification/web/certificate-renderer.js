@@ -52,9 +52,9 @@
     }
   }
 
-  // The approved PNG has subtle white/blue gradients in the data panels.
-  // Reconstructing from neighbouring pixels can re-introduce anti-aliased
-  // sample text, so use the approved panel tone inside dynamic boxes only.
+  // Only approved sample-value pixels may be replaced. Row separators
+  // at y=533/577/622/668/713 and the Explorer button are IMMUTABLE.
+  // Never enlarge a clear rectangle across a row separator or static element.
   function eraseSampleValue(ctx, x, y, width, height) {
     requireState(x >= 1 && y >= 3 && width > 0 && height > 0 &&
       x + width <= WIDTH && y + height + 3 < HEIGHT,
@@ -141,12 +141,12 @@
     // brand artwork, fixed text, badge, title, status panel, lines or footer.
     field(ctx, 567, 109, 216, report, { weight: '600' });
     field(ctx, 567, 182, 216, issueDate, { weight: '600' });
-    field(ctx, 339, 483, 564, report, { weight: '600', clearHeight: 65 });
-    field(ctx, 339, 526, 564, docType, { clearHeight: 67 });
-    field(ctx, 339, 570, 564, subject, { clearHeight: 65 });
-    field(ctx, 339, 614, 564, issuer, { weight: '600', clearHeight: 64 });
-    field(ctx, 339, 658, 564, issueDate, { clearHeight: 65 });
-    field(ctx, 339, 700, 564, 'PDF (SHA-256 Verified)', { clearHeight: 63 });
+    field(ctx, 339, 490, 564, report, { weight: '600', clearHeight: 36 });
+    field(ctx, 339, 536, 564, docType, { clearHeight: 36 });
+    field(ctx, 339, 580, 564, subject, { clearHeight: 37 });
+    field(ctx, 339, 625, 564, issuer, { weight: '600', clearHeight: 37 });
+    field(ctx, 339, 670, 564, issueDate, { clearHeight: 36 });
+    field(ctx, 339, 716, 564, 'PDF (SHA-256 Verified)', { clearHeight: 35 });
 
     // TWO non-overlapping lines fit the master's fingerprint row.
     eraseSampleValue(ctx, 347, 989, 541, 40);
@@ -169,7 +169,7 @@
     // The QR contains the complete, canonical verification URL. The printed
     // reference must remain within the owner-locked one-line artwork box.
     const displayVerificationUrl = `scan.winmarchain.io/verify/${id.slice(0, 12)}…`;
-    field(ctx, 347, 1265, 459, displayVerificationUrl, { size: 11, color: '#086cfa' });
+    field(ctx, 347, 1265, 420, displayVerificationUrl, { size: 11, color: '#086cfa' });
     field(ctx, 97, 1377, 254, report, { size: 14, weight: '600' });
     field(ctx, 487, 1377, 151, verified.pageLabel, { size: 15, weight: '600' });
 
