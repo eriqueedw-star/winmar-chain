@@ -45,7 +45,7 @@ Use one designated operator, with a current configuration backup, a tested rollb
 
 ## 3. Example static Nginx route (requires adaptation and review)
 
-First place the exact reviewed artifact files in a versioned release directory, e.g. `/srv/winmar-document-verification/releases/<reviewed-git-sha>/`, and point the `current` symlink to that release. The web root in this example is `/srv/winmar-document-verification/current`.
+First place the exact reviewed artifact files in a versioned release directory, e.g. `/srv/winmar-document-verification/releases/<reviewed-git-sha>/`. **The artifact contains a nested `site/` directory. Point the `current` symlink to the reviewed release's `site/` directory, not the release directory itself.** The web root in this example is `/srv/winmar-document-verification/current` and must therefore contain `verify.html` and `document-verification/verify.js` directly. Validate the SHA256SUMS relative to the release root before switching the symlink.
 
 **Within the existing `server_name scan.winmarchain.io` TLS server block**, add the following *before any conflicting location policy*, then run `nginx -t` prior to a reload:
 
@@ -69,6 +69,15 @@ location ~ "^/verify/0x[0-9A-Fa-f]{64}/?$" {
     add_header X-Content-Type-Options nosniff always;
 }
 ```
+
+**Pre-reload static-layout check:** under the target `current` symlink, both of these paths MUST exist:
+
+```text
+/srv/winmar-document-verification/current/verify.html
+/srv/winmar-document-verification/current/document-verification/verify.js
+```
+
+Do not approve deployment if the first path accidentally resolves to `current/site/verify.html`: that indicates the symlink points to the wrong directory and both routes will 404.
 
 **Never replace the Explorer's general `location /` or Blockscout upstream.** Maintain existing TLS/HSTS/security headers and existing API/upstream routes. If the reverse proxy is not Nginx, implement the **same two static routes** using its supported route rules. Existing asset CORS/content-security policies should not be weakened globally.
 
