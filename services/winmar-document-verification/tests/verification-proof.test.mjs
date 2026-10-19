@@ -41,10 +41,11 @@ const registeredReceipt = {
   blockNumber: '0x78', blockHash: registrationBlockHash, logs: [registrationLog],
 };
 
-function mockRpc({ registered = true, revoked = false, badAmount = false, currentIssuer = true } = {}) {
+function mockRpc({ registered = true, revoked = false, badAmount = false, currentIssuer = true,
+                   zeroRecord = false, badChain = false } = {}) {
   return async (method, params) => {
     switch (method) {
-      case 'eth_chainId': return C.MAINNET_CHAIN_ID;
+      case 'eth_chainId': return badChain ? '0x1' : C.MAINNET_CHAIN_ID;
       case 'eth_getTransactionByHash':
         return { to: C.FEE_ADDRESS, from: payer,
           value: '0x' + (badAmount ? 1n : C.FEE_WEI).toString(16),
@@ -56,6 +57,7 @@ function mockRpc({ registered = true, revoked = false, badAmount = false, curren
         const data = params[0].data;
         if (data.startsWith('0xb10d6b41')) {
           if (!registered) throw new Error('missing on-chain document');
+          if (zeroRecord) return '0x' + '0'.repeat(320);
           return encodedRecord(revoked ? 123n : 0n);
         }
         if (data.startsWith('0x38a7543e')) {
@@ -130,4 +132,31 @@ test('public Explorer lookup rejects unauthorized issuer', async () => {
 test('public Explorer lookup rejects incorrect document ID', async () => {
   await assert.rejects(proof.lookup(async () => { throw Error('RPC must not be called'); },
     'invalid-hash'), /Invalid document ID/);
+});
+
+test('prepayment registry gate rejects an already registered PDF before charging wallet', async () => {
+  const result = await proof.preflightNewPayment(mockRpc(), id);
+  assert.equal(result.status, 'already_registered');
+  assert.equal(result.documentId, id);
+});
+
+test('prepayment registry gate permits zero-value unregistered record', async () => {
+  const result = await proof.preflightNewPayment(mockRpc({ zeroRecord: true }), id);
+  assert.equal(result.status, 'not_registered');
+});
+
+test('prepayment registry gate rejects revoked records and wrong chain', async () => {
+  const old = await proof.preflightNewPayment(mockRpc({ revoked: true }), id);
+  assert.equal(old.status, 'revoked');
+  await assert.rejects(proof.preflightNewPayment(mockRpc({ badChain: true }), id),
+    /Wrong Winmar Chain network/);
+});
+
+test('prepayment registry gate fails closed on RPC outage instead of charging wallet', async () => {
+  const rpc = async (method) => {
+    if (method === 'eth_chainId') return C.MAINNET_CHAIN_ID;
+    throw new Error('RPC connection refused');
+  };
+  await assert.rejects(proof.preflightNewPayment(rpc, id),
+    /Cannot check document registry/);
 });
