@@ -203,10 +203,11 @@ def make_certificate_image(master_bytes, evidence, title, subject, issuer, page_
     # Never fill a section border or static icon.
     def clear_dynamic(box):
         x0,y0,x1,y1=box
-        # Summary sample glyphs extend into the lower part of their cells.
-        # Clear only that value-cell remainder, never the label column.
-        if 480 <= y0 < 750:
-            y1 = min(image.height, y1 + 35)
+        # Approved static dividers at 533/577/622/668/713 must remain.
+        # A prior blanket +35px expansion erased table separator lines.
+        summary_rules = (533, 534, 577, 578, 622, 623, 668, 713)
+        if 480 <= y0 < 752 and any(y0 <= rule < y1 for rule in summary_rules):
+            raise ValueError("Summary dynamic area overlaps approved table rules")
         ImageDraw.Draw(image).rectangle((x0, y0, x1 - 1, y1 - 1), fill="#f7fbff")
 
     def font(size, bold=False):
@@ -247,12 +248,12 @@ def make_certificate_image(master_bytes, evidence, title, subject, issuer, page_
     utc_date=timestamp.strftime("%Y-%m-%d %H:%M:%S")
     write((567,113,782,140),short_id,15,bold=True)
     write((567,185,778,211),issue_date,16,bold=True)
-    write((340,483,907,513),short_id,17,bold=True)
-    write((340,526,907,558),title,17)
-    write((340,571,907,600),subject,17)
-    write((340,614,907,643),issuer,15,bold=True)
-    write((340,658,907,688),issue_date,17)
-    write((340,702,907,728),"PDF (SHA-256 Verified)",17)
+    write((340,490,907,526),short_id,17,bold=True)
+    write((340,536,907,572),title,17)
+    write((340,580,907,617),subject,17)
+    write((340,625,907,662),issuer,15,bold=True)
+    write((340,670,907,706),issue_date,17)
+    write((340,716,907,751),"PDF (SHA-256 Verified)",17)
 
     sha=evidence["sha256"].upper()
     clear_dynamic((348,989,897,1029))
