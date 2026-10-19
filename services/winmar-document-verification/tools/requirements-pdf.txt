@@ -1,0 +1,6 @@
+# Permissive-license local PDF assembly tools (not loaded by the web UI).
+# These dependencies are only required to execute build_verified_pdf.py.
+pypdf==5.9.0
+reportlab==4.4.9
+Pillow==12.3.0
+qrcode==8.2

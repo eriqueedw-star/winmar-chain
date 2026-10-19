@@ -1,0 +1,98 @@
+# Winmar Chain — Organization Document Verification API
+
+**Status:** isolated draft implementation for review and staging. **NOT deployed, NOT production-ready, and NOT an issuer service.** Designed as a parallel workstream to [PR #42](https://github.com/eriqueedw-star/winmar-chain/pull/42), where Codex is handling approved certificate assets/UI.
+
+## Product decision: one blockchain standard, two access paths
+
+- **Public portal, no registration:** connect EVM wallet, upload the original PDF, pay **0.0021 WMC + gas**, confirm `FeePaid`, wait for separately authorized `DocumentRegistered`, then generate the exact owner-approved certificate and QR.
+- **Organization account (API access):** after business approval, an organization obtains scoped backend-only API credentials for its own website/ERP. Its customers still connect a wallet, approve the same fee and obtain the **same** independently confirmed on-chain document registration. API credentials are **not** payment authority or issuer authorization.
+
+**No off-chain official certificate.** Payment alone is never verification. This API does not sign, send an on-chain transaction, deploy contracts or generate a PDF; it records and checks existing blockchain evidence, reporting `certificateIssued:false` even after a registry record is confirmed. The official PDF is handled only by an independently reviewed owner-approved rendering workflow.
+
+## Service endpoints
+
+All `/v1/` routes require `Authorization: Bearer <api-key>` from an approved **server-side** client. Do **not** embed this key in JavaScript on a company's public website. No browser CORS is enabled.
+
+| Method/path | Required scope | Description |
+| --- | --- | --- |
+| `GET /healthz` | None | Liveness only, **not** production readiness |
+| `POST /v1/intents` | `verification:intents:create` | Body: original PDF bytes, `Content-Type: application/pdf`, `Idempotency-Key` (12–128 safe chars), `X-Payer-Wallet`. Returns original source SHA-256/document ID, contract, chain ID, exact fee. Original bytes discarded, not stored. |
+| `POST /v1/intents/:id/confirm` | `verification:intents:confirm` | JSON body: `{"paymentTxHash":"0x...","registrationTxHash":"0x..."}` (registration TX optional; when omitted, the backend searches a bounded recent block window for the issuer worker's DocumentRegistered event). Independently verifies paid fee, payer, contract, topics, separately authorized registration and current revocation state. HTTP 202 pending or 200 registered. **Never issues PDF.** |
+| `GET /v1/intents/:id` | `verification:intents:read` | Tenant-isolated, read-only current record reconciliation against Winmar Chain; never returns a falsely verified certificate. |
+
+**Proof semantics:** each intent is pinned to the full original document SHA-256 and payer wallet. A successful fee transaction is reserved **globally across every organization and intent**; the same transaction cannot be reused for another issuance, including after a server restart. Pending, legitimately paid intents can be resumed using the same payment hash without a second charge. The reference store records only the payment hash and intent ownership metadata in a restricted claim ledger; it does not store PDF data or API keys. Confirming the payment proves only the application fee; confirming the separate authorized registration proves that a hash was recorded. The PDF held by the verifier must still be hashed against that record. A registry record is not a guarantee that the text of a document is legally accurate.
+
+### Chain identity and non-configurable invariants
+
+- Chain ID `12142816` (`0xb948e0`)
+- Deployed payment contract `0xcEC232bd11F03006ECC80917F5cD55bBf247617D`
+- Deployed registry `0x53fB6ba2997A50d3ddFfF5395a3BB9b7b24B7AEF`
+- Fee `0.0021 WMC` = `2100000000000000 wei` plus gas
+- Treasury `0x2d26e199f9be1A907239e403c4fad14C0856E7FD`
+- Explorer verification URL `https://scan.winmarchain.io/verify/<documentId>`
+
+This reference implementation never modifies these contracts or settings.
+
+## Partner integration handoff
+
+The machine-readable endpoint contract lives in [`openapi.yaml`](openapi.yaml). A backend-only example for `prepare`, `confirm` and `status` is available at [`examples/partner-client.mjs`](examples/partner-client.mjs).
+
+```bash
+# Example only: set these variables in your private partner server,
+# never in a public web page or browser bundle.
+export WINMAR_ORG_API_URL=https://your-approved-private-api-host.example
+export WINMAR_ORG_API_KEY='<secret-from-approved-key-manager>'
+node examples/partner-client.mjs prepare /secure/source.pdf 0xYOURPAYERWALLET reusable_request_key_001
+node examples/partner-client.mjs confirm int_YOURINTENT 0xCONFIRMEDPAYMENT 0xCONFIRMEDREGISTRATION
+node examples/partner-client.mjs status int_YOURINTENT
+```
+
+The demonstration does **not** obtain an API key, sign a wallet payment, register a document itself, or issue a PDF. The confirmation endpoint **can discover** an existing authorized issuer-worker registration transaction by reading public `DocumentRegistered` logs when the caller omits the registration hash. This discovery does not send transactions; the actual worker still must register the document. Any public-facing organization website must send requests through its **own authenticated backend**; the browser must never receive the partner API key.
+
+## Running isolated local tests
+
+Requires Node.js 22+. There are **no external runtime dependencies**.
+
+```bash
+cd services/winmar-document-verification/organization-api
+npm test
+npm run check
+```
+
+Create a cryptographically random API key offline (256-bit random, base64url) and retain it only in an approved secret manager. The server accepts `WINMAR_ORG_API_CLIENTS` as a privately configured JSON array:
+
+```json
+[
+  {
+    "id": "example_org",
+    "keySha256": "<64-hex-sha256-of-random-api-key>",
+    "status": "approved",
+    "scopes": [
+      "verification:intents:create",
+      "verification:intents:read",
+      "verification:intents:confirm"
+    ]
+  }
+]
+```
+
+Use a **private absolute directory** in `WINMAR_ORG_API_STATE_DIR`, e.g. `/var/lib/winmar/org-document-api`. Example configuration file `.env.example` contains no actual credentials. The server listens only on `127.0.0.1:8771` and requires an approved HTTPS reverse proxy to provide organization access. **Never expose the backend port directly or run this reference service on the public internet.**
+
+## Safety and release blockers
+
+- **No tenant self-onboarding yet.** An administrator must review legal/business identity and approve/revoke every organization. Keys are issued and rotated via an approved private channel.
+- The reference filesystem store supports only **one** host and one shared local filesystem; its rate limiting and intent locking are **not** multi-node-safe. A new cross-organization payment-claim ledger prevents double use of the same paid transaction in this single-host reference, but production MUST enforce a **database-wide unique constraint on (chain_id, payment_transaction_hash)**. Before migration, reconcile any existing paid intents against each other and historical chain events; do not drop the claim ledger or reset it on restart. Production also requires transactional storage, disaster recovery, verified backups, central rate limiting, logging and tenant-level quotas.
+- The PDF body has an upload byte limit and `%PDF-` prefix check, **not** a full PDF parser or malware scan. Add sandboxed PDF validation, malware scanning, secure retention and privacy controls before any production paid issuance.
+- The org API does **not** have an authorization channel to ask the live issuer/receipt worker to register hashes; receipt registration is now found through a bounded, read-only search of recent on-chain `DocumentRegistered` events or via the caller's explicit existing registration TX hash. The scan checks at most the latest **2,000 confirmed blocks**, in **250-block batches**. Older registrations require the explicit hash or a separately reviewed indexed backend. Search result candidates are independently verified with their receipts and live contract state. The API still cannot ask the live issuer to issue, and must be connected through a separately reviewed internal backend channel. Integrate through separately reviewed backend channels only; no issuer private keys in the API.
+- The original owner-approved certificate PNG has a locked SHA-256 `e6f621c211c389398377f251c533b522e3f76117c8428624a5e43407ab5fe5d3`. This API does not modify that file and **cannot** issue PDF output itself.
+- The Explorer `/verify/<documentId>` URL was previously observed returning 404. Treat QR/Explorer production routing and iOS/Android scan testing as release blockers until independently confirmed live.
+- Validate the real running smart-contract ABI/runtime, worker identity, payer accounting, signer role, source PDF integrity, and production deployment snapshot before connecting to any customer-facing experience.
+- Do not publish private keys, user PDFs, tenant credentials, reconciliation logs, or private operational configurations.
+
+## Parallel work instructions
+
+**Codex:** Continue PR #42's original PNG upload, owner-approved certificate pixel fidelity, browser PDF, and Explorer verification UI.
+
+**Organization API branch:** This code is intentionally isolated under `services/winmar-document-verification/organization-api/` and should be reviewed as a **separate draft PR based on main**. Do not merge or deploy either PR automatically. After code review, explicitly map the contract of this API to the exact live Document Verification issuer worker, then finish organization onboarding, entitlement management, rate controls, issuer callback/inbox, and real end-to-end tests.
+
+**No deployment, wallet transaction, smart-contract change, treasury change, validator change, or production hosting change is authorized by this PR.**
