@@ -6,6 +6,7 @@ import { fileURLToPath } from 'node:url';
 import {
   NETWORK, fail, normalizeWallet, normalizeHash, sha256,
   parseApprovedClients, authenticateBearer, validatePayment, validateRegistration,
+  findRegistrationTransaction,
 } from './core.mjs';
 import { IntentStore } from './storage.mjs';
 
@@ -87,7 +88,7 @@ export function createRpc(url = DEFAULT_RPC, transport = fetch) {
   let nextId = 0;
   return async (method, params = []) => {
     if (!['eth_chainId', 'eth_getTransactionReceipt', 'eth_getTransactionByHash',
-      'eth_call', 'eth_getBlockByNumber'].includes(method)) {
+      'eth_call', 'eth_getBlockByNumber', 'eth_getLogs', 'eth_blockNumber'].includes(method)) {
       throw fail('Unsupported blockchain method', 400);
     }
     const response = await transport(u.toString(), {
@@ -179,7 +180,13 @@ export function createApi({ clients, store, rpc, now = () => Date.now() }) {
         // Record confirmed payment BEFORE checking potentially delayed issuer TX.
         // On outage do not lose payment TX and do not invite duplicate charges.
         const stored = await store.attachValidatedProof(tenant.id, record.id, { paymentTxHash });
-        const registration = registrationTxHash || stored.registrationTxHash;
+        // The authorized issuer worker may register minutes after payment.
+        // Find the public receipt event without requiring the client to copy
+        // the issuer TX hash manually. This never signs or sends a transaction.
+        const registration = registrationTxHash || stored.registrationTxHash ||
+          await findRegistrationTransaction(rpc, {
+            documentId: stored.documentId, paymentBlock: paid.paymentBlock,
+          });
         if (!registration) return json(res, 202, present(stored, paid));
         const proof = await validateRegistration(rpc, {
           documentId: stored.documentId,
