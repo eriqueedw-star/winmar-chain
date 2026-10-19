@@ -8,7 +8,7 @@ from pathlib import Path
 from PIL import Image
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "tools"))
-from visual_acceptance import pixel_diff
+from visual_acceptance import pixel_diff, MASKS
 
 
 class TestImmutableArtwork(unittest.TestCase):
@@ -49,6 +49,24 @@ class TestImmutableArtwork(unittest.TestCase):
 
     def test_alpha_only_change_outside_data_is_detected(self):
         self.assertIsNotNone(self.compare([(99, 110, (255, 255, 255, 100))]))
+
+    def test_summary_immutable_divider_coordinates_are_never_masked(self):
+        """Codex's old 65px clears erased these approved blue table lines."""
+        immutable_lines = (533, 534, 577, 578, 622, 623, 668, 713)
+        for rule in immutable_lines:
+            for x0, y0, x1, y1 in MASKS:
+                if x0 < 900 and x1 > 340 and y0 < 760 and y1 > 480:
+                    self.assertFalse(y0 <= rule < y1,
+                                     f"Approved divider y={rule} covered by {x0,y0,x1,y1}")
+
+    def test_explorer_button_is_outside_dynamic_data_mask(self):
+        for box in MASKS:
+            x0, y0, x1, y1 = box
+            self.assertFalse(x0 <= 795 < x1 and y0 <= 1280 < y1,
+                             f"VIEW ON EXPLORER button covered by {box}")
+
+    def test_static_rule_change_is_detected_even_when_sample_text_changes(self):
+        self.assertIsNotNone(self.compare([(500, 533, (12, 12, 12, 255))]))
 
 
 if __name__ == "__main__":
