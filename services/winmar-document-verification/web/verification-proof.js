@@ -107,6 +107,34 @@
     return null;
   }
 
+  // Before asking the wallet to pay, refuse a duplicate registration or
+  // uncertain registry state. A second fee for the same original PDF hash
+  // would be irrecoverable if the one-record-per-hash contract refuses it.
+  async function preflightNewPayment(rpc, originalDocumentId) {
+    const hash = docId(originalDocumentId);
+    const network = await rpc('eth_chainId');
+    if (String(network).toLowerCase() !== MAINNET_CHAIN_ID) {
+      throw new Error('Wrong Winmar Chain network. No payment requested.');
+    }
+    let record;
+    try {
+      record = await getRecord(rpc, hash);
+    } catch {
+      // A failing RPC is not proof that the document is absent.
+      throw new Error('Cannot check document registry. No payment requested; try again later.');
+    }
+    if (!record) return { status: 'not_registered', documentId: hash };
+    if (record.hash !== hash) throw new Error('Registry hash conflict. No payment requested.');
+    if (record.revokedAt !== 0n) {
+      return { status: 'revoked', documentId: hash };
+    }
+    if (!(await authorized(rpc, record.issuer))) {
+      return { status: 'issuer_not_authorized', documentId: hash };
+    }
+    return { status: 'already_registered', documentId: hash,
+      verificationUrl: 'https://scan.winmarchain.io/verify/' + hash };
+  }
+
   async function check(rpc, sourceHash, paymentTransactionHash) {
     const hash = docId(sourceHash);
     if (!/^0x[0-9a-f]{64}$/i.test(paymentTransactionHash || '')) throw new Error('Missing payment transaction reference');
@@ -206,7 +234,7 @@
   }
 
   root.WinmarVerificationProof = {
-    lookup, check, docId, decodeDocument,
+    lookup, check, preflightNewPayment, docId, decodeDocument,
     // Exposed for deterministic, transaction-free unit tests.
     constants: { MAINNET_CHAIN_ID, FEE_ADDRESS, VERIFICATION_ADDRESS, TREASURY_ADDRESS,
       FEE_WEI, FEE_SELECTOR, FEE_EVENT, REGISTERED_EVENT },
