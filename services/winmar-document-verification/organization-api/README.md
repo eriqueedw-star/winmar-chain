@@ -33,6 +33,22 @@ All `/v1/` routes require `Authorization: Bearer <api-key>` from an approved **s
 
 This reference implementation never modifies these contracts or settings.
 
+## Partner integration handoff
+
+The machine-readable endpoint contract lives in [`openapi.yaml`](openapi.yaml). A backend-only example for `prepare`, `confirm` and `status` is available at [`examples/partner-client.mjs`](examples/partner-client.mjs).
+
+```bash
+# Example only: set these variables in your private partner server,
+# never in a public web page or browser bundle.
+export WINMAR_ORG_API_URL=https://your-approved-private-api-host.example
+export WINMAR_ORG_API_KEY='<secret-from-approved-key-manager>'
+node examples/partner-client.mjs prepare /secure/source.pdf 0xYOURPAYERWALLET reusable_request_key_001
+node examples/partner-client.mjs confirm int_YOURINTENT 0xCONFIRMEDPAYMENT 0xCONFIRMEDREGISTRATION
+node examples/partner-client.mjs status int_YOURINTENT
+```
+
+The demonstration does **not** obtain an API key, sign a wallet payment, automatically register a document, or issue a PDF. Any public-facing organization website must send requests through its **own authenticated backend**; the browser must never receive the partner API key.
+
 ## Running isolated local tests
 
 Requires Node.js 22+. There are **no external runtime dependencies**.
