@@ -67,8 +67,12 @@ components:
           type: string
           pattern: '^0x[0-9a-fA-F]{64}$'
           description: |
-            Optional while issuer registration is pending. It must
-            point to a separately successful on-chain registration.
+            Optional. If omitted, the API searches a bounded window of
+            public DocumentRegistered events for the authorized issuer
+            worker's transaction and verifies it independently. For older
+            registration transactions outside the lookback window, supply
+            the actual registration transaction hash. No keys or chain
+            signing are performed by this API.
     Intent:
       type: object
       required:
@@ -221,7 +225,15 @@ paths:
       description: |
         Requires verification:intents:confirm. This action is read-only
         on Winmar Chain. Never sends transactions, charges a wallet,
-        or issues a PDF. It may persist validated TX references.
+        or issues a PDF. It may persist validated TX references. A
+        payment transaction may be linked to only ONE intent across
+        ALL organizations, never reused for a second issuance. When
+        registrationTxHash is omitted, it searches at most the latest
+        2,000 confirmed blocks in 250-block chunks for matching
+        DocumentRegistered events. All candidate events must pass
+        distinct transaction receipt, issuer authorization, exact
+        SHA-256, timestamp, fee and revocation checks. A paid intent
+        may be retried without a second wallet charge.
       requestBody:
         required: true
         content:
@@ -246,6 +258,6 @@ paths:
         '404':
           description: Intent not found for this tenant.
         '409':
-          description: Invalid transaction or mismatched hash/issuer.
+          description: Invalid or already-claimed payment transaction, mismatched hash/issuer or conflicting proof.
         '503':
           description: RPC unavailable, no certificate issued.
