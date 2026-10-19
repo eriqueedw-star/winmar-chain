@@ -32,6 +32,10 @@
     requireValue(file instanceof File && file.size > 0 && file.size <= MAX_BYTES,
       'Select one PDF file between 1 byte and 10 MB.');
     requireValue(file.name.toLowerCase().endsWith('.pdf'), 'Only PDF documents are supported.');
+    requireValue(typeof subject === 'string' && subject.trim().length > 0,
+      'Subject is required for the certificate.');
+    requireValue(typeof issuer === 'string' && issuer.trim().length > 0,
+      'Issuer / applicant organization is required for the certificate.');
     requireValue(typeof rpc === 'function', 'Read-only blockchain RPC is unavailable.');
     requireValue(root.WinmarVerificationProof?.check && root.WinmarCertificateRenderer?.render,
       'Verified PDF components are unavailable.');
