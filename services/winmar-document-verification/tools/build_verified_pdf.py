@@ -190,7 +190,7 @@ def clean(value, max_length=160):
     return value
 
 
-def make_certificate_image(master_bytes, evidence, title, subject, page_number):
+def make_certificate_image(master_bytes, evidence, title, subject, issuer, page_number):
     """Modify only sample data positions on the exact owner-approved PNG."""
     from PIL import Image, ImageDraw, ImageFont
     import qrcode
@@ -242,7 +242,7 @@ def make_certificate_image(master_bytes, evidence, title, subject, page_number):
     write((340,483,907,513),short_id,17,bold=True)
     write((340,526,907,558),title,17)
     write((340,571,907,600),subject,17)
-    write((340,614,907,643),"Authorized Winmar Chain Issuer",15,bold=True)
+    write((340,614,907,643),issuer,15,bold=True)
     write((340,658,907,688),issue_date,17)
     write((340,702,907,728),"PDF (SHA-256 Verified)",17)
 
@@ -270,7 +270,7 @@ def make_certificate_image(master_bytes, evidence, title, subject, page_number):
     return image
 
 
-def build_pdf(source_path, master_path, output_path, payment_tx, document_type, subject):
+def build_pdf(source_path, master_path, output_path, payment_tx, document_type, subject, issuer):
     # Do NOT produce official output unless the owner-approved exact source
     # is installed and live blockchain state is independently checked.
     master = approve_exact_master(master_path)
@@ -295,7 +295,7 @@ def build_pdf(source_path, master_path, output_path, payment_tx, document_type, 
 
     page_number = len(reader.pages) + 1
     artwork = make_certificate_image(
-        master, evidence, clean(document_type), clean(subject), page_number)
+        master, evidence, clean(document_type), clean(subject), clean(issuer), page_number)
     image_bytes = io.BytesIO()
     artwork.save(image_bytes, format="PNG", optimize=True)
     certificate_pdf = io.BytesIO()
@@ -329,10 +329,11 @@ def main():
     parser.add_argument("--payment-tx",required=True)
     parser.add_argument("--document-type",required=True)
     parser.add_argument("--subject",required=True)
+    parser.add_argument("--issuer",required=True)
     parser.add_argument("--output",required=True)
     args=parser.parse_args()
     result=build_pdf(args.source_pdf,args.approved_master,args.output,
-                     args.payment_tx,args.document_type,args.subject)
+                     args.payment_tx,args.document_type,args.subject,args.issuer)
     print(json.dumps(result,indent=2))
 
 

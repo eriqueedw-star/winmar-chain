@@ -27,7 +27,7 @@
   }
 
   async function build({ file, paymentTransactionHash, expectedDocumentId,
-                         subject, documentType = 'Document Verification Record',
+                         subject, issuer, documentType = 'Document Verification Record',
                          rpc }) {
     requireValue(file instanceof File && file.size > 0 && file.size <= MAX_BYTES,
       'Select one PDF file between 1 byte and 10 MB.');
@@ -66,7 +66,7 @@
       'PDF page count is invalid or exceeds supported limits.');
     const pageNumber = originalPages + 1;
     const proof = { ...verified, status: 'verified',
-      pageLabel: `${pageNumber} of ${pageNumber}`, subject, documentType };
+      pageLabel: `${pageNumber} of ${pageNumber}`, subject, issuer, documentType };
 
     // loadApprovedMaster() rejects anything that is not the exact original
     // owner-approved uploaded PNG, even if an older template has the same name.

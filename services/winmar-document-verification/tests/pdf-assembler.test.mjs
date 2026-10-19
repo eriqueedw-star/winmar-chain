@@ -59,7 +59,7 @@ test('browser PDF assembler preserves source pages visually and adds only one A4
   const input = new File([originalBytes], 'sample.pdf', { type: 'application/pdf' });
   const result = await sandbox.WinmarPdfAssembler.build({
     file: input, paymentTransactionHash: paymentTx,
-    expectedDocumentId: '0x' + digest, subject: 'QA fixture',
+    expectedDocumentId: '0x' + digest, subject: 'QA fixture', issuer: 'QA Organization',
     rpc: async () => { throw Error('Replaced by mocked read-only proof'); },
   });
   const checked = await PDFDocument.load(result.bytes);
@@ -82,7 +82,7 @@ test('PDF assembler rejects mismatched SHA-256 before attempting blockchain proo
   const file = new File([bytes], 'source.pdf', { type: 'application/pdf' });
   await assert.rejects(sandbox.WinmarPdfAssembler.build({
     file, paymentTransactionHash: '0x' + '12'.repeat(32),
-    expectedDocumentId: '0x' + '00'.repeat(32), subject: 'Test',
+    expectedDocumentId: '0x' + '00'.repeat(32), subject: 'Test', issuer: 'QA Organization',
     rpc: async () => { throw Error('RPC must not be called'); },
   }), /fingerprint changed/);
 });
@@ -99,7 +99,7 @@ test('PDF assembler rejects existing signature markers before output', async () 
   const sha = createHash('sha256').update(combined).digest('hex');
   await assert.rejects(sandbox.WinmarPdfAssembler.build({
     file, paymentTransactionHash: '0x' + '12'.repeat(32),
-    expectedDocumentId: '0x' + sha, subject: 'Test',
+    expectedDocumentId: '0x' + sha, subject: 'Test', issuer: 'QA Organization',
     rpc: async () => { throw Error('RPC must not be called'); },
   }), /Digitally signed source PDFs/);
 });

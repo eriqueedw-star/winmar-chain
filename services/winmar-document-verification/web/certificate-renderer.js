@@ -146,9 +146,10 @@
     const dateWithTime = String(verified.issuedAt || '');
     const report = `WMC-${issueDate.slice(0, 4)}-${id.slice(2, 10).toUpperCase()}`;
     const subject = String(verified.subject || '').trim();
+    const issuer = String(verified.issuer || '').trim();
     const docType = String(verified.documentType || 'Document Verification Record').trim();
-    requireState(subject && subject.length <= 160 && docType && docType.length <= 160,
-      'Subject or document type invalid.');
+    requireState(subject && subject.length <= 160 && issuer && issuer.length <= 160 && docType && docType.length <= 160,
+      'Subject, issuer or document type invalid.');
 
     // WARNING: Sample-value bounding boxes are locked; these are data only.
     // This canvas does not restyle, crop, recolor or move any of the approved
@@ -158,7 +159,7 @@
     field(ctx, 339, 483, 564, report, { background: '#f7fbff', weight: '600' });
     field(ctx, 339, 526, 564, docType, { background: '#f7fbff' });
     field(ctx, 339, 570, 564, subject, { background: '#f7fbff' });
-    field(ctx, 339, 614, 564, 'Authorized Winmar Chain Issuer', { background: '#f7fbff', weight: '600' });
+    field(ctx, 339, 614, 564, issuer, { background: '#f7fbff', weight: '600' });
     field(ctx, 339, 658, 564, issueDate, { background: '#f7fbff' });
     field(ctx, 339, 700, 564, 'PDF (SHA-256 Verified)', { background: '#f7fbff' });
 
