@@ -25,7 +25,9 @@ jobs:
           node --version
           node -e 'if (+process.versions.node.split(".")[0] < 22) process.exit(1)'
       - name: Check server code syntax
-        run: npm run check
+        run: |
+          npm run check
+          node --check examples/partner-client.mjs
       - name: Test tenant separation, permissions and paid on-chain proofs
         run: npm test
       - name: Fail on unexpected uploaded PDF or API key artifacts
