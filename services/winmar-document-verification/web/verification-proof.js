@@ -58,7 +58,13 @@
     const issuer = ('0x' + words[1].slice(24)).toLowerCase();
     const issuedAt = BigInt('0x' + words[2]);
     const revokedAt = BigInt('0x' + words[3]);
-    if (issuer === ZERO_ADDRESS || issuedAt === 0n) return null;
+    const zeroHash = '0x' + '0'.repeat(64);
+    const allZero = hash === zeroHash && issuer === ZERO_ADDRESS &&
+      issuedAt === 0n && revokedAt === 0n && words[4] === '0'.repeat(64);
+    if (allZero) return null;
+    if (hash === zeroHash || issuer === ZERO_ADDRESS || issuedAt === 0n) {
+      throw new Error('Malformed partial on-chain document. Do not issue a certificate or request payment.');
+    }
     return { hash, issuer, issuedAt, revokedAt, metadataHash: '0x' + words[4] };
   }
 
