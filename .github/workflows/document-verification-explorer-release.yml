@@ -9,6 +9,7 @@ on:
       - 'services/winmar-document-verification/web/verification-proof.js'
       - 'services/winmar-document-verification/web/winmar-chain-logo-framed-v2.png'
       - 'scripts/build-document-verification-explorer.py'
+      - 'scripts/stage-document-verification-explorer.sh'
       - 'scripts/probe-document-verification-explorer.mjs'
       - 'tests/test_document_verification_explorer_release.py'
       - '.github/workflows/document-verification-explorer-release.yml'
@@ -36,6 +37,7 @@ jobs:
           node --check services/winmar-document-verification/web/verify.js
           node --check services/winmar-document-verification/web/verification-proof.js
           node --check scripts/probe-document-verification-explorer.mjs
+          bash -n scripts/stage-document-verification-explorer.sh
       - name: Assemble static-only deployment bundle
         run: |
           set -euo pipefail
@@ -43,6 +45,18 @@ jobs:
           cd build/document-verification-explorer
           sha256sum --check SHA256SUMS
           grep -q '"status": "review-only-not-deployed"' manifest.json
+      - name: Rehearse immutable staging without a live symlink or Nginx changes
+        env:
+          REVIEW_SHA: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+          bash scripts/stage-document-verification-explorer.sh \
+            build/document-verification-explorer \
+            "$RUNNER_TEMP/winmar-explorer-verify-releases" \
+            "$REVIEW_SHA"
+          test -f "$RUNNER_TEMP/winmar-explorer-verify-releases/$REVIEW_SHA/site/verify.html"
+          test ! -e "$RUNNER_TEMP/winmar-explorer-verify-releases/current"
+
       - name: Publish review artifact (not the production site)
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
