@@ -28,7 +28,7 @@ let verifiedIssuance = null;
 let pdfDownloadPending = false;
 
 function canIssue() {
-  issueButton.disabled = issuancePending || !(selectedDocumentHash && subjectInput.value.trim() && issuerInput.value.trim());
+  issueButton.disabled = issuancePending || !(selectedDocumentHash && subjectInput.value.trim());
 }
 
 function rpc(method, params = []) {
@@ -112,7 +112,7 @@ input.addEventListener('change', async () => {
 [subjectInput, issuerInput].forEach((field) => field.addEventListener('input', canIssue));
 
 issueButton.addEventListener('click', async () => {
-  if (issuancePending || !selectedDocumentHash || !subjectInput.value.trim() || !issuerInput.value.trim()) return;
+  if (issuancePending || !selectedDocumentHash || !subjectInput.value.trim()) return;
   if (!window.ethereum) {
     walletNote.textContent = 'Install or connect an EVM wallet first. No account registration is required.';
     return;
@@ -121,7 +121,7 @@ issueButton.addEventListener('click', async () => {
   const digest = selectedDocumentHash;
   const id = `0x${digest}`;
   const subject = subjectInput.value.trim();
-  const issuer = issuerInput.value.trim();
+  const applicant = issuerInput.value.trim();
   const storageKey = `winmar:payment:${id}`;
   const status = document.querySelector('#status-value');
   input.disabled = true;
@@ -164,7 +164,7 @@ issueButton.addEventListener('click', async () => {
       // Resuming must never silently charge the customer twice.
       sessionStorage.setItem(storageKey, paymentTx);
       sessionStorage.setItem(`winmar:issuance:${digest}`, JSON.stringify({
-        documentId: id, subject, issuer, payerWallet: accounts[0],
+        documentId: id, subject, applicant, payerWallet: accounts[0],
       }));
     }
     issueButton.textContent = 'Awaiting on-chain registration…';
@@ -192,7 +192,7 @@ issueButton.addEventListener('click', async () => {
     // No HTML-only, query-string-only, or mock certificate is issued.
     verifiedIssuance = {
       file: input.files[0], paymentTransactionHash: paymentTx,
-      expectedDocumentId: proof.documentId, subject, issuer,
+      expectedDocumentId: proof.documentId, subject,
       documentType: 'Document Verification Record',
     };
     certificateDownload.textContent = 'Download Verified PDF';
