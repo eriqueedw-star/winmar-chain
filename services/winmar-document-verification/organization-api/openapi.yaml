@@ -1,0 +1,251 @@
+openapi: 3.1.0
+info:
+  title: Winmar Chain Organization Document Verification (Reference API)
+  version: 0.1.0
+  description: |
+    REVIEW-ONLY API. Not a live production service or certificate issuer.
+    Organizations receive API access only after approval. The same
+    Winmar Chain fee and distinct authorized document registration are
+    mandatory for all issuances, registered or not.
+    The API never signs transactions or generates PDF certificates.
+servers:
+  - url: https://your-approved-private-api-host.example
+    description: Placeholder only. Do not expose reference localhost server publicly.
+security:
+  - OrganizationApiKey: []
+tags:
+  - name: Health
+  - name: Intent
+components:
+  securitySchemes:
+    OrganizationApiKey:
+      type: http
+      scheme: bearer
+      bearerFormat: opaque-random-256-bit-key
+      description: |
+        Server-to-server use only. Never expose tokens in browser code.
+        Three separately enforced scopes:
+        verification:intents:create, verification:intents:read,
+        verification:intents:confirm.
+  parameters:
+    IntentId:
+      name: intentId
+      in: path
+      required: true
+      schema:
+        type: string
+        pattern: '^int_[0-9a-f]{64}$'
+    IdempotencyKey:
+      name: Idempotency-Key
+      in: header
+      required: true
+      schema:
+        type: string
+        minLength: 12
+        maxLength: 128
+        pattern: '^[A-Za-z0-9_-]+$'
+    PayerWallet:
+      name: X-Payer-Wallet
+      in: header
+      required: true
+      description: |
+        This is the payer's Winmar Chain wallet. The later confirmed
+        fee transaction must have precisely this wallet as tx.from.
+      schema:
+        type: string
+        pattern: '^0x[0-9a-fA-F]{40}$'
+  schemas:
+    ConfirmRequest:
+      type: object
+      required: [paymentTxHash]
+      additionalProperties: false
+      properties:
+        paymentTxHash:
+          type: string
+          pattern: '^0x[0-9a-fA-F]{64}$'
+        registrationTxHash:
+          type: string
+          pattern: '^0x[0-9a-fA-F]{64}$'
+          description: |
+            Optional while issuer registration is pending. It must
+            point to a separately successful on-chain registration.
+    Intent:
+      type: object
+      required:
+        - intentId
+        - documentId
+        - payerWallet
+        - chainId
+        - feeContract
+        - feeWei
+        - treasury
+        - status
+        - certificateIssued
+      properties:
+        intentId:
+          type: string
+          pattern: '^int_[0-9a-f]{64}$'
+        documentId:
+          type: string
+          pattern: '^0x[0-9a-f]{64}$'
+          description: SHA-256 of original input PDF bytes (with 0x prefix).
+        payerWallet:
+          type: string
+        chainId:
+          const: 12142816
+        feeContract:
+          const: '0xcec232bd11f03006ecc80917f5cd55bbf247617d'
+        feeWei:
+          const: '2100000000000000'
+        treasury:
+          const: '0x2d26e199f9be1a907239e403c4fad14c0856e7fd'
+        networkGasExtra:
+          const: true
+        paymentTxHash:
+          type: [string, 'null']
+        registrationTxHash:
+          type: [string, 'null']
+        status:
+          type: string
+          enum:
+            - awaiting_payment
+            - payment_pending
+            - payment_confirmed_registration_pending
+            - registration_pending
+            - registered
+        registrationBlock:
+          type: string
+        issuerWallet:
+          type: string
+        issuedAtUtc:
+          type: string
+          format: date-time
+        explorerUrl:
+          type: string
+          format: uri
+        certificateIssued:
+          const: false
+          description: |
+            ALWAYS false: proof API does not issue official certificates.
+    Error:
+      type: object
+      required: [error, requestId, certificateIssued]
+      properties:
+        error:
+          type: string
+        requestId:
+          type: string
+          format: uuid
+        certificateIssued:
+          const: false
+paths:
+  /healthz:
+    get:
+      tags: [Health]
+      security: []
+      summary: Liveness only, not issuance readiness.
+      responses:
+        '200':
+          description: Running HTTP process, no chain readiness assertion.
+  /v1/intents:
+    post:
+      tags: [Intent]
+      summary: Prepare one hash-bound intent from original PDF.
+      description: |
+        Requires verification:intents:create scope. No account
+        registration for wallet users in the public portal, but API
+        access is reserved for approved organizations. Original bytes
+        are discarded; this API does not parse or retain a PDF.
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+        - $ref: '#/components/parameters/PayerWallet'
+      requestBody:
+        required: true
+        content:
+          application/pdf:
+            schema:
+              type: string
+              format: binary
+              maxLength: 10485760
+      responses:
+        '201':
+          description: Created new intent. NO certificate issued.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Intent'
+        '200':
+          description: Same idempotent request already exists.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Intent'
+        '401':
+          description: Invalid API key.
+        '403':
+          description: Revoked or missing API key scope.
+        '409':
+          description: Idempotency conflict.
+        '413':
+          description: Original PDF exceeds size limit.
+        '415':
+          description: Expected application/pdf.
+        '429':
+          description: Tenant request limit exceeded.
+  /v1/intents/{intentId}:
+    parameters:
+      - $ref: '#/components/parameters/IntentId'
+    get:
+      tags: [Intent]
+      summary: Reconcile current on-chain status of this organization intent.
+      description: |
+        Requires verification:intents:read. Revoked, malformed,
+        unauthorized or unavailable blockchain data fails closed.
+      responses:
+        '200':
+          description: Current payment and registration status.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Intent'
+        '404':
+          description: Intent missing or belongs to another organization.
+        '503':
+          description: Current chain status unavailable. Do not issue certificate.
+  /v1/intents/{intentId}/confirm:
+    parameters:
+      - $ref: '#/components/parameters/IntentId'
+    post:
+      tags: [Intent]
+      summary: Independently verify fee receipt and distinct issuer registration.
+      description: |
+        Requires verification:intents:confirm. This action is read-only
+        on Winmar Chain. Never sends transactions, charges a wallet,
+        or issues a PDF. It may persist validated TX references.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ConfirmRequest'
+      responses:
+        '200':
+          description: Fee and registration confirmed; no certificate issued.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Intent'
+        '202':
+          description: Payment or authorized registration still pending.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Intent'
+        '403':
+          description: Missing confirm scope or revoked client.
+        '404':
+          description: Intent not found for this tenant.
+        '409':
+          description: Invalid transaction or mismatched hash/issuer.
+        '503':
+          description: RPC unavailable, no certificate issued.
