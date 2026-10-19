@@ -102,9 +102,19 @@ Use an isolated staging virtual host/path that serves the exact release bytes. C
 7. Unknown/malformed document ID, inactive issuer, revoked hash and RPC failure must remain non-verified (fail closed).
 8. Scan the QR from a real, owner-approved Winmar certificate on iPhone and Android; confirm hash, issuer, timestamp and registration TX link.
 9. Ensure existing Explorer home, address lookup, transaction lookup, `/api/v2`, websocket and all existing application routes remain healthy.
-10. Monitor browser/RPC latency. The initial in-browser `eth_getLogs` scan can be expensive at large block heights; a safe indexed read-only lookup should replace broad scanning before significant public traffic.
+10. Monitor browser/RPC latency. The UI now uses the existing Blockscout public address-log index for candidate registration transaction discovery, followed by independent RPC receipt/contract verification. Confirm indexed queries are paginated and bounded (maximum 25 pages), do not use historic-block brute-force scans in live Explorer, and rate-limit as needed. If indexer or RPC is unavailable, report not-verified—not success.
 
 An Explorer TX ID already appearing correctly does **not** prove `/verify/<documentId>` is published. These are separate acceptance gates.
+
+### Post-deploy automated smoke test
+
+From a reviewed checkout on a trusted operator workstation (Node.js 22+), run:
+
+```bash
+node scripts/probe-document-verification-explorer.mjs
+```
+
+It tests the exact known QR route, JS/CSS/logo HTTP status and MIME types, indexed successful registration TX, public RPC chain ID and CORS permission, plus a second unknown hash route. It performs only read-only requests and exits nonzero on failures. The live operator must still scan the QR on an actual iPhone/Android and compare the original PDF locally. **Do not infer production readiness from a successful build artifact or from a single TX Explorer view.**
 
 ## 5. Controlled production activation and rollback
 
