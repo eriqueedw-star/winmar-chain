@@ -131,10 +131,12 @@
     const dateWithTime = String(verified.issuedAt || '');
     const report = `WMC-${issueDate.slice(0, 4)}-${id.slice(2, 10).toUpperCase()}`;
     const subject = String(verified.subject || '').trim();
-    const issuer = String(verified.issuer || '').trim();
+    // Applicant-entered text is not authoritative evidence of issuer identity.
+    // Chain authorization is proven by verified.issuerWallet before rendering.
+    const issuer = 'Winmar Chain';
     const docType = String(verified.documentType || 'Document Verification Record').trim();
-    requireState(subject && subject.length <= 160 && issuer && issuer.length <= 160 && docType && docType.length <= 160,
-      'Subject, issuer or document type invalid.');
+    requireState(subject && subject.length <= 160 && docType && docType.length <= 160,
+      'Subject or document type invalid.');
 
     // WARNING: Sample-value bounding boxes are locked; these are data only.
     // This canvas does not restyle, crop, recolor or move any of the approved
