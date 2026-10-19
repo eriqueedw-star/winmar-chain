@@ -10,6 +10,7 @@ on:
       - 'services/winmar-document-verification/web/winmar-chain-logo-framed-v2.png'
       - 'scripts/build-document-verification-explorer.py'
       - 'scripts/stage-document-verification-explorer.sh'
+      - 'deployment/explorer/scan.winmarchain.io.document-verification.locations.conf'
       - 'scripts/probe-document-verification-explorer.mjs'
       - 'tests/test_document_verification_explorer_release.py'
       - '.github/workflows/document-verification-explorer-release.yml'
