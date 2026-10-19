@@ -9,6 +9,7 @@ on:
       - 'services/winmar-document-verification/web/verification-proof.js'
       - 'services/winmar-document-verification/web/winmar-chain-logo-framed-v2.png'
       - 'scripts/build-document-verification-explorer.py'
+      - 'scripts/probe-document-verification-explorer.mjs'
       - 'tests/test_document_verification_explorer_release.py'
       - '.github/workflows/document-verification-explorer-release.yml'
   workflow_dispatch:
@@ -34,6 +35,7 @@ jobs:
           python3 -m unittest discover -s tests -p 'test_document_verification_explorer_release.py' -v
           node --check services/winmar-document-verification/web/verify.js
           node --check services/winmar-document-verification/web/verification-proof.js
+          node --check scripts/probe-document-verification-explorer.mjs
       - name: Assemble static-only deployment bundle
         run: |
           set -euo pipefail
