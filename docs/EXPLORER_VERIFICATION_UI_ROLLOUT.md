@@ -66,7 +66,8 @@ location ^~ /document-verification/ {
     root /srv/winmar-document-verification/current;
     limit_except GET HEAD { deny all; }
     try_files $uri =404;
-    add_header X-Content-Type-Options nosniff always;
+    # Avoid ad-hoc location add_header directives: they can suppress
+    # inherited HSTS, CSP and frame/security headers.
 }
 
 # Exact document-ID path only, preserving the visible URL for QR scans.
@@ -76,8 +77,7 @@ location ~ "^/verify/0x[0-9A-Fa-f]{64}/?$" {
     root /srv/winmar-document-verification/current;
     limit_except GET HEAD { deny all; }
     try_files /verify.html =404;
-    add_header Cache-Control "no-store" always;
-    add_header X-Content-Type-Options nosniff always;
+    expires -1; # reduce HTML caching without resetting inherited add_header policy
 }
 ```
 
@@ -89,6 +89,8 @@ location ~ "^/verify/0x[0-9A-Fa-f]{64}/?$" {
 ```
 
 Do not approve deployment if the first path accidentally resolves to `current/site/verify.html`: that indicates the symlink points to the wrong directory and both routes will 404.
+
+**Critical Nginx header inheritance:** adding `add_header` directly inside a new `location` can suppress inherited HSTS/CSP and other parent headers. Validate effective security headers on both new routes and preserve the approved server-level policy. If security headers previously came only from `location /`, coordinate a scoped security-header fix with operations. Do not weaken Blockscout routes, TLS or reverse-proxy policy.
 
 **Never replace the Explorer's general `location /` or Blockscout upstream.** Maintain existing TLS/HSTS/security headers and existing API/upstream routes. If the reverse proxy is not Nginx, implement the **same two static routes** using its supported route rules. Existing asset CORS/content-security policies should not be weakened globally.
 
