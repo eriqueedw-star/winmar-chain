@@ -18,25 +18,26 @@ from approved_master import approve_exact_master, APPROVED_DIMS
 # Expand only through explicit owner design review; DO NOT mask logo,
 # title, status badge, borders, static icons, section titles or footer labels.
 MASKS = [
-    # These bounds mirror the renderer's approved dynamic rectangles exactly.
-    (567, 113, 782, 140),   # header report
-    (567, 185, 778, 211),   # header issue date
-    (340, 483, 907, 548),   # summary document ID
-    (340, 526, 907, 593),   # summary document type
-    (340, 571, 907, 635),   # summary subject
-    (340, 614, 907, 678),   # summary issuer
-    (340, 658, 907, 723),   # summary issue date
-    (340, 702, 907, 763),   # summary PDF format
-    (348, 989, 897, 1029),  # two-line SHA-256 fingerprint
-    (348, 1049, 898, 1075), # registration TX
-    (348, 1089, 898, 1118), # block number
-    (348, 1132, 898, 1161), # UTC timestamp
-    (348, 1175, 898, 1205), # issuer wallet
-    (348, 1217, 898, 1250), # network
-    (349, 1265, 808, 1298), # Explorer text only; protect button
-    (98, 1377, 348, 1409),  # footer report
-    (487, 1377, 640, 1409), # footer page number
-    (831, 83, 941, 193),    # QR pixels only; protect outer border and caption
+    # Exact union of review-only browser and Python dynamic value boxes.
+    # Never cover the immutable summary rules y=533,577,622,668,713.
+    (567, 109, 783, 140),    # header report (browser + CLI)
+    (567, 182, 783, 212),    # header issue date
+    (339, 490, 907, 526),    # summary document ID
+    (339, 536, 907, 572),    # summary document type
+    (339, 580, 907, 617),    # summary subject
+    (339, 625, 907, 662),    # summary issuer
+    (339, 670, 907, 706),    # summary issue date
+    (339, 716, 907, 751),    # summary PDF format
+    (347, 989, 897, 1029),   # two-line SHA-256 fingerprint
+    (347, 1049, 898, 1079),  # registration TX
+    (347, 1089, 898, 1119),  # block number
+    (347, 1132, 898, 1162),  # UTC timestamp
+    (347, 1175, 898, 1205),  # issuer wallet
+    (347, 1217, 898, 1250),  # network
+    (347, 1265, 768, 1298),  # Explorer text: stops before VIEW ON EXPLORER
+    (97, 1377, 351, 1409),   # footer report
+    (487, 1377, 640, 1409),  # footer page number
+    (831, 83, 944, 197),     # QR pixels only; protect outer border and caption
 ]
 
 
