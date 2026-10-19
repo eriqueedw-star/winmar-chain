@@ -82,6 +82,7 @@ The reviewed two-location fragment is at:
 `deployment/explorer/scan.winmarchain.io.document-verification.locations.conf`.
 
 It defines precisely:
+
 - `location ^~ /document-verification/` → public static assets under
   `/srv/winmar-document-verification/current/document-verification/`.
 - `location ~ "^/verify/0x[0-9A-Fa-f]{64}/?$"` → static
@@ -128,6 +129,7 @@ node scripts/probe-document-verification-explorer.mjs
 ```
 
 The read-only smoke test checks:
+
 - Known `/verify/<documentId>` URL returns HTTP 200 with reviewed HTML.
 - All public JS, CSS and logo assets return correct content types.
 - Known registered TX is present in Explorer indexed logs.
