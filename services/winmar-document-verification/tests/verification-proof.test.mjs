@@ -160,3 +160,16 @@ test('prepayment registry gate fails closed on RPC outage instead of charging wa
   await assert.rejects(proof.preflightNewPayment(rpc, id),
     /Cannot check document registry/);
 });
+
+test('partially initialized registry record is NOT mistaken for safe unregistered hash', async () => {
+  const invalidTuple = '0x' + id.slice(2) + '0'.repeat(256);
+  const rpc = async (method, params) => {
+    if (method === 'eth_chainId') return C.MAINNET_CHAIN_ID;
+    if (method === 'eth_call' && params[0].data.startsWith(C.DOCUMENT_SELECTOR || '0xb10d6b41')) {
+      return invalidTuple;
+    }
+    throw Error('Unexpected RPC call: ' + method);
+  };
+  await assert.rejects(proof.preflightNewPayment(rpc, id),
+    /Cannot check document registry/);
+});
