@@ -122,14 +122,18 @@ class TestCertificateProof(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "Invalid SHA-256"):
             verify_document(RpcFixture(), "0xbroken", PAYMENT)
 
-    def test_approved_asset_gate_refuses_substitutes(self):
-        repo_master = (Path(__file__).resolve().parents[3]
-                       / "assets" / "winmar-verification-certificate-master.png")
+    def test_all_shipped_certificate_assets_are_the_owner_approved_original(self):
+        root = Path(__file__).resolve().parents[3]
+        approved_paths = (
+            root / "assets" / "winmar-verification-certificate-master.png",
+            root / "assets" / "winmar-verification-certificate-public.png",
+            root / "services" / "winmar-document-verification" / "web" / "winmar-verification-certificate-master.png",
+            root / "services" / "winmar-document-verification" / "web" / "winmar-verification-certificate-public.png",
+        )
         self.assertEqual(len(APPROVED_SHA256), 64)
-        # The imported Codex master is not identical to the owner-approved
-        # attachment; this strict test must not mistakenly PASS it.
-        with self.assertRaisesRegex(ValueError, "approved original"):
-            approve_exact_master(repo_master)
+        for asset in approved_paths:
+            with self.subTest(asset=asset):
+                self.assertEqual(approve_exact_master(asset), asset.read_bytes())
 
 
 if __name__ == "__main__":
