@@ -56,6 +56,8 @@ jobs:
             "$RUNNER_TEMP/winmar-explorer-verify-releases" \
             "$REVIEW_SHA"
           test -f "$RUNNER_TEMP/winmar-explorer-verify-releases/$REVIEW_SHA/site/verify.html"
+          # The Nginx service account must be able to traverse this folder.
+          test "$(stat -c '%a' "$RUNNER_TEMP/winmar-explorer-verify-releases/$REVIEW_SHA")" = 755
           test ! -e "$RUNNER_TEMP/winmar-explorer-verify-releases/current"
 
       - name: Publish review artifact (not the production site)
