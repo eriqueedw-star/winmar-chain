@@ -20,7 +20,7 @@ class ExplorerReleaseTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as td:
             out = Path(td) / "dist"
             data = module.assemble(out)
-            self.assertEqual(len(data["public_files"]), 6)
+            self.assertEqual(len(data["public_files"]), 10)
             for name in module.ALLOWLIST:
                 source = (module.WEB / name).read_bytes()
                 target = (out / "site" / "document-verification" / name).read_bytes()
@@ -41,13 +41,13 @@ class ExplorerReleaseTests(unittest.TestCase):
             self.assertTrue(manifest["requires_operator_nginx_review"])
             self.assertIn(module.SAMPLE_DOC_ID, manifest["sample_url"])
             self.assertTrue((out / "SHA256SUMS").is_file())
-            self.assertEqual(len(manifest["public_files"]), 6)
+            self.assertEqual(len(manifest["public_files"]), 10)
 
     def test_source_pdf_and_sensitive_deploy_files_are_not_packaged(self):
         with tempfile.TemporaryDirectory() as td:
             out = Path(td) / "dist"
             module.assemble(out)
-            packaged = {str(x.relative_to(out)) for x in out.rglob("*") if x.is_file()}
+            packaged = {x.relative_to(out).as_posix() for x in out.rglob("*") if x.is_file()}
             self.assertEqual(packaged,
                              {"manifest.json", "SHA256SUMS", "site/verify.html"} |
                              {"site/document-verification/" + x for x in module.ALLOWLIST})

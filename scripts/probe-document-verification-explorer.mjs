@@ -81,7 +81,11 @@ await check('CSS and JavaScript assets load from official Explorer', async () =>
     '/document-verification/verify.css',
     '/document-verification/verify.js',
     '/document-verification/verification-proof.js',
+    '/document-verification/certificate-renderer.js',
     '/document-verification/winmar-chain-logo-framed-v2.png',
+    '/document-verification/winmar-verification-certificate-master.png',
+    '/document-verification/vendor/qrcode.min.js',
+    '/document-verification/vendor/pdf-lib-1.17.1.min.js',
   ]) {
     const resp = await http(path);
     requireValue(resp.status === 200, `${path} returned HTTP ${resp.status}`);

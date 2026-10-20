@@ -14,7 +14,11 @@ The draft [PR #42](https://github.com/eriqueedw-star/winmar-chain/pull/42) inclu
 - `services/winmar-document-verification/web/verify.css`
 - `services/winmar-document-verification/web/verify.js`
 - `services/winmar-document-verification/web/verification-proof.js`
+- `services/winmar-document-verification/web/certificate-renderer.js`
 - `services/winmar-document-verification/web/winmar-chain-logo-framed-v2.png`
+- `services/winmar-document-verification/web/winmar-verification-certificate-master.png`
+- `services/winmar-document-verification/web/vendor/qrcode.min.js`
+- `services/winmar-document-verification/web/vendor/pdf-lib-1.17.1.min.js`
 
 No server-side dependencies are required to **serve these files**. Blockchain lookup requires the browser to reach the official read-only RPC; check CORS and performance from the final origin.
 

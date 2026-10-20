@@ -58,6 +58,10 @@ cp -- "$artifact/SHA256SUMS" "$artifact/manifest.json" "$tmp/"
   sha256sum --check SHA256SUMS >/dev/null
 )
 if [[ ! -f "$tmp/site/document-verification/verify.js" ||
+      ! -f "$tmp/site/document-verification/certificate-renderer.js" ||
+      ! -f "$tmp/site/document-verification/winmar-verification-certificate-master.png" ||
+      ! -f "$tmp/site/document-verification/vendor/qrcode.min.js" ||
+      ! -f "$tmp/site/document-verification/vendor/pdf-lib-1.17.1.min.js" ||
       ! -f "$tmp/site/verify.html" ]]; then
   echo 'FAIL: invalid staged Nginx document root' >&2
   exit 2

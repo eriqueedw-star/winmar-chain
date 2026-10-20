@@ -20,7 +20,11 @@ ALLOWLIST = (
     "verify.css",
     "verify.js",
     "verification-proof.js",
+    "certificate-renderer.js",
     "winmar-chain-logo-framed-v2.png",
+    "winmar-verification-certificate-master.png",
+    "vendor/qrcode.min.js",
+    "vendor/pdf-lib-1.17.1.min.js",
 )
 SAMPLE_DOC_ID = (
     "0x477a80f1f39d85e3b746f621a5271a17c3aa1b6adc9d88401cc7bbf58ae209fc"
@@ -45,6 +49,7 @@ def assemble(destination: Path) -> dict[str, object]:
         if not content:
             raise ValueError(f"Empty verifier asset: {basename}")
         target = assets / basename
+        target.parent.mkdir(parents=True, exist_ok=True)
         target.write_bytes(content)
         digests[f"document-verification/{basename}"] = hashlib.sha256(content).hexdigest()
 
@@ -53,9 +58,12 @@ def assemble(destination: Path) -> dict[str, object]:
     # alias that does not replace Blockscout's main / route.
     html = (assets / "verify.html").read_text(encoding="utf-8")
     for phrase in ('<base href="/document-verification/">',
+                   'src="./certificate-renderer.js"',
                    'src="./verification-proof.js"',
                    'src="./verify.js"',
-                   'href="./verify.css"'):
+                   'href="./verify.css"',
+                   'src="./vendor/qrcode.min.js"',
+                   'src="./vendor/pdf-lib-1.17.1.min.js"'):
         if phrase not in html:
             raise ValueError(f"Verifier asset path is inconsistent: {phrase}")
 
@@ -69,6 +77,9 @@ def assemble(destination: Path) -> dict[str, object]:
         raise ValueError("Certificate verifier uses an unapproved public route")
     if 'https://rpc.winmarchain.io/' not in js:
         raise ValueError("Browser lookup is not pointed to the official read-only RPC")
+    renderer = (assets / "certificate-renderer.js").read_text(encoding="utf-8")
+    if "ORIGINAL_MASTER_SHA256" not in renderer or "https://scan.winmarchain.io/verify/" not in renderer:
+        raise ValueError("Certificate renderer is missing approved-master or QR safeguards")
 
     route_entry = out / "site" / "verify.html"
     shutil.copyfile(assets / "verify.html", route_entry)
