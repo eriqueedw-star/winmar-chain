@@ -1,0 +1,107 @@
+name: Document Verification integration checks
+
+on:
+  pull_request:
+    paths:
+      - 'services/winmar-document-verification/**'
+      - 'docs/DOCUMENT_VERIFICATION_*.md'
+      - 'docs/WINMAR_VERIFICATION_STANDARD.md'
+      - 'docs/EXPLORER_DOCUMENT_VERIFICATION_ROUTE.md'
+      - 'docs/document-verification-api.openapi.yaml'
+      - 'assets/winmar-verification-certificate-*.png'
+      - '.github/workflows/document-verification-checks.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  document-verification:
+    name: JavaScript syntax, contract config and asset integrity
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Check JavaScript syntax
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --check services/winmar-document-verification/src/server.mjs
+          node --check services/winmar-document-verification/web/app.js
+          node --check services/winmar-document-verification/web/pdf-assembler.js
+          node --check services/winmar-document-verification/web/certificate-renderer.js
+          node --check services/winmar-document-verification/web/verify.js
+          node --check services/winmar-document-verification/deployment/receipt-worker-core.mjs
+          node --check services/winmar-document-verification/deployment/receipt-worker.mjs
+          node --check services/winmar-document-verification/web/vendor/pdf-lib-1.17.1.min.js
+          node --check services/winmar-document-verification/web/verification-proof.js
+          node --check services/winmar-document-verification/web/vendor/qrcode.min.js
+          while IFS= read -r -d '' file; do
+            node --check "$file"
+          done < <(find services/winmar-document-verification/deployment -maxdepth 1 -name '*.mjs' -print0)
+          python3 - <<'PY'
+          import pathlib
+          import re
+          import subprocess
+
+          html = pathlib.Path('services/winmar-document-verification/web/certificate.html').read_text()
+          # The legacy certificate.html route must NEVER issue a verified
+          # certificate from untrusted query-string data.
+          if '<canvas' in html.lower() or 'new urlsearchparams' in html.lower():
+              raise SystemExit('Unsafe legacy query-string certificate renderer')
+          for code in re.findall(r'<script>(.*?)</script>', html, flags=re.I | re.S):
+              subprocess.run(['node', '--check', '-'], input=code, text=True, check=True)
+          PY
+
+      - name: Test mainnet proof, binary master gate and browser PDF assembly
+        run: node --test services/winmar-document-verification/tests/*.test.mjs
+
+      - name: Check verified PDF builder, asset gate and on-chain proof tests
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 -m venv /tmp/winmar-document-qa
+          /tmp/winmar-document-qa/bin/python -m pip install --disable-pip-version-check 'Pillow==12.3.0'
+          /tmp/winmar-document-qa/bin/python -m py_compile services/winmar-document-verification/tools/*.py
+          /tmp/winmar-document-qa/bin/python -m unittest discover -s services/winmar-document-verification/tests -p 'test_*.py' -v
+
+      - name: Check certificate image fidelity and metadata
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          import struct
+
+          assets = Path('assets')
+          web = Path('services/winmar-document-verification/web')
+          for name in ('winmar-verification-certificate-master.png', 'winmar-verification-certificate-public.png'):
+              if (assets / name).read_bytes() != (web / name).read_bytes():
+                  raise SystemExit(f'Brand master mismatch: {name}')
+          paths = list(assets.glob('winmar-verification-certificate-*.png')) + list(web.glob('*.png'))
+          forbidden = {b'tEXt', b'zTXt', b'iTXt', b'eXIf'}
+          for path in paths:
+              data = path.read_bytes()
+              if not data.startswith(b'\x89PNG\r\n\x1a\n'):
+                  raise SystemExit(f'Invalid PNG: {path}')
+              offset = 8
+              found = set()
+              complete = False
+              while offset < len(data):
+                  if offset + 12 > len(data):
+                      raise SystemExit(f'Truncated PNG: {path}')
+                  size = struct.unpack('>I', data[offset:offset + 4])[0]
+                  kind = data[offset + 4:offset + 8]
+                  if offset + 12 + size > len(data):
+                      raise SystemExit(f'Invalid PNG chunk: {path}')
+                  if kind in forbidden:
+                      found.add(kind.decode('latin-1'))
+                  offset += 12 + size
+                  if kind == b'IEND':
+                      complete = True
+                      break
+              if not complete or found:
+                  raise SystemExit(f'PNG metadata/format review required: {path}; sensitive chunk types: {sorted(found)}')
+          print(f'PASS: {len(paths)} PNG files checked; certificate copies match approved originals')
+          PY
