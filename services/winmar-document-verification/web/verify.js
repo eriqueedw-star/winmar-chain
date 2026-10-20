@@ -1,116 +1,36 @@
-/* Public Explorer document lookup - read-only. No wallet or account needed. */
+/* Public Explorer document lookup — read-only, no wallet connection required. */
 (function () {
   'use strict';
-
-  const note = document.querySelector('#verification-state');
-  const details = document.querySelector('#record-details');
-  const idOutput = document.querySelector('#document-id');
-  const issuerOutput = document.querySelector('#issuer-wallet');
-  const txOutput = document.querySelector('#registration-tx');
-  const issuedOutput = document.querySelector('#issued-at');
-  const integrity = document.querySelector('#file-integrity');
-  const input = document.querySelector('#source-pdf');
-
-  let current = null;
-  let fileVersion = 0;
-
-  function state(text, type = 'pending') {
-    note.textContent = text;
-    note.dataset.status = type;
+  const $ = (selector) => document.querySelector(selector);
+  const note = $('#verification-state'), details = $('#record-details'), integrity = $('#file-integrity'), input = $('#source-pdf');
+  const overlay = $('#certificate-overlay'), master = $('#certificate-master'), previewNote = $('#preview-note');
+  const openCertificate = $('#open-certificate'), download = $('#download-certificate'), print = $('#print-certificate');
+  let current = null, generated = null, fileVersion = 0;
+  function state(text, type = 'pending') { note.textContent = text; note.dataset.status = type; }
+  async function rpc(method, params = []) { const res = await fetch('https://rpc.winmarchain.io/', { method:'POST', cache:'no-store', headers:{'Content-Type':'application/json'}, body:JSON.stringify({jsonrpc:'2.0',id:Date.now(),method,params}) }); if (!res.ok) throw new Error('RPC unavailable'); const payload=await res.json(); if(payload.error) throw new Error('RPC error'); return payload.result; }
+  function requestedId() { const match=location.pathname.match(/\/verify\/(0x[0-9a-fA-F]{64})\/?$/); return window.WinmarVerificationProof.docId(match?.[1] || new URLSearchParams(location.search).get('documentId')); }
+  function copyText(id) { const node = $('#'+id), value = node?.href || node?.textContent; if (value) navigator.clipboard?.writeText(value).catch(()=>{}); }
+  function setCertificatePending(message) { overlay.hidden=false; overlay.textContent=message; previewNote.textContent='The approved certificate design is shown for reference only. '+message; download.disabled=true; print.disabled=true; openCertificate.hidden=true; }
+  function reportNumber() { return `WMC-${current.issuedAt.slice(0,4)}-${current.documentId.slice(2,10).toUpperCase()}`; }
+  async function createVerifiedPreview() {
+    const canvas = await window.WinmarCertificateRenderer.render({ ...current, status:'verified', sha256:current.documentId.slice(2), subject:`Original PDF ${current.documentId.slice(2,14).toUpperCase()}…`, issuer:current.issuerWallet, documentType:'On-chain Document Record', pageLabel:'1 of 1' });
+    generated = canvas.toDataURL('image/png'); master.src=generated; master.alt=`Verified Winmar Document Authenticity Certificate ${reportNumber()}`;
+    overlay.hidden=true; previewNote.textContent='VERIFIED ON-CHAIN — validated registration and the selected original PDF have the same SHA-256.';
+    openCertificate.href=generated; openCertificate.download=`${reportNumber()}-certificate.png`; openCertificate.hidden=false; download.disabled=false; print.disabled=false;
   }
-
-  async function rpc(method, params = []) {
-    const res = await fetch('https://rpc.winmarchain.io/', {
-      method: 'POST', cache: 'no-store',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ jsonrpc: '2.0', id: Date.now(), method, params }),
-    });
-    if (!res.ok) throw new Error('Public Winmar Chain RPC did not respond.');
-    const payload = await res.json();
-    if (payload.error) throw new Error('Explorer cannot verify on-chain state at this time.');
-    return payload.result;
-  }
-
-  function requestedId() {
-    const match = location.pathname.match(/\/verify\/(0x[0-9a-fA-F]{64})\/?$/);
-    const candidate = match?.[1] || new URLSearchParams(location.search).get('documentId');
-    return window.WinmarVerificationProof.docId(candidate);
-  }
-
   async function verifyLocalFile() {
-    const sequence = ++fileVersion;
-    const file = input.files?.[0];
-    if (!file) { integrity.textContent = 'Select the ORIGINAL source PDF to verify its SHA-256.'; return; }
-    if (!file.name.toLowerCase().endsWith('.pdf') || file.size <= 0 ||
-        file.size > 10 * 1024 * 1024) {
-      integrity.textContent = 'Choose a valid PDF no larger than 10 MB.';
-      return;
-    }
-    integrity.textContent = 'Calculating SHA-256 of the original PDF…';
-    try {
-      const digest = await crypto.subtle.digest('SHA-256', await file.arrayBuffer());
-      if (sequence !== fileVersion) return;
-      const actual = '0x' + Array.from(new Uint8Array(digest),
-        b => b.toString(16).padStart(2, '0')).join('');
-      if (current?.status === 'registered' && actual === current.documentId) {
-        integrity.textContent = 'VERIFIED ON-CHAIN — selected original PDF matches the active blockchain record.';
-        integrity.dataset.status = 'verified';
-      } else {
-        integrity.textContent = 'HASH MISMATCH or inactive record — this PDF is NOT verified against the blockchain.';
-        integrity.dataset.status = 'failed';
-      }
-    } catch {
-      if (sequence !== fileVersion) return;
-      integrity.textContent = 'Could not read or hash this PDF.';
-      integrity.dataset.status = 'failed';
-    }
+    const sequence=++fileVersion, file=input.files?.[0];
+    if(!file){integrity.textContent='Select the ORIGINAL source PDF to verify its SHA-256.';integrity.dataset.status='pending';return;}
+    if(!file.name.toLowerCase().endsWith('.pdf')||file.size<=0||file.size>10*1024*1024){integrity.textContent='Choose a valid PDF no larger than 10 MB.';integrity.dataset.status='failed';setCertificatePending('INVALID PDF — certificate actions are unavailable.');return;}
+    integrity.textContent='Calculating SHA-256 locally…'; integrity.dataset.status='pending';
+    try { const digest=await crypto.subtle.digest('SHA-256',await file.arrayBuffer()); if(sequence!==fileVersion)return; const actual='0x'+Array.from(new Uint8Array(digest),b=>b.toString(16).padStart(2,'0')).join('');
+      if(current?.status==='registered'&&actual===current.documentId){integrity.textContent='VERIFIED ON-CHAIN — this original PDF matches the active blockchain record.';integrity.dataset.status='verified';await createVerifiedPreview();}
+      else {integrity.textContent='DOCUMENT HASH MISMATCH — this PDF is not the registered original.';integrity.dataset.status='failed';setCertificatePending('DOCUMENT HASH MISMATCH — no authenticated certificate is available.');}
+    } catch {if(sequence!==fileVersion)return;integrity.textContent='Could not read or hash this PDF.';integrity.dataset.status='failed';setCertificatePending('FILE COMPARISON FAILED — certificate actions are unavailable.');}
   }
-
-  input.addEventListener('change', verifyLocalFile);
-
-  async function start() {
-    let id;
-    try {
-      id = requestedId();
-    } catch {
-      state('Invalid document ID. Scan the QR on a real Winmar certificate or use the document ID.', 'failed');
-      input.disabled = true;
-      return;
-    }
-    state('Reading the current on-chain document record…');
-    try {
-      current = await window.WinmarVerificationProof.lookup(rpc, id);
-      if (current.status === 'not_registered') {
-        state('NO ON-CHAIN DOCUMENT RECORD FOUND. No Winmar certificate can be validated.', 'failed');
-        input.disabled = true;
-        return;
-      }
-      if (current.status === 'revoked') {
-        state('REVOKED — this document is not currently verified.', 'failed');
-        input.disabled = true;
-        return;
-      }
-      if (current.status !== 'registered') {
-        state('Document is not currently verifiable. The issuer or registration receipt needs review.', 'failed');
-        input.disabled = true;
-        return;
-      }
-
-      details.hidden = false;
-      idOutput.textContent = current.documentId;
-      issuerOutput.textContent = current.issuerWallet;
-      issuedOutput.textContent = current.issuedAt;
-      txOutput.textContent = current.registrationTransactionHash;
-      txOutput.href = 'https://scan.winmarchain.io/tx/' + current.registrationTransactionHash;
-      state('ACTIVE ON-CHAIN RECORD FOUND — upload the original PDF to check document integrity.', 'pending');
-      integrity.textContent = 'No PDF uploaded. A registered hash alone does not prove the file you hold matches it.';
-      integrity.dataset.status = 'pending';
-      if (input.files?.[0]) verifyLocalFile();
-    } catch {
-      state('Unable to establish the blockchain record. No verification claim can be made.', 'failed');
-      input.disabled = true;
-    }
-  }
-
+  input.addEventListener('change',verifyLocalFile); document.querySelectorAll('.copy').forEach(b=>b.addEventListener('click',()=>copyText(b.dataset.copy)));
+  download.addEventListener('click',async()=>{if(!generated||!window.PDFLib)return;download.disabled=true;try{const pdf=await window.PDFLib.PDFDocument.create();const image=await pdf.embedPng(generated);const page=pdf.addPage([image.width,image.height]);page.drawImage(image,{x:0,y:0,width:image.width,height:image.height});const blob=new Blob([await pdf.save()],{type:'application/pdf'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`${reportNumber()}-certificate.pdf`;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000);}finally{download.disabled=false;}});
+  print.addEventListener('click',()=>{if(!generated)return;const win=window.open('','_blank','noopener');if(!win)return;win.document.write(`<img src="${generated}" style="max-width:100%;height:auto">`);win.document.close();win.focus();win.print();});
+  async function start(){let id;try{id=requestedId();}catch{state('INVALID DOCUMENT ID — scan an official Winmar certificate QR or use a complete document ID.','failed');input.disabled=true;setCertificatePending('INVALID DOCUMENT ID');return;} state('Reading the current on-chain document record…');try{current=await window.WinmarVerificationProof.lookup(rpc,id);if(current.status==='not_registered'){state('NO ON-CHAIN DOCUMENT RECORD FOUND.','failed');input.disabled=true;setCertificatePending('NO ON-CHAIN DOCUMENT RECORD FOUND');return;}if(current.status==='revoked'){state('DOCUMENT REVOKED — this registration is not active.','failed');input.disabled=true;setCertificatePending('DOCUMENT REVOKED');return;}if(current.status!=='registered'){state('VERIFICATION TEMPORARILY UNAVAILABLE — the registration needs review.','failed');input.disabled=true;setCertificatePending('RECORD NOT READY FOR VERIFICATION');return;}details.hidden=false;$('#document-id').textContent=current.documentId;$('#issuer-wallet').textContent=current.issuerWallet;$('#issued-at').textContent=current.issuedAt;$('#block-number').textContent='#'+current.registrationBlockNumber;const tx=$('#registration-tx');tx.textContent=current.registrationTransactionHash;tx.href='https://scan.winmarchain.io/tx/'+current.registrationTransactionHash;$('#explorer-link').href=current.verificationUrl;state('ACTIVE ON-CHAIN RECORD FOUND — compare the original PDF to verify integrity.');integrity.textContent='Original-file integrity is awaiting comparison.';integrity.dataset.status='pending';setCertificatePending('ORIGINAL PDF COMPARISON REQUIRED');}catch{state('VERIFICATION TEMPORARILY UNAVAILABLE — no verification claim can be made.','failed');input.disabled=true;setCertificatePending('VERIFICATION TEMPORARILY UNAVAILABLE');}}
   start();
 })();

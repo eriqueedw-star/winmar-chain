@@ -3,47 +3,35 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="Verify original PDF file integrity against the Winmar Chain blockchain.">
+  <meta name="description" content="Read-only on-chain document verification on Winmar Chain.">
   <title>Winmar Chain — Document Verification</title>
   <base href="/document-verification/">
   <link rel="stylesheet" href="./verify.css">
 </head>
 <body>
-  <div class="shell">
-    <header class="header">
-      <a class="brand" href="https://winmarchain.io/" aria-label="Winmar Chain website">
-        <img src="./winmar-chain-logo-framed-v2.png" alt="Winmar Chain official logo">
-        <span><strong>WINMAR CHAIN</strong><small>Document Verification</small></span>
-      </a>
-      <a class="explorer" href="https://scan.winmarchain.io/">Back to Explorer ↗</a>
-    </header>
-    <main class="main">
-      <div class="eyebrow">SHA-256 · WINMAR CHAIN MAINNET · CHAIN ID 12142816</div>
-      <h1>Verify a document on-chain.</h1>
-      <p>Check the active registration on Winmar Chain and compare your original PDF's SHA-256 fingerprint. No login, API key or wallet connection is needed to verify an existing document.</p>
-      <div id="verification-state" data-status="pending" role="status" aria-live="polite">Checking blockchain registration…</div>
-      <section id="record-details" class="record" hidden aria-label="Blockchain document record">
-        <h2>On-chain record</h2>
-        <dl>
-          <div><dt>DOCUMENT ID / ORIGINAL SHA-256</dt><dd id="document-id"></dd></div>
-          <div><dt>ISSUER WALLET</dt><dd id="issuer-wallet"></dd></div>
-          <div><dt>BLOCK TIMESTAMP (UTC)</dt><dd id="issued-at"></dd></div>
-          <div><dt>REGISTRATION TRANSACTION</dt><dd><a id="registration-tx" target="_blank" rel="noopener noreferrer"></a></dd></div>
-          <div><dt>NETWORK</dt><dd>Winmar Chain Mainnet</dd></div>
-        </dl>
-      </section>
-      <section class="upload" aria-label="Verify your original PDF">
-        <h2>Compare the original PDF</h2>
-        <p>A QR code opens the registry record; <strong>it is not proof that an arbitrary file is authentic.</strong> Upload the original PDF to compare its exact bytes against the immutable on-chain hash.</p>
-        <label for="source-pdf" class="file-label">Select original PDF (maximum 10 MB)</label>
-        <input id="source-pdf" type="file" accept="application/pdf,.pdf">
-        <div id="file-integrity" data-status="pending" aria-live="polite">Awaiting original source PDF.</div>
-        <small>The PDF is hashed locally in your browser. This page does not upload it to a server or store its contents on-chain.</small>
-      </section>
-      <footer>Official Winmar verification · <a href="https://winmarchain.io">winmarchain.io</a> · <a href="https://scan.winmarchain.io">scan.winmarchain.io</a></footer>
-    </main>
-  </div>
-  <script src="./verification-proof.js"></script>
-  <script src="./verify.js"></script>
+  <header class="site-header">
+    <a class="brand" href="https://winmarchain.io/" aria-label="Winmar Chain home"><img src="./winmar-chain-logo-framed-v2.png" alt="Winmar Chain logo"><span><strong>WINMAR CHAIN</strong><small>Where the world settles value</small></span></a>
+    <nav aria-label="Winmar Chain"><a href="https://winmarchain.io/network.html">Network</a><a href="https://winmarchain.io/technology.html">Technology</a><a href="https://winmarchain.io/developers.html">Developers</a><a href="https://winmarchain.io/governance.html">Governance</a><a href="https://winmarchain.io/whitepaper.html">Whitepaper</a></nav>
+    <a class="explorer" href="https://scan.winmarchain.io/">Explorer ↗</a>
+  </header>
+  <main class="page-shell">
+    <div class="eyebrow">PUBLIC VERIFICATION · READ ONLY</div><h1>Document verification</h1>
+    <p class="intro">Confirm a Winmar Chain document registration, then compare the original PDF locally. A blockchain record and a matching original file are both required before this page presents an authenticated certificate.</p>
+    <div id="verification-state" class="state" data-status="pending" role="status" aria-live="polite">Reading blockchain registration…</div>
+    <section class="verification-grid" aria-label="Document verification result">
+      <article class="details-card"><div class="card-heading"><span>01</span><h2>Verification details</h2></div>
+        <div id="record-details" hidden><dl class="record-list">
+          <div><dt>DOCUMENT ID / SHA-256</dt><dd id="document-id"></dd><button class="copy" data-copy="document-id" aria-label="Copy document ID">Copy</button></div>
+          <div><dt>ISSUER WALLET</dt><dd id="issuer-wallet"></dd><button class="copy" data-copy="issuer-wallet" aria-label="Copy issuer wallet">Copy</button></div>
+          <div><dt>REGISTRATION TRANSACTION</dt><dd><a id="registration-tx" target="_blank" rel="noopener noreferrer"></a></dd><button class="copy" data-copy="registration-tx" aria-label="Copy registration transaction">Copy</button></div>
+          <div><dt>BLOCK NUMBER</dt><dd id="block-number"></dd></div><div><dt>TIMESTAMP (UTC)</dt><dd id="issued-at"></dd></div><div><dt>NETWORK</dt><dd>Winmar Chain Mainnet · 12142816</dd></div>
+        </dl><a id="explorer-link" class="text-link" target="_blank" rel="noopener noreferrer">View on Explorer ↗</a></div>
+        <section class="upload" aria-label="Compare original PDF"><h3>Compare original PDF</h3><p>Your file never leaves this device. We calculate SHA-256 inside this browser and compare it with the active record.</p><label for="source-pdf" class="file-label">Select original PDF <small>PDF · maximum 10 MB</small></label><input id="source-pdf" type="file" accept="application/pdf,.pdf"><div id="file-integrity" class="integrity" data-status="pending" aria-live="polite">Awaiting original source PDF.</div></section>
+      </article>
+      <article class="certificate-card"><div class="card-heading"><span>02</span><h2>Certificate preview</h2></div><p class="preview-note" id="preview-note">An authenticated certificate is available only after the original PDF hash matches the active record.</p><div class="certificate-frame" id="certificate-frame"><img id="certificate-master" src="./winmar-verification-certificate-master.png" alt="Approved Winmar Document Authenticity Certificate template"><div id="certificate-overlay" class="certificate-overlay">ORIGINAL PDF COMPARISON REQUIRED</div></div><div class="certificate-actions"><a id="open-certificate" class="button secondary" hidden target="_blank" rel="noopener noreferrer">Open full certificate</a><button id="download-certificate" class="button" disabled>Download PDF</button><button id="print-certificate" class="button secondary" disabled>Print</button></div></article>
+    </section>
+  </main>
+  <footer class="site-footer"><a class="footer-brand" href="https://winmarchain.io/"><img src="./winmar-chain-logo-framed-v2.png" alt=""><span><b>WINMAR CHAIN</b><small>Where the world settles value</small></span></a><div><b>EXPLORE</b><a href="https://winmarchain.io/network.html">Network</a><a href="https://winmarchain.io/technology.html">Technology</a><a href="https://winmarchain.io/governance.html">Governance</a></div><div><b>BUILD</b><a href="https://winmarchain.io/developers.html">Developer tools</a><a href="https://winmarchain.io/wmc.html">WMC native coin</a><a href="https://winmarchain.io/wint.html">WINT</a></div><div><b>NETWORK</b><a href="https://scan.winmarchain.io/">Primary explorer ↗</a><a href="https://scan.winmarchain.com/">Backup explorer ↗</a><a href="https://winmarchain.io/privacy.html">Privacy policy</a></div><div class="footer-bottom"><span>© 2026 Winmar Chain</span><strong>Capital · Technology · Intelligence</strong></div></footer>
+  <script src="./vendor/qrcode.min.js"></script><script src="./vendor/pdf-lib-1.17.1.min.js"></script><script src="./certificate-renderer.js"></script><script src="./verification-proof.js"></script><script src="./verify.js"></script>
 </body>
 </html>
