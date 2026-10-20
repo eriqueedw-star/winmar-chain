@@ -220,6 +220,14 @@ body.developer-page .ok{color:#16784a!important}body.developer-page .warn{color:
 'use strict';
 const CHAIN = 12142816n, CHAIN_HEX = '0xB948E0';
 const RPC = 'https://rpc.winmarchain.io', SCAN = 'https://scan.winmarchain.io';
+const WINMAR_NETWORK = {
+  chainId: CHAIN_HEX,
+  chainName: 'Winmar Chain',
+  nativeCurrency: {name: 'Winmar Coin', symbol: 'WMC', decimals: 18},
+  rpcUrls: [RPC, 'https://rpc.winmarchain.com'],
+  blockExplorerUrls: [SCAN, 'https://scan.winmarchain.com'],
+  iconUrls: ['https://winmarchain.io/logo/wmc.png']
+};
 const FAUCET_ABI = ['function claim()'];
 const FACTORY_ABI = [
   'function createToken((string name,string symbol,uint8 decimals,uint256 initialSupply,address initialHolder,bool mintable,bool burnable,bool pausable) config,bytes32 userSalt) returns (address token)',
@@ -290,24 +298,41 @@ async function refreshHealth(){
   try{const x=await rpcProbe('https://rpc.winmarchain.com');backup.textContent='Online · '+x.latency+' ms';backup.className='ok';}
   catch(_){backup.textContent='Unavailable';backup.className='bad';}
 }
-async function connect(){
-  if(!window.ethereum)throw new Error('Install a compatible EVM wallet.');
-  if(!window.ethers)throw new Error('Wallet library unavailable.');
-  const walletProvider=new ethers.BrowserProvider(window.ethereum);
-  await walletProvider.send('eth_requestAccounts',[]);
-  let network=await walletProvider.getNetwork();
-  if(network.chainId!==CHAIN){
-    try{await window.ethereum.request({method:'wallet_switchEthereumChain',params:[{chainId:CHAIN_HEX}]});}
-    catch(e){
-      if(e.code!==4902)throw e;
-      await window.ethereum.request({method:'wallet_addEthereumChain',params:[{
-        chainId:CHAIN_HEX,chainName:'Winmar Chain',
-        nativeCurrency:{name:'Winmar Coin',symbol:'WMC',decimals:18},
-        rpcUrls:[RPC],blockExplorerUrls:[SCAN]
-      }]});
+function injectedWallet(){
+  const primary=window.ethereum;
+  const candidates=[primary,...(Array.isArray(primary?.providers)?primary.providers:[])].filter(Boolean);
+  if(!candidates.length)throw new Error('No browser wallet found. Open this page in Chrome or Edge with MetaMask, Rabby, Coinbase Wallet, or another EVM wallet extension unlocked.');
+  return candidates.find(item=>item.isMetaMask)||candidates.find(item=>item.isRabby)||candidates[0];
+}
+function walletError(error){
+  if(error?.code===4001)return new Error('Wallet request was cancelled. Approve the request in your wallet to continue.');
+  if(error?.code===-32002)return new Error('A wallet request is already open. Check your wallet extension and approve or reject it first.');
+  return error;
+}
+async function ensureWinmarNetwork(wallet){
+  const current=await wallet.request({method:'eth_chainId'});
+  if(BigInt(current)===CHAIN)return;
+  try{
+    await wallet.request({method:'wallet_switchEthereumChain',params:[{chainId:CHAIN_HEX}]});
+  }catch(error){
+    if(error?.code!==4902)throw walletError(error);
+    await wallet.request({method:'wallet_addEthereumChain',params:[WINMAR_NETWORK]});
+    // Not every wallet switches automatically after adding a network.
+    const addedChain=await wallet.request({method:'eth_chainId'});
+    if(BigInt(addedChain)!==CHAIN){
+      await wallet.request({method:'wallet_switchEthereumChain',params:[{chainId:CHAIN_HEX}]});
     }
   }
-  provider=new ethers.BrowserProvider(window.ethereum);
+  const selected=await wallet.request({method:'eth_chainId'});
+  if(BigInt(selected)!==CHAIN)throw new Error('Winmar Chain was not selected. Switch to Winmar Chain in your wallet, then try again.');
+}
+async function connect(){
+  const wallet=injectedWallet();
+  if(!window.ethers)throw new Error('Wallet library unavailable.');
+  const walletProvider=new ethers.BrowserProvider(wallet);
+  await walletProvider.send('eth_requestAccounts',[]);
+  await ensureWinmarNetwork(wallet);
+  provider=new ethers.BrowserProvider(wallet);
   if((await provider.getNetwork()).chainId!==CHAIN)throw new Error('Wrong wallet network.');
   signer=await provider.getSigner(); account=await signer.getAddress();
   $('token-holder').value=account;$('issuer').value=account;
@@ -414,9 +439,9 @@ function signOutDeveloper(){
   const url=new URL('/logout',auth.hostedUiDomain);url.search=new URLSearchParams({client_id:auth.clientId,logout_uri:auth.redirectUri}).toString();location.assign(url.toString());
 }
 async function addWmcNetwork(){
-  if(!window.ethereum)throw new Error('Install a compatible EVM wallet.');
-  await window.ethereum.request({method:'wallet_addEthereumChain',params:[{chainId:CHAIN_HEX,chainName:'Winmar Chain',nativeCurrency:{name:'Winmar Coin',symbol:'WMC',decimals:18},rpcUrls:[RPC,'https://rpc.winmarchain.com'],blockExplorerUrls:[SCAN,'https://scan.winmarchain.com'],iconUrls:['https://winmarchain.io/logo/wmc.png']} ]});
-  msg('wallet-config-result','Winmar Chain network request sent to wallet.');
+  const wallet=injectedWallet();
+  await ensureWinmarNetwork(wallet);
+  msg('wallet-config-result','Winmar Chain was added and selected in your wallet.');
 }
 async function addWmc20(){
   const address=conf?.tokenMaker?.tokenAddress;
