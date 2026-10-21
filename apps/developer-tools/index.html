@@ -98,8 +98,6 @@ body.developer-page .ok{color:#16784a!important}body.developer-page .warn{color:
 </header>
 <main>
 <div class="console-header">
-  <div class="console-brand"><img alt="Winmar Chain logo" src="https://raw.githubusercontent.com/eriqueedw-star/winmar-chain/main/winmar-chain-logo-framed-v2.png">
-    <div><b>WINMAR CHAIN</b><span class="small">INSTITUTIONAL BLOCKCHAIN INFRASTRUCTURE</span></div></div>
   <div class="muted">MAINNET · ID 12142816 · <a href="/wmc.html">WMC</a> · <a href="/wint.html">WINT</a><br><a href="https://scan.winmarchain.io" target="_blank" rel="noopener noreferrer">EXPLORER ↗</a> &nbsp; <a href="https://winmarchain.io" target="_blank" rel="noopener noreferrer">OFFICIAL WEBSITE ↗</a></div>
   <div class="auth-controls">
     <span id="developer-account-status" class="small">Developer account not signed in</span>
@@ -336,8 +334,11 @@ async function connect(){
   if((await provider.getNetwork()).chainId!==CHAIN)throw new Error('Wrong wallet network.');
   signer=await provider.getSigner(); account=await signer.getAddress();
   $('token-holder').value=account;$('issuer').value=account;
-  msg('wallet-status',account.slice(0,7)+'…'+account.slice(-5));
-  $('connect').textContent='Connected';refresh();
+  msg('wallet-status','Connected: '+account);
+  $('connect').textContent=account.slice(0,7)+'…'+account.slice(-5);
+  $('connect').setAttribute('aria-label','Connected wallet '+account);
+  msg('wallet-config-result','Wallet connected on Winmar Chain: '+account);
+  refresh();
   if(developerSession) await loadLinkedWallets();
 }
 
@@ -515,7 +516,10 @@ async function changeDocument(action){
   msg('document-result','Submitted: '+SCAN+'/tx/'+tx.hash+'\nWaiting for confirmation…');
   await tx.wait();msg('document-result','Confirmed: '+SCAN+'/tx/'+tx.hash+'\nIssuer: '+account+'\nAction: '+action);
 }
-$('connect').onclick=()=>connect().catch(e=>msg('wallet-status',eword(e)));
+$('connect').onclick=()=>connect().catch(e=>{
+  msg('wallet-status','Not connected');
+  msg('wallet-config-result',eword(e));
+});
 $('email-auth').onclick=()=>beginEmailSignIn().catch(e=>msg('developer-auth-message',eword(e)));
 $('email-signout').onclick=()=>signOutDeveloper();
 $('link-wallet').onclick=()=>verifyCreatorWallet().catch(e=>msg('linked-wallet-status',eword(e)));
