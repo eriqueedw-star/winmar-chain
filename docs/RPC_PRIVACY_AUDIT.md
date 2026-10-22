@@ -50,6 +50,7 @@ This document defines an **evidence-gated** process. Do not copy production logs
 **Gate:** This record must be completed and approved before marking `none` / `limited` or claiming no user tracking.
 
 References:
+
 - Provisional RPC disclosure: [RPC_PRIVACY_DISCLOSURE.md](RPC_PRIVACY_DISCLOSURE.md)
 - Existing public-RPC exposure policy: [RPC_EXPOSURE_POLICY.md](RPC_EXPOSURE_POLICY.md)
 - DefiLlama ChainList source: https://github.com/DefiLlama/chainlist/blob/main/components/RPCList/index.js
