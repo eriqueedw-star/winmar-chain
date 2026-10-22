@@ -14,7 +14,6 @@ export const winmarChain = defineChain({
   blockExplorers: [
     { name: "Winmar Chain Explorer", url: "https://scan.winmarchain.io" },
   ],
-  testnet: false,
 });
 
 // WMC logo for display purposes (not the Chainlist network icon):
