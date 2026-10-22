@@ -24,6 +24,7 @@ The project owner also provided an IPFS gateway reference:
 ### Historical artwork fingerprints (NOT yet reproduced)
 
 A previously prepared owner-side `wmc-registration.json` record reports:
+
 - Original/reference image SHA-256: `b04c3538790681d94732b7f59702ecc4f9dd85cce5558f26995604f411279aeb`
 - 256 × 256 prepared-image SHA-256: `2f4f25fdbeed12a61fb61e134c73bfa9b0e7481cdcfa6e0a828f02beabac0385`
 - Notes indicate the smaller PNG was resized from the reference without visual redesign and retained a white background.
