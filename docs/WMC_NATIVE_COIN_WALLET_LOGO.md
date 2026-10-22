@@ -19,7 +19,7 @@ The repository's existing [`config/network.json`](../config/network.json) declar
 The project owner also provided an IPFS gateway reference:
 `https://bafybeieqw6y7ha7ciykcxqz7ttuywix2yaxyffhk5uajxgy7357xdn7liu.ipfs.dweb.link?filename=WMC.png`.
 
-**Logo evidence pending:** These URLs are source references, NOT yet proof that the PNG files are identical, accessible or meet a particular wallet's specifications. A verified original PNG and SHA-256 have **not** been committed to this repository. Preserve the original asset; do not design a surrogate, recolor or distort it.
+**Owner-uploaded WMC artwork (locally inspected 2026-10-22):** The project owner supplied `WMC.png` directly. Its unmodified file was inspected: PNG / RGBA / 1254 × 1254 px / 2,717,749 bytes / transparent outside the circular logo. **SHA-256: `466e0857dbe99549d9e999afb83e4a22cd6c8cdeb8486e9f571afa7bc2d6c54f`.** This is the verified digest of the owner-uploaded local file, NOT an independently verified digest of the image currently served by either the official URL or IPFS. Original bytes have **not** been committed to GitHub; vendor acceptance has **not** been established. Never redraw, recolor, crop or substitute artwork.
 
 ### Historical artwork fingerprints (NOT yet reproduced)
 
