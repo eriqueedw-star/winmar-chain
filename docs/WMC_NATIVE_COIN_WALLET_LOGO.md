@@ -21,6 +21,15 @@ The project owner also provided an IPFS gateway reference:
 
 **Logo evidence pending:** These URLs are source references, NOT yet proof that the PNG files are identical, accessible or meet a particular wallet's specifications. A verified original PNG and SHA-256 have **not** been committed to this repository. Preserve the original asset; do not design a surrogate, recolor or distort it.
 
+### Historical artwork fingerprints (NOT yet reproduced)
+
+A previously prepared owner-side `wmc-registration.json` record reports:
+- Original/reference image SHA-256: `b04c3538790681d94732b7f59702ecc4f9dd85cce5558f26995604f411279aeb`
+- 256 × 256 prepared-image SHA-256: `2f4f25fdbeed12a61fb61e134c73bfa9b0e7481cdcfa6e0a828f02beabac0385`
+- Notes indicate the smaller PNG was resized from the reference without visual redesign and retained a white background.
+
+These are **historical, unverified statements from a prior registration manifest**, not hashes independently reproduced from the publicly referenced URLs. Do not assume the two files are identical; the resized export naturally has different bytes. **Do not submit either until the owner-approved source binary is recovered and checked.**
+
 **Separate concepts:** The Chainlist network icon (`winmar`) is already listed via DefiLlama/icons#2523. Its appearance does **not** establish that MetaMask, Trust Wallet or SafePal display a native WMC coin icon.
 
 ## Integration routes
