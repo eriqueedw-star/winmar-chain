@@ -11,7 +11,7 @@
   if(window.ethereum?.providers?.length) window.ethereum.providers.forEach(provider=>{if(!wallets.some(x=>x.provider===provider))wallets.push({provider})});
   else if(window.ethereum&&!wallets.some(x=>x.provider===window.ethereum)) wallets.push({provider:window.ethereum});
   if(!wallets.length) throw Error('No EVM wallet detected. Open this page in MetaMask, Trust Wallet, Rabby, Coinbase Wallet, or another EVM wallet browser.');
-  const preferred=wallets.find(x=>x.info?.rdns==='io.metamask'||x.provider.isMetaMask);
+  const preferred=wallets.find(x=>x.info?.rdns==='io.metamask')||(discovered.length?wallets.find(x=>x.provider.isMetaMask):null);
   const wallet=preferred||wallets[0];
   const walletProvider=wallet.provider;
   provider=new ethers.BrowserProvider(walletProvider); await provider.send('eth_requestAccounts',[]); signer=await provider.getSigner(); const syncAccount=accounts=>{const account=accounts?.[0]; if(!account){signer=null;$('wallet').textContent='Wallet disconnected.';$('holder').value='';$('deploy').disabled=true;$('deploy').textContent='Connect wallet to deploy';return} $('wallet').textContent='Connected: '+account;$('holder').value=account;$('deploy').disabled=false;$('deploy').textContent='Deploy token · 0.01 WMC'}; const account=await signer.getAddress(); syncAccount([account]); walletProvider.on?.('accountsChanged',syncAccount); $('status').textContent='Wallet connected. Review your details before deployment.';
