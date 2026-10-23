@@ -86,13 +86,13 @@ test('Bridge catalog rejects unauthorized routes and starts globally paused',asy
 });
 
 test('WMC-20 factory preserves ERC-20 ABI, balances, allowances and optional issuer powers',async()=>{
-  const {accounts:[creator,receiver,spender]}=await fixture();
+  const {accounts:[creator,receiver,spender,treasury]}=await fixture();
   const me=await creator.getAddress(),to=await receiver.getAddress(),by=await spender.getAddress();
-  const factory=await deploy('WinmarTokenFactory',creator);
+  const factory=await deploy('WinmarTokenFactory',creator,await treasury.getAddress());
   const cfg={name:'Winmar Test',symbol:'WTEST',decimals:18,initialSupply:ethers.parseEther('1000'),
     initialHolder:me,mintable:false,burnable:true,pausable:false};
   const salt=ethers.id('wmc-20-test');
-  const receipt=await done(factory.createToken(cfg,salt));
+  const receipt=await done(factory.createToken(cfg,salt,{value:ethers.parseEther('0.01')}));
   const iface=new ethers.Interface(artifact('WinmarTokenFactory').abi);
   const event=receipt.logs.map(log=>{try{return iface.parseLog(log);}catch(_){return null;}})
     .find(log=>log && log.name==='TokenCreated');
@@ -110,7 +110,7 @@ test('WMC-20 factory preserves ERC-20 ABI, balances, allowances and optional iss
   await done(token.connect(receiver).burn(ethers.parseEther('10')));
   assert.equal(await token.totalSupply(),ethers.parseEther('990'));
   await assert.rejects(()=>token.setPaused.staticCall(true));
-  await assert.rejects(()=>factory.createToken.staticCall(cfg,salt));
+  await assert.rejects(()=>factory.createToken.staticCall(cfg,ethers.id('missing-fee')));
 });
 
 test('Native WMC faucet enforces daily cap, cooldown, pause and admin access',async()=>{
