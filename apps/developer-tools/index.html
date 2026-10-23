@@ -41,7 +41,9 @@ input[type=checkbox]{width:auto;accent-color:#3c8de0}.checks{display:flex;flex-w
 .kv span:first-child{color:#a1b7ce}.kv span:last-child{text-align:right;overflow-wrap:anywhere}
 .links{margin-top:22px;display:flex;gap:14px;flex-wrap:wrap;font-size:12px}
 .console-disclaimer{border-top:1px solid #293e58;margin-top:30px;padding-top:20px;font-size:12px;color:#8eabc9;line-height:1.7}
+.launchpad-intro{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(240px,.65fr);gap:16px;margin:18px 0 22px}.launchpad-banner{padding:22px;border:1px solid #cfd9ee;border-radius:16px;background:linear-gradient(135deg,#f5f7ff,#fff)}.launchpad-banner h3{font-size:21px;letter-spacing:-.02em;margin-bottom:8px}.launchpad-banner p{margin:0}.launchpad-status{display:grid;gap:10px;padding:18px;border:1px solid #dfe3ef;border-radius:16px;background:#f8f9ff}.launchpad-status .kv{padding:7px 0}.launchpad-steps{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:0 0 22px}.launchpad-step{padding:14px;border:1px solid #dfe3ef;border-radius:13px;background:#fff}.launchpad-step b{display:block;margin-bottom:5px;color:#1e3db8}.launchpad-step span{display:block;color:#697184;font-size:12px;line-height:1.5}.token-preview{display:flex;align-items:center;gap:14px;margin:18px 0;padding:14px;border:1px solid #dfe3ef;border-radius:13px;background:#fafbff}.token-preview-mark{display:grid;place-items:center;width:48px;height:48px;border-radius:14px;background:linear-gradient(135deg,#3155ff,#7b5cff);color:#fff;font-size:18px;font-weight:850}.token-preview strong{display:block}.token-preview small{color:#697184}.launchpad-lock{display:inline-flex;align-items:center;gap:8px;margin:0 0 14px;padding:8px 11px;border:1px solid #ecd9a9;border-radius:999px;background:#fff8e8;color:#795719;font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase}
 @media(max-width:840px){.layout{grid-template-columns:1fr}}
+@media(max-width:760px){.launchpad-intro{grid-template-columns:1fr}.launchpad-steps{grid-template-columns:1fr}.market-grid{grid-template-columns:1fr}.market-row{grid-template-columns:1fr auto}.market-row .market-action{grid-column:1/-1;width:100%}}
 @media(max-width:600px){.tabs{grid-template-columns:repeat(2,1fr)}.cols{grid-template-columns:1fr}.card{padding:18px}.console-brand b{font-size:16px}.console-brand img{width:48px;height:48px}main{padding:14px}}
 
 /* Homepage-standard shell. Developer Console content below intentionally keeps its blue theme. */
@@ -85,6 +87,7 @@ body.developer-page .kv span:first-child{color:#697184}
 body.developer-page .flag{color:#8a5b12}
 body.developer-page .console-disclaimer{color:#737b8e;border-color:#e1e4ef}
 body.developer-page .ok{color:#16784a!important}body.developer-page .warn{color:#996000!important}body.developer-page .bad{color:#b52d3a!important}
+ .market-grid{display:grid;grid-template-columns:1.25fr .75fr;gap:16px;margin:18px 0}.market-panel{padding:18px;border:1px solid #dfe3ef;border-radius:16px;background:linear-gradient(145deg,#fff,#f8f9ff)}.market-panel h3{margin-bottom:8px}.market-list{display:grid;gap:9px;margin-top:14px}.market-row{display:grid;grid-template-columns:1fr auto auto;align-items:center;gap:12px;padding:13px;border:1px solid #e5e8f2;border-radius:12px;background:#fff}.market-row strong{display:block}.market-row small{color:#737b8e}.market-badge{padding:5px 8px;border-radius:999px;background:#fff4d8;color:#795719;font-size:10px;font-weight:800;letter-spacing:.05em}.market-action{min-height:36px;padding:0 10px;font-size:11px}.market-metric{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px}.market-metric .kv{display:block;padding:12px;border:1px solid #e5e8f2;border-radius:12px}.market-metric .kv span{display:block;text-align:left!important}.market-metric .kv span:last-child{margin-top:4px;font-weight:800;color:#11121a}.market-lock{padding:14px;border-radius:13px;background:#fff8e8;border:1px solid #ecd9a9;color:#795719;font-size:12px;line-height:1.6}
 </style>
 </head>
 <body class="developer-page">
@@ -117,6 +120,7 @@ body.developer-page .ok{color:#16784a!important}body.developer-page .warn{color:
   <button type="button" id="t-creator" aria-selected="false"><span class="no">02 / ASSET ISSUANCE</span>WMC-20 Creator</button>
   <button type="button" id="t-bridge" aria-selected="false"><span class="no">03 / INTEROPERABILITY</span>Wrapped Assets</button>
   <button type="button" id="t-documents" aria-selected="false"><span class="no">04 / INTEGRITY</span>Document Verify</button>
+  <button type="button" id="t-market" aria-selected="false"><span class="no">05 / MARKET</span>WMC-20 Central</button>
 </div>
 <div class="layout">
   <div>
@@ -128,8 +132,15 @@ body.developer-page .ok{color:#16784a!important}body.developer-page .warn{color:
     <div id="faucet-result" class="result" role="status">Waiting for verified deployment and separate treasury funding.</div>
   </section>
   <section id="p-creator" class="card" hidden>
-    <span class="flag" id="creator-state">FACTORY LIVE · TOKEN CREATION REQUIRES WALLET CONFIRMATION</span><h2>WMC-20 Token Creator</h2>
-    <p class="muted">Create a WMC-20 fungible token native to Winmar Chain. ERC-20 compatible for EVM wallets and tools. Gas is paid in native WMC; issuer powers are disclosed before deployment.</p>
+    <!-- WMC-20 Token Creator launchpad -->
+    <span class="flag" id="creator-state">LAUNCHPAD UI · ACTIVATION PENDING REVIEW</span><h2>WMC-20 Token Launchpad <span class="muted">/ Creator</span></h2>
+    <p class="muted">Prepare a native WMC-20 token on Winmar Chain. The launchpad guides the creator through configuration, ownership powers and final wallet confirmation before any transaction is sent.</p>
+    <div class="launchpad-intro">
+      <div class="launchpad-banner"><h3>Launch with clear control</h3><p class="muted">Configure the token identity, preview the supply and disclose optional owner powers. This screen is a preparation UI only; token creation remains locked until the factory and review gates are activated.</p></div>
+      <div class="launchpad-status"><div class="kv"><span>Network</span><span>Winmar Chain</span></div><div class="kv"><span>Chain ID</span><span>12142816</span></div><div class="kv"><span>Launch status</span><span class="warn">UI READY · PAUSED</span></div></div>
+    </div>
+    <div class="launchpad-steps" aria-label="Token launch steps"><div class="launchpad-step"><b>01 · Configure</b><span>Set name, symbol, supply and token powers.</span></div><div class="launchpad-step"><b>02 · Review</b><span>Preview ownership and deployment details.</span></div><div class="launchpad-step"><b>03 · Confirm</b><span>Wallet confirmation will be enabled later.</span></div></div>
+    <div class="launchpad-lock">🔒 Token deployment is paused</div>
     <div class="auth-state" aria-live="polite">
       <strong>Developer account &amp; creator wallet</strong>
       <p id="developer-auth-message" class="muted">Sign in with a verified email, connect your creator wallet, then verify ownership with a non-transaction signature.</p>
@@ -148,6 +159,7 @@ body.developer-page .ok{color:#16784a!important}body.developer-page .warn{color:
       <label><input id="burnable" type="checkbox" checked> Burnable</label>
       <label><input id="pausable" type="checkbox"> Pausable</label>
     </div>
+    <div class="token-preview"><div class="token-preview-mark" id="token-preview-mark">ET</div><div><strong id="token-preview-name">Example Winmar Token</strong><small id="token-preview-meta">EWT · 1,000,000 initial supply · 18 decimals</small></div></div>
     <div class="risk">If <strong>Mintable</strong> or <strong>Pausable</strong> is enabled, the token creator retains owner authority. Creating a token does not make it endorsed or listed by Winmar Chain.</div>
     <button type="button" id="deploy" disabled>Deploy WMC-20 Token</button>
     <p class="muted">Email access protects this portal workflow only. The factory is public on-chain; a wallet can interact with it directly outside this page.</p>
@@ -163,6 +175,15 @@ body.developer-page .ok{color:#16784a!important}body.developer-page .warn{color:
     <div class="kv"><span>Staging route</span><span>BSC NEXS → Winmar · PAUSED</span></div>
     <div class="links"><a href="https://bridge.winmarchain.io" target="_blank" rel="noopener noreferrer">Existing Bridge Interface ↗</a><a href="https://github.com/eriqueedw-star/winmar-chain/blob/main/docs/BRIDGE_TRUST_MODEL.md" target="_blank" rel="noopener noreferrer">Bridge Trust Model ↗</a></div>
     <div id="bridge-result" class="result" role="status">Routes pending verification. No asset representation is endorsed by this prototype.</div>
+  </section>
+  <section id="p-market" class="card" hidden>
+    <span class="flag">CENTRAL MARKET · ALL FEATURES LOCKED</span><h2>WMC-20 Central Market</h2>
+    <p class="muted">A central, non-custodial home for discovering WMC-20 tokens and connecting to approved trading venues across the ecosystem.</p>
+    <div class="launchpad-intro"><div class="launchpad-banner"><h3>Discover first. Trade later.</h3><p class="muted">Tokens can appear here even when liquidity is hosted elsewhere. The central page will show verified contract details, market links and risk disclosures before trading is enabled.</p></div><div class="launchpad-status"><div class="kv"><span>Network</span><span>Winmar Chain</span></div><div class="kv"><span>Market status</span><span class="warn">UI READY · PAUSED</span></div><div class="kv"><span>Custody</span><span>Non-custodial</span></div></div></div>
+    <div class="market-lock">🔒 Trading, liquidity, listings and wallet actions are locked. This is a UI preview only; no funds move and no contract is called.</div>
+    <div class="market-grid"><div class="market-panel"><h3>Featured WMC-20 tokens</h3><p class="muted">Verified listings will appear after token and market review.</p><div class="market-list"><div class="market-row"><div><strong>Example Winmar Token</strong><small>EWT · Contract pending verification</small></div><span class="market-badge">PREVIEW</span><button class="market-action secondary" type="button" disabled>Trade locked</button></div><div class="market-row"><div><strong>Winmar USD</strong><small>WUSD · Contract pending verification</small></div><span class="market-badge">PREVIEW</span><button class="market-action secondary" type="button" disabled>Trade locked</button></div></div></div><div class="market-panel"><h3>Market overview</h3><div class="market-metric"><div class="kv"><span>Listed tokens</span><span>0 verified</span></div><div class="kv"><span>Trading venues</span><span>0 enabled</span></div><div class="kv"><span>Liquidity routes</span><span>Paused</span></div><div class="kv"><span>Wallet connection</span><span>Locked</span></div></div><div class="links"><button class="secondary" type="button" disabled>Connect wallet</button><button class="secondary" type="button" disabled>Manage liquidity</button></div></div></div>
+    <div class="note"><strong>Planned flow</strong><br>Connect wallet → browse verified WMC-20 listings → review contract and venue → approve a wallet transaction → trade through the selected non-custodial route. Central Market will not hold user funds.</div>
+    <div class="result" role="status">Central Market preparation UI loaded. Trading activation requires a reviewed router, verified token registry, liquidity policy and security sign-off.</div>
   </section>
   <section id="p-documents" class="card" hidden>
     <span class="flag">SELF-ATTESTATION · NOT CERTIFICATION</span><h2>Document Integrity Verify</h2>
@@ -239,9 +260,9 @@ const DOC_ABI = [
 const $ = id => document.getElementById(id);
 let conf, provider, signer, account, digest, developerSession;
 let linkedWallets = [];
-for (const name of ['faucet','creator','bridge','documents']) {
+for (const name of ['faucet','creator','bridge','documents','market']) {
   $('t-'+name).addEventListener('click',()=>{
-    for(const k of ['faucet','creator','bridge','documents']){
+    for(const k of ['faucet','creator','bridge','documents','market']){
       $('p-'+k).hidden = k !== name;
       $('t-'+k).setAttribute('aria-selected', String(k===name));
     }
@@ -527,6 +548,17 @@ $('add-network').onclick=()=>addWmcNetwork().catch(e=>msg('wallet-config-result'
 $('add-wmc20').onclick=()=>addWmc20().catch(e=>msg('wallet-config-result',eword(e)));
 $('claim').onclick=()=>claim().catch(e=>msg('faucet-result',eword(e)));
 $('deploy').onclick=()=>deployToken().catch(e=>msg('token-result',eword(e)));
+function updateTokenPreview(){
+  const name=$('token-name').value.trim()||'Untitled Winmar Token';
+  const symbol=($('token-symbol').value.trim()||'TKN').toUpperCase();
+  const supply=$('token-supply').value.trim()||'0';
+  const decimals=$('token-decimals').value||'18';
+  $('token-preview-mark').textContent=symbol.slice(0,2);
+  $('token-preview-name').textContent=name;
+  $('token-preview-meta').textContent=`${symbol} · ${supply} initial supply · ${decimals} decimals`;
+}
+['token-name','token-symbol','token-supply','token-decimals'].forEach(id=>$(id).addEventListener('input',updateTokenPreview));
+updateTokenPreview();
 $('hash').onclick=()=>sha256().catch(e=>msg('hash-result',eword(e)));
 $('verify').onclick=()=>verify().catch(e=>msg('document-result',eword(e)));
 $('anchor').onclick=()=>changeDocument('anchor').catch(e=>msg('document-result',eword(e)));
