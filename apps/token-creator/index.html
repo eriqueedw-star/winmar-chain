@@ -14,7 +14,9 @@
   let wallet=wallets[0];
   if(wallets.length>1){
     const labels=wallets.map((x,i)=>x.info?.name||(x.provider.isMetaMask?'MetaMask':x.provider.isTrust?'Trust Wallet':x.provider.isRabby?'Rabby':x.provider.isCoinbaseWallet?'Coinbase Wallet':'EVM Wallet '+(i+1)));
-    const choice=window.prompt('Choose wallet:\n'+labels.map((x,i)=>(i+1)+'. '+x).join('\n'),'1');
+    const preferredIndex=wallets.findIndex(x=>x.info?.rdns==='io.metamask'||x.provider.isMetaMask);
+    const defaultChoice=preferredIndex>=0?preferredIndex+1:1;
+    const choice=window.prompt('Choose wallet:\n'+labels.map((x,i)=>(i+1)+'. '+x).join('\n'),String(defaultChoice));
     const index=Math.max(0,Math.min(wallets.length-1,Number(choice||1)-1)); wallet=wallets[index];
   }
   const walletProvider=wallet.provider;
