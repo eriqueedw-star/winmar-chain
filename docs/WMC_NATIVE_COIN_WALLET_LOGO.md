@@ -12,26 +12,27 @@
 - WMC page: https://winmarchain.io/wmc.html
 - Chainlist: https://chainlist.org/chain/12142816
 
-## Official logo pointers (not a new or generated logo)
+## Canonical native WMC coin logo — owner-approved (2026-10-23)
 
-The repository's existing [`config/network.json`](../config/network.json) declares the **native WMC coin image** as `https://winmarchain.io/logo/wmc.png`.
+The project owner selected the **401 × 401 RGBA PNG** currently served at **https://winmarchain.io/logo/wmc.png** as the single authoritative WMC native-coin logo for public interfaces and wallet submissions.
 
-The project owner also provided an IPFS gateway reference:
-`https://bafybeieqw6y7ha7ciykcxqz7ttuywix2yaxyffhk5uajxgy7357xdn7liu.ipfs.dweb.link?filename=WMC.png`.
+- **Canonical logo URL:** https://winmarchain.io/logo/wmc.png
+- **Exact GitHub asset:** [`assets/wmc.png`](../assets/wmc.png)
+- **Owner-uploaded matching image:** `WMC2.png`
+- **File:** PNG RGBA; 401 × 401 pixels; 325,280 bytes
+- **SHA-256:** `dbbd58c8a18c730825a3931c0bf41f133abca76c140f27d8c4ba0b2f58deafee`
+- **Git blob SHA-1:** `440a721729635dbbe06fba3247a2421fe8fbbd2c`
+- **Availability:** HTTP 200 from independent GitLab CI
 
-**Owner-uploaded WMC artwork (locally inspected 2026-10-22):** The project owner supplied `WMC.png` directly. Its unmodified file was inspected: PNG / RGBA / 1254 × 1254 px / 2,717,749 bytes / transparent outside the circular logo. **SHA-256: `466e0857dbe99549d9e999afb83e4a22cd6c8cdeb8486e9f571afa7bc2d6c54f`.** This is the verified digest of the owner-uploaded local file, NOT an independently verified digest of the image currently served by either the official URL or IPFS. Original bytes have **not** been committed to GitHub; vendor acceptance has **not** been established. Never redraw, recolor, crop or substitute artwork.
+The repository file and owner-supplied `WMC2.png` are **byte-identical** to the official web file. Never invent, edit, recompress, recolor, crop or swap this WMC artwork. **This is native coin artwork, not Winmar Chain network artwork.** The Chainlist network icon `winmar` and its separately approved logo must not be altered.
 
-### Historical artwork fingerprints (NOT yet reproduced)
+### Historical sources, not used for live branding
 
-A previously prepared owner-side `wmc-registration.json` record reports:
+The earlier 1254 × 1254 `WMC.png`, SHA-256 `466e0857dbe99549d9e999afb83e4a22cd6c8cdeb8486e9f571afa7bc2d6c54f`, is retained solely as historic master evidence. Previously prepared `wmc-registration.json` also lists source hash `b04c3538790681d94732b7f59702ecc4f9dd85cce5558f26995604f411279aeb` and resized hash `2f4f25fdbeed12a61fb61e134c73bfa9b0e7481cdcfa6e0a828f02beabac0385`; those older records are not the canonical logo.
 
-- Original/reference image SHA-256: `b04c3538790681d94732b7f59702ecc4f9dd85cce5558f26995604f411279aeb`
-- 256 × 256 prepared-image SHA-256: `2f4f25fdbeed12a61fb61e134c73bfa9b0e7481cdcfa6e0a828f02beabac0385`
-- Notes indicate the smaller PNG was resized from the reference without visual redesign and retained a white background.
+Legacy IPFS CID `bafybeieqw6y7ha7ciykcxqz7ttuywix2yaxyffhk5uajxgy7357xdn7liu` remains unverified due to rate limits and must **not** override the canonical HTTPS logo until its contents are independently checked.
 
-These are **historical, unverified statements from a prior registration manifest**, not hashes independently reproduced from the publicly referenced URLs. Do not assume the two files are identical; the resized export naturally has different bytes. **Do not submit either until the owner-approved source binary is recovered and checked.**
-
-**Separate concepts:** The Chainlist network icon (`winmar`) is already listed via DefiLlama/icons#2523. Its appearance does **not** establish that MetaMask, Trust Wallet or SafePal display a native WMC coin icon.
+**Wallet status:** An accessible, approved WMC PNG and merged Chainlist network icon do not imply that MetaMask, Trust Wallet or SafePal have approved native WMC icon display.
 
 ## Integration routes
 
@@ -44,8 +45,8 @@ These are **historical, unverified statements from a prior registration manifest
 
 ## Approval gates for a WMC logo submission
 
-1. Download the **owner-approved original** coin PNG and confirm it is not the chain icon or an unrelated WIM/BEP-20 token.
-2. Record the exact SHA-256, MIME type, dimensions, size, and trademark/use authorization; compare the HTTPS source with the owner-provided IPFS source.
+1. Use the verified [canonical WMC PNG](../assets/wmc.png); do not substitute the Winmar Chain icon or WIM/BEP-20 token.
+2. Include canonical SHA-256, MIME, dimensions and approved commercial/trademark use; legacy IPFS comparison remains optional until its bytes are available.
 3. Confirm vendor technical eligibility and follow vendor-specific native blockchain support process; avoid duplicate/token-contract submissions.
 4. Obtain a vendor receipt/PR/case ID and verify the actual UI on mobile and extension before reporting native WMC icon support.
 5. Never claim that an opened PR or custom RPC connection equals a wallet-native listing.
@@ -55,4 +56,4 @@ These are **historical, unverified statements from a prior registration manifest
 - https://gitlab.com/winmar-chain/winmar-chain-registry/-/merge_requests/2
 - https://gitlab.com/winmar-chain/winmar-chain-registry/-/blob/main/networks/winmar-mainnet.json
 
-**Status on 2026-10-22:** Documentation-only, not a vendor submission or production change.
+**Status on 2026-10-23:** Canonical published 401px logo approved and validated; documentation-only repo change, not a wallet-vendor submission or production infrastructure change.

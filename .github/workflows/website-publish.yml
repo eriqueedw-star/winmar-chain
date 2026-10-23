@@ -5,6 +5,7 @@ on:
     branches: [main]
     paths:
       - 'apps/developer-tools/**'
+      - 'apps/token-creator/**'
       - 'config/**'
       - 'assets/**'
       - '.github/workflows/website-publish.yml'
@@ -38,11 +39,11 @@ jobs:
           mkdir -p _site
           cp apps/developer-tools/index.html _site/developers.html
           cp apps/developer-tools/wmc.html _site/wmc.html
-          cp apps/developer-tools/wint.html _site/wint.html
+          cp apps/developer-tools/wint.html _site/wint.html`n          mkdir -p _site/token-creator`n          cp apps/token-creator/index.html _site/token-creator/index.html
           cp -R config _site/config
           mkdir -p _site/logo
           if [[ -f assets/wmc.png ]]; then cp assets/wmc.png _site/logo/wmc.png; fi
-          if [[ -f assets/wint.png ]]; then cp assets/wint.png _site/logo/wint.png; fi
+          if [[ -f assets/wint.png ]]; then cp assets/wint.png _site/logo/wint.png; fi`n          if [[ -f winmar-chain-logo-framed-v2.png ]]; then cp winmar-chain-logo-framed-v2.png _site/assets/winmar-chain-logo-framed-v2.png; fi
           touch _site/.nojekyll
 
       - name: Upload Pages artifact
