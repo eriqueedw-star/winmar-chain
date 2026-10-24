@@ -78,6 +78,37 @@
     const cognitoDomain = 'https://eu-north-1ph3o7veez.auth.eu-north-1.amazoncognito.com';
     const cognitoClientId = '1i5268br47tai5elejs81tkss4';
     const redirectUri = 'https://winmarchain.io/wmusd-control-room-7f3c/';
+    const authGate = document.querySelector('.auth-gate');
+    const showAuthError = (message) => { authGate.querySelector('.muted').textContent = message; };
+    const finishCognitoCallback = async () => {
+      const params = new URLSearchParams(window.location.search);
+      const code = params.get('code');
+      const returnedState = params.get('state');
+      if (!code) return;
+      if (!returnedState || returnedState !== sessionStorage.getItem('wmusd_oauth_state')) {
+        showAuthError('Login state expired. Please start the secure sign-in again.');
+        return;
+      }
+      const verifier = sessionStorage.getItem('wmusd_pkce_verifier');
+      if (!verifier) {
+        showAuthError('Secure login session expired. Please start the sign-in again.');
+        return;
+      }
+      try {
+        const response = await fetch(`${cognitoDomain}/oauth2/token`, { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: new URLSearchParams({ grant_type: 'authorization_code', client_id: cognitoClientId, code, redirect_uri: redirectUri, code_verifier: verifier }) });
+        if (!response.ok) throw new Error('Token exchange failed');
+        const tokens = await response.json();
+        sessionStorage.setItem('wmusd_id_token', tokens.id_token || '');
+        sessionStorage.setItem('wmusd_access_token', tokens.access_token || '');
+        sessionStorage.setItem('wmusd_refresh_token', tokens.refresh_token || '');
+        sessionStorage.removeItem('wmusd_oauth_state');
+        sessionStorage.removeItem('wmusd_pkce_verifier');
+        window.history.replaceState({}, document.title, redirectUri);
+        authGate.remove();
+      } catch (error) {
+        showAuthError('Secure login could not be completed. Please try again.');
+      }
+    };
     const randomBytes = (length) => { const bytes = new Uint8Array(length); crypto.getRandomValues(bytes); return bytes; };
     const base64Url = (bytes) => btoa(String.fromCharCode(...bytes)).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
     const beginCognitoLogin = async () => {
@@ -91,6 +122,7 @@
       window.location.assign(`${cognitoDomain}/oauth2/authorize?${params}`);
     };
     document.querySelector('#auth-login').addEventListener('click', beginCognitoLogin);
+    finishCognitoCallback();
     document.querySelector('#connect').addEventListener('click', async () => {
       const button = document.querySelector('#connect');
       const wallet = document.querySelector('#wallet');
