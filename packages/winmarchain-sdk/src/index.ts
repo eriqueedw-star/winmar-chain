@@ -8,6 +8,44 @@ export const LEVERAGE_TIERS = [1, 2, 3, 5, 10, 20, 25, 50, 75, 100] as const;
 export type Side = "BUY" | "SELL";
 export type OrderType = "LIMIT" | "MARKET";
 export type Leverage = typeof LEVERAGE_TIERS[number];
+export type MarketKind = "PERPETUAL" | "SPOT" | "OUTCOME";
+export type MarketCategory = "CRYPTO" | "COMMODITY" | "FX" | "INDEX" | "EQUITY" | "WINMAR_ECOSYSTEM";
+export type MarketStatus = "PROPOSED" | "REVIEW" | "TESTING" | "ACTIVE" | "PAUSED" | "REJECTED";
+
+export interface MarketDefinition {
+  symbol: string;
+  kind: MarketKind;
+  category: MarketCategory;
+  base: string;
+  quote: string;
+  maxLeverage: number;
+  tickSize: string;
+  lotSize: string;
+  markPrice: string;
+  oracle: { source: string; feed: string };
+  tokenAddress?: string | null;
+  status: MarketStatus;
+}
+
+export interface MarketFilters {
+  category?: MarketCategory;
+  kind?: MarketKind;
+  status?: MarketStatus;
+  q?: string;
+}
+
+export interface MarketProposal {
+  symbol: string;
+  kind: MarketKind;
+  category: MarketCategory;
+  base: string;
+  quote: string;
+  maxLeverage: number;
+  tickSize: string;
+  lotSize: string;
+  oracle?: { source?: string; feed?: string };
+  tokenAddress?: string;
+}
 
 export interface PlaceOrder {
   market: string;
@@ -80,7 +118,15 @@ export class WinmarClient {
   }
 
   async status() { return this.request("/api/v1/status"); }
-  async markets() { return this.request("/api/v1/markets"); }
+  async markets(filters: MarketFilters = {}) {
+    const query = new URLSearchParams();
+    if (filters.category) query.set("category", filters.category);
+    if (filters.kind) query.set("kind", filters.kind);
+    if (filters.status) query.set("status", filters.status);
+    if (filters.q) query.set("q", filters.q);
+    const suffix = query.size ? "?" + query.toString() : "";
+    return this.request("/api/v1/markets" + suffix);
+  }
   async market(symbol: string) { return this.request("/api/v1/markets/" + encodeURIComponent(symbol)); }
   async orderbook(symbol: string) { return this.request("/api/v1/orderbook/" + encodeURIComponent(symbol)); }
   async oracle(symbol: string) { return this.request("/api/v1/oracle/" + encodeURIComponent(symbol)); }
@@ -89,6 +135,13 @@ export class WinmarClient {
   async orders(account?: string) {
     const address = account || await this.requireSigner().getAddress();
     return this.request("/api/v1/orders?account=" + encodeURIComponent(address));
+  }
+
+  async proposeMarket(proposal: MarketProposal) {
+    return this.request("/api/v1/markets/proposals", {
+      method: "POST",
+      body: JSON.stringify(await this.sign("market.propose", proposal))
+    });
   }
 
   async placeOrder(order: PlaceOrder) {
