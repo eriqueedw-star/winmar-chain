@@ -10,9 +10,12 @@ const client = new WinmarClient({
 const status = await client.status();
 if (status.environment !== "testnet") throw new Error("Unexpected API environment");
 
-const marketResponse = await client.markets();
-if (!Array.isArray(marketResponse.markets) || marketResponse.markets.length !== 4) {
-  throw new Error("Expected four initial markets");
+const marketResponse = await client.markets({ status: "ACTIVE" });
+if (!Array.isArray(marketResponse.markets) || marketResponse.markets.length < 4) {
+  throw new Error("Expected dynamic registry to expose active seed markets");
+}
+if (!marketResponse.markets.every((market) => market.status === "ACTIVE")) {
+  throw new Error("Default market discovery must return ACTIVE markets only");
 }
 
 const order = await client.placeOrder({
@@ -32,4 +35,4 @@ if (!orders.orders.some((item) => item.id === order.id)) throw new Error("Order 
 const canceled = await client.cancelOrder(order.id);
 if (canceled.status !== "CANCELED") throw new Error("Signed cancel was not accepted");
 
-process.stdout.write("PASS: SDK -> signed action -> WMCore API smoke test\n");
+process.stdout.write("PASS: dynamic registry + SDK -> signed action -> WMCore API smoke test\n");
