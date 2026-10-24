@@ -2,13 +2,15 @@
 
 - **Status:** Draft
 - **Type:** Markets
-- **Depends on:** WIP-001
+- **Depends on:** WIP-001, WIP-005
 - **Created:** 2026-10-25
 - **Target:** Testnet-first
 
 ## Summary
 
 WIP-002 defines perpetual futures markets executed by WMCore and settled/committed through Winmar Chain infrastructure.
+
+The markets are exposed natively through the Winmar Chain API and SDK. No specific trading terminal is required.
 
 Initial reference markets:
 
@@ -83,6 +85,8 @@ Perpetual markets MAY use periodic funding to keep the contract price near the r
 A market definition does not create liquidity.
 
 Testnet SHOULD use a virtual market maker based on validated reference prices. Mainnet requires separately approved real collateral and market-maker arrangements.
+
+Professional liquidity providers MUST be able to connect directly through the Winmar Chain API/SDK without a graphical frontend.
 
 ## Underlying Asset Treatment
 
