@@ -1,0 +1,55 @@
+name: WMCore API and SDK checks
+
+on:
+  pull_request:
+    paths:
+      - "services/wmcore-api/**"
+      - "packages/winmarchain-sdk/**"
+      - "examples/wmcore-test-client.mjs"
+      - "docs/wips/**"
+      - ".github/workflows/wmcore-api-sdk-checks.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  api:
+    name: WMCore API unit tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Set up Node.js
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 24
+      - name: Install API dependencies
+        working-directory: services/wmcore-api
+        run: npm install --ignore-scripts --no-audit --no-fund --package-lock=false
+      - name: Check and test API
+        working-directory: services/wmcore-api
+        run: |
+          npm run check
+          npm test
+
+  sdk:
+    name: TypeScript SDK build
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Set up Node.js
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 24
+      - name: Install SDK dependencies
+        working-directory: packages/winmarchain-sdk
+        run: npm install --ignore-scripts --no-audit --no-fund --package-lock=false
+      - name: Typecheck and build SDK
+        working-directory: packages/winmarchain-sdk
+        run: |
+          npm run check
+          npm run build
