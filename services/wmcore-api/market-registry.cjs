@@ -55,7 +55,7 @@ function createMarketRegistry(initial = SEED_MARKETS) {
   let version = 0;
 
   function put(definition, metadata = {}) {
-    const record = { ...validateDefinition(definition), id: metadata.id || randomUUID(), proposer: metadata.proposer || null, createdAt: metadata.createdAt || new Date().toISOString(), updatedAt: new Date().toISOString() };
+    const record = { ...validateDefinition(definition, { proposal: String(definition?.status || '').toUpperCase() === 'PROPOSED' }), id: metadata.id || randomUUID(), proposer: metadata.proposer || null, createdAt: metadata.createdAt || new Date().toISOString(), updatedAt: new Date().toISOString() };
     if (!MARKET_STATUSES.includes(record.status)) throw new Error('BAD_MARKET_STATUS');
     records.set(record.symbol, record);
     version += 1;
