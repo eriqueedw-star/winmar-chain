@@ -101,7 +101,7 @@ contract WMUSD is ERC20, ERC20Pausable, AccessControl {
     }
 
     /// @notice Enables or disables redemption after legal and operational approval.
-    function setRedemptionEnabled(bool enabled) external onlyRole(DEFAULT_ADMIN) {
+    function setRedemptionEnabled(bool enabled) external onlyRole(DEFAULT_ADMIN_ROLE) {
         redemptionEnabled = enabled;
         emit RedemptionStatusUpdated(enabled);
     }
