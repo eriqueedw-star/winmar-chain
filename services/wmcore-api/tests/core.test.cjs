@@ -24,11 +24,12 @@ async function signed(action, nonce, payload, overrides = {}) {
   return { envelope, signature: await wallet.signMessage(signingMessage(envelope)) };
 }
 
-test('exposes four initial testnet perpetual markets with market-specific leverage caps', () => {
-  const markets = engine.markets();
-  assert.deepEqual(markets.map((m) => m.symbol), ['BTC-USD-PERP', 'ETH-USD-PERP', 'WMC-USD-PERP', 'GOLD-USD-PERP']);
+test('discovers active markets from the dynamic registry', () => {
+  const markets = engine.markets({ status: 'ACTIVE' });
+  assert.ok(markets.length >= 7);
+  assert.ok(markets.some((m) => m.symbol === 'BTC-USD-PERP' && m.category === 'CRYPTO'));
+  assert.ok(markets.some((m) => m.symbol === 'WMC-USD-PERP' && m.category === 'WINMAR_ECOSYSTEM'));
   assert.equal(markets.find((m) => m.symbol === 'BTC-USD-PERP').maxLeverage, 100);
-  assert.equal(markets.find((m) => m.symbol === 'WMC-USD-PERP').maxLeverage, 25);
 });
 
 test('accepts a correctly signed testnet order', async () => {
@@ -72,4 +73,28 @@ test('cancel requires a new signed nonce and ownership proof', async () => {
   const placed = engine.place(await signed('order.place', 6, { market: 'GOLD-USD-PERP', side: 'SELL', type: 'LIMIT', price: '2800', size: '0.1', leverage: 50 }));
   const canceled = engine.cancel(await signed('order.cancel', 7, { orderId: placed.id }));
   assert.equal(canceled.status, 'CANCELED');
+});
+
+test('signed market proposal enters registry as PROPOSED and is not tradable until activation', async () => {
+  const proposal = await signed('market.propose', 8, {
+    symbol: 'ABC-USD-PERP',
+    kind: 'PERPETUAL',
+    category: 'WINMAR_ECOSYSTEM',
+    base: 'ABC',
+    quote: 'USD',
+    maxLeverage: 10,
+    tickSize: '0.001',
+    lotSize: '1',
+    oracle: { source: 'UNASSIGNED', feed: 'ABC/USD' },
+    tokenAddress: '0x00000000000000000000000000000000000000ab'
+  });
+  const created = engine.proposeMarket(proposal);
+  assert.equal(created.status, 'PROPOSED');
+  assert.equal(created.proposer, wallet.address);
+  assert.ok(engine.markets({ status: 'PROPOSED' }).some((m) => m.symbol === 'ABC-USD-PERP'));
+  assert.throws(() => engine.orderbook('ABC-USD-PERP'), /MARKET_NOT_ACTIVE/);
+
+  engine.registry.activate('ABC-USD-PERP', { markPrice: '1.25', oracle: { source: 'TESTNET_SIMULATION', feed: 'ABC/USD' } });
+  assert.ok(engine.markets({ status: 'ACTIVE' }).some((m) => m.symbol === 'ABC-USD-PERP'));
+  assert.equal(engine.orderbook('ABC-USD-PERP').symbol, 'ABC-USD-PERP');
 });
