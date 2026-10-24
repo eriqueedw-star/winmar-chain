@@ -10,26 +10,33 @@
 
 WIP-001 proposes **WMCore**, a deterministic financial execution environment for Winmar Chain. WMCore is intended to support low-latency market execution while preserving Winmar Chain as the canonical security, settlement, and finality layer.
 
+WMCore is a native Winmar Chain service. It MUST NOT depend on NEXSUS or any other application-specific frontend.
+
 The target architecture is:
 
 ```text
-NEXSUS Terminal
-      |
-REST / WebSocket
-      |
-   WMCore
-      |
-+-----+------+---------+-----------+
-| Matching  | Risk    | Clearing  |
-| Orders    | Margin  | Positions |
-+-----+------+---------+-----------+
-      |
-Oracle / Index / Mark Price
-      |
-State Commitment / Settlement
-      |
-Winmar Chain
-QBFT PoA + EVM
+Wallets / Trading Apps / Market Makers / Institutions / NEXSUS / Third Parties
+                              |
+                    Winmar Chain SDK
+                              |
+                    Winmar Chain API
+                   REST + WebSocket
+                              |
+                           WMCore
+                              |
+              +---------------+---------------+
+              |               |               |
+           Matching          Risk          Clearing
+        Orders / Fills   Margin / Liq.   Positions / PnL
+              |               |               |
+              +---------------+---------------+
+                              |
+                 Oracle / Index / Mark Price
+                              |
+                State Commitment / Settlement
+                              |
+                       Winmar Chain
+                       QBFT PoA + EVM
 ```
 
 ## Motivation
@@ -37,6 +44,8 @@ QBFT PoA + EVM
 A professional order-book market requires frequent place/cancel/replace operations, deterministic matching, margin checks, liquidation, and real-time market data. Requiring every order operation to be a normal EVM transaction would create unnecessary latency and gas overhead.
 
 WMCore therefore separates the trading state machine from ordinary smart-contract execution while anchoring auditable state and settlement to Winmar Chain.
+
+A protocol-native API and SDK prevent WMCore from becoming coupled to one user interface. The same execution layer can serve first-party and third-party applications through stable, versioned interfaces.
 
 ## Execution Model
 
@@ -76,29 +85,42 @@ protocol version
 
 A Winmar EVM settlement contract MAY record commitments during testnet validation.
 
-## API Layer
+## Native API and SDK
 
-NEXSUS is the reference user terminal. WMCore SHOULD expose versioned APIs:
+The canonical application interface is defined by WIP-005.
+
+At minimum, Winmar Chain MUST expose versioned financial APIs for:
 
 ```text
-REST
+Public REST
 /v1/markets
+/v1/market/{symbol}
+/v1/orderbook/{symbol}
+/v1/trades/{symbol}
+/v1/oracle/{symbol}
+/v1/commitments
+
+Authenticated REST
 /v1/order
 /v1/orders
 /v1/positions
 /v1/account
 /v1/history
-/v1/commitments
+/v1/withdrawals
 
 WebSocket
 /ws/ticker
 /ws/orderbook
 /ws/trades
 /ws/account
+/ws/orders
 /ws/oracle
+/ws/commitments
 ```
 
-Market makers MUST be able to use machine APIs without using the NEXSUS UI.
+Applications SHOULD integrate through the Winmar Chain SDK where practical. Direct API access MUST remain available for professional market makers and institutional integrations.
+
+The API MUST NOT require custody of user private keys. Signed trading actions MUST include anti-replay fields such as chain/network domain, account, nonce or sequence, and expiry.
 
 ## Oracle Model
 
@@ -137,6 +159,8 @@ Before any real-value deployment, WMCore requires:
 - mass-liquidation stress tests;
 - validator/RPC failure simulation;
 - state-commitment verification;
+- API authentication/signature replay tests;
+- SDK signing test vectors;
 - key-management review;
 - rate limiting and DDoS controls;
 - emergency market pause controls;
@@ -153,5 +177,7 @@ WIP-001 is designed to be additive. The prototype MUST NOT change existing produ
 3. Margin and liquidation invariants pass automated tests.
 4. Oracle stale/deviation circuit breakers operate correctly.
 5. Settlement commitments can be verified on Winmar testnet.
-6. Existing Winmar Chain CI remains green.
-7. No production-chain configuration is modified.
+6. Winmar Chain API and reference SDK can place, cancel, query, and stream test orders without an application-specific backend.
+7. Signed actions reject replay, invalid domain/network, expired requests, and invalid sequence numbers.
+8. Existing Winmar Chain CI remains green.
+9. No production-chain configuration is modified.
