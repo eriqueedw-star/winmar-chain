@@ -145,7 +145,7 @@ async function refreshMarket() {
   $("assetIcon").textContent=m.base==="BTC"?"₿":m.base==="ETH"?"Ξ":m.base==="GOLD"?"Au":"W";
   $("sizeAsset").textContent=m.base;
   $("markPrice").textContent=money(Number(m.markPrice));
-  $("priceInput").value=m.markPrice;
+  ($("priceInput") as HTMLInputElement).value=m.markPrice;
   renderLeverage(m);
   drawChart(Number(m.markPrice));
   try {
