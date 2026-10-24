@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex,nofollow,noarchive">
+  <title>WMUSD Control Room | Winmar Chain</title>
+  <link rel="stylesheet" href="styles.css">
+  <style>.hero-coin{flex:0 0 132px;height:132px;border-radius:50%;padding:7px;background:#071a3caa;box-shadow:0 8px 22px #00183c66}.hero-coin img{width:100%;height:100%;object-fit:contain;border-radius:50%}.auth-gate{position:fixed;inset:0;z-index:10;display:grid;place-items:center;padding:20px;background:#071a3cf2}.auth-card{width:min(100%,430px);background:#fff;border-radius:20px;padding:30px;box-shadow:0 24px 70px #0008}.auth-card>img{width:66px;height:66px;object-fit:contain;margin-bottom:12px}.auth-card h1{margin:4px 0 10px;color:#102653}.auth-card label{display:block;color:#6b7d9d;font-size:12px;font-weight:700;margin:14px 0}.auth-card input{display:block;width:100%;margin-top:6px;padding:12px;border:1px solid #dce6f5;border-radius:10px}.auth-card .primary{width:100%;padding:12px;border:0;border-radius:10px;background:#1978ed;color:#fff;font-weight:800}.auth-card small{display:block;color:#8492a8;font-size:11px;margin-top:16px}@media(max-width:700px){.hero-coin{width:96px;height:96px;margin-bottom:18px}}</style>
+</head>
+<body>
+  <section class="auth-gate" aria-label="Private admin sign in"><div class="auth-card"><img src="../../../../assets/wmusd.png" alt="WMUSD"><p class="eyebrow">PRIVATE OPERATIONS</p><h1>WMUSD Admin access</h1><p class="muted">Sign in with the team account and confirm your authenticator code. Wallet role verification follows sign-in.</p><form id="auth-form"><label>Email<input type="email" autocomplete="username" placeholder="admin@winmarchain.io" required></label><label>Password<input type="password" autocomplete="current-password" placeholder="Password" required></label><label>Authenticator code<input inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]{6}" maxlength="6" placeholder="6-digit code" required></label><button class="primary" type="submit">Continue securely</button></form><small>Authentication must be enforced server-side before production deployment.</small></div></section>
+  <main class="shell">
+    <header class="topbar">
+      <a class="brand" href="#" aria-label="Winmar Chain home">
+        <img src="../winmar-chain-logo-framed-v2.png" alt="Winmar Chain logo">
+        <span><b>WINMAR CHAIN</b><small>WMUSD Control Room</small></span>
+      </a>
+      <span class="private-badge">PRIVATE · PRE-LAUNCH</span>
+    </header>
+
+    <section class="notice">
+      <div class="notice-icon">!</div>
+      <div><strong>Minting is safely disabled.</strong><br>
+        WMUSD remains dormant until reserve verification, attestation, legal review and contract audit are complete.</div>
+    </section>
+
+    <section class="hero">
+      <div class="hero-coin"><img src="../../../../assets/wmusd.png" alt="WMUSD stablecoin logo"></div>
+      <div>
+        <p class="eyebrow">ADMIN CONSOLE · CHAIN ID 12142818 STAGING</p>
+        <h1>WMUSD<br><span>Control Room</span></h1>
+        <p class="lede">A private operations surface for reserve-backed issuance controls. No public minting or sale is available from this draft.</p>
+      </div>
+      <div class="hero-status"><span class="dot"></span> STAGING ONLY</div>
+    </section>
+
+    <section class="grid">
+      <article class="card wide">
+        <div class="card-head"><div><p class="eyebrow">CONTRACT STATUS</p><h2>Pre-launch safeguards</h2></div><span class="pill locked">LOCKED</span></div>
+        <div class="metrics">
+          <div><span>Minting</span><strong class="red">Disabled</strong></div>
+          <div><span>Mint cap</span><strong>0 WMUSD</strong></div>
+          <div><span>Supply</span><strong>0 WMUSD</strong></div>
+          <div><span>Public sale</span><strong class="red">Off</strong></div>
+        </div>
+        <p class="muted">Contract <code>0xE9f1…08252</code> · WMUSD · 6 decimals</p>
+      </article>
+
+      <article class="card">
+        <div class="card-head"><div><p class="eyebrow">RESERVE GATE</p><h2>Reference approval</h2></div><span class="pill pending">PENDING</span></div>
+        <label>Reserve reference<input placeholder="Attestation ID / bank confirmation hash" disabled></label>
+        <label>Verified capacity<input placeholder="0 WMUSD" disabled></label>
+        <button class="primary" disabled>Awaiting verification</button>
+      </article>
+
+      <article class="card">
+        <div class="card-head"><div><p class="eyebrow">WALLET ACCESS</p><h2>Role control</h2></div><span class="pill pending">NOT CONNECTED</span></div>
+        <p class="muted">Connect the approved admin multisig to view role actions. A browser wallet alone cannot bypass the safeguards.</p>
+        <button class="outline" id="connect">Connect admin wallet</button>
+        <p class="wallet" id="wallet">No wallet connected</p>
+      </article>
+
+      <article class="card wide">
+        <div class="card-head"><div><p class="eyebrow">AUTHORISED ROLES</p><h2>Separation of duties</h2></div><span class="pill safe">READ-ONLY</span></div>
+        <div class="roles">
+          <div><b>Admin</b><code>0x0b1B…0716</code><span>Governance &amp; gates</span></div>
+          <div><b>Minter</b><code>0x0a8E…1975</code><span>Reserve-approved mint only</span></div>
+          <div><b>Burner</b><code>0x01Db…9DbD9</code><span>Redemption burns</span></div>
+          <div><b>Pauser</b><code>0x424a…A088</code><span>Emergency stop</span></div>
+        </div>
+      </article>
+    </section>
+
+    <footer><span>WINMAR CHAIN · WMUSD</span><span>Private operations · No public access</span></footer>
+  </main>
+  <script>
+    document.querySelector('#auth-form').addEventListener('submit', (event) => { event.preventDefault(); alert('Server-side authentication is not configured in this local draft.'); });
+    document.querySelector('#connect').addEventListener('click', async () => {
+      const button = document.querySelector('#connect');
+      const wallet = document.querySelector('#wallet');
+      if (!window.ethereum) { wallet.textContent = 'No compatible wallet detected'; return; }
+      try { const [address] = await window.ethereum.request({ method: 'eth_requestAccounts' }); wallet.textContent = address; button.textContent = 'Wallet connected'; } catch { wallet.textContent = 'Connection cancelled'; }
+    });
+  </script>
+</body>
+</html>
