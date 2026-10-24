@@ -3,10 +3,11 @@ import type { Signer } from "ethers";
 export const WMCORE_PROTOCOL = "wmcore" as const;
 export const WMCORE_VERSION = 1 as const;
 export const WMCORE_ENVIRONMENT = "testnet" as const;
+export const LEVERAGE_TIERS = [1, 2, 3, 5, 10, 20, 25, 50, 75, 100] as const;
 
 export type Side = "BUY" | "SELL";
 export type OrderType = "LIMIT" | "MARKET";
-export type Leverage = 1 | 2 | 3 | 5;
+export type Leverage = typeof LEVERAGE_TIERS[number];
 
 export interface PlaceOrder {
   market: string;
