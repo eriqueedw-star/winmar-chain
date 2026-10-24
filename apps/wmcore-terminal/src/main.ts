@@ -4,7 +4,7 @@ import "./styles.css";
 
 declare global { interface Window { ethereum?: any } }
 
-type Market = { symbol:string; base:string; quote:string; maxLeverage:number; tickSize:string; lotSize:string; markPrice:string };
+type Market = { symbol:string; kind:string; category:string; base:string; quote:string; maxLeverage:number; tickSize:string; lotSize:string; markPrice:string; status:string; oracle:{source:string;feed:string} };
 type Order = { id:string; market:string; side:Side; type:string; price:string; size:string; leverage:number; status:string };
 
 const API_BASE = (import.meta.env.VITE_WMCORE_API_URL || window.location.origin).replace(/\/$/, "");
@@ -12,7 +12,7 @@ const publicClient = new WinmarClient({ baseUrl: API_BASE, environment: "testnet
 
 let tradingClient: WinmarClient | null = null;
 let walletAddress = "";
-let selectedSymbol = "BTC-USD-PERP";
+let selectedSymbol = "";
 let side: Side = "BUY";
 let orderType: "LIMIT" | "MARKET" = "LIMIT";
 let leverage: Leverage = 5;
@@ -36,7 +36,7 @@ app.innerHTML = `
   <section class="market-strip">
     <div class="market-main">
       <div id="assetIcon" class="asset-icon">₿</div>
-      <div><div id="marketName" class="market-name">BTC-USD-PERP</div><div class="market-meta">Perpetual · WMCore · <span id="maxLev">100x max</span></div></div>
+      <div><div id="marketName" class="market-name">LOADING MARKETS</div><div class="market-meta"><span id="marketCategory">Dynamic Registry</span> · WMCore · <span id="maxLev">—</span></div></div>
     </div>
     <div class="metric"><div class="metric-label">Mark Price</div><div id="markPrice" class="metric-value">—</div></div>
     <div class="metric"><div class="metric-label">Oracle</div><div id="oraclePrice" class="metric-value">—</div></div>
@@ -102,17 +102,19 @@ app.innerHTML = `
 const $ = <T extends HTMLElement>(id:string) => document.getElementById(id) as T;
 const money = (v:number) => v >= 1000 ? "$" + v.toLocaleString(undefined,{maximumFractionDigits:2}) : "$" + v.toLocaleString(undefined,{maximumFractionDigits:4});
 
-function currentMarket() { return markets.find(m => m.symbol === selectedSymbol)!; }
+function currentMarket() { return markets.find(m => m.symbol === selectedSymbol); }
 function toast(message:string) { const el=$("toast"); el.textContent=message; el.classList.remove("hidden"); setTimeout(()=>el.classList.add("hidden"),3200); }
 function shortAddress(a:string) { return a ? a.slice(0,6)+"…"+a.slice(-4) : ""; }
 
 function renderMarkets() {
   const root=$("watchlist");
-  root.innerHTML='<div class="section-title">Markets</div>'+markets.map(m=>`
+  root.innerHTML='<div class="section-title">Dynamic Markets · '+markets.length+'</div>'+markets.map(m=>`
     <button class="market-row ${m.symbol===selectedSymbol?"active":""}" data-symbol="${m.symbol}">
       <div class="row-symbol">${m.symbol}</div>
-      <div class="row-price"><span>${money(Number(m.markPrice))}</span><span class="positive">+${m.base==="WMC"?"1.8":"2.4"}%</span></div>
+      <div class="row-category">${m.category.replaceAll("_"," ")} · ${m.maxLeverage}x</div>
+      <div class="row-price"><span>${money(Number(m.markPrice))}</span><span class="positive">ACTIVE</span></div>
     </button>`).join("");
+  if (!markets.length) root.innerHTML += '<div class="empty">No ACTIVE markets returned by WMCore Registry.</div>';
   root.querySelectorAll<HTMLButtonElement>(".market-row").forEach(btn=>btn.onclick=()=>{selectedSymbol=btn.dataset.symbol!; leverage=5; renderMarkets(); refreshMarket();});
 }
 
@@ -141,7 +143,16 @@ function drawChart(mark:number) {
 
 async function refreshMarket() {
   const m=currentMarket();
+  if (!m) {
+    $("marketName").textContent="NO ACTIVE MARKET";
+    $("marketCategory").textContent="Dynamic Registry";
+    $("markPrice").textContent="—";
+    $("oraclePrice").textContent="—";
+    ($("submitOrder") as HTMLButtonElement).disabled=true;
+    return;
+  }
   $("marketName").textContent=m.symbol;
+  $("marketCategory").textContent=m.category.replaceAll("_"," ")+" · "+m.kind;
   $("assetIcon").textContent=m.base==="BTC"?"₿":m.base==="ETH"?"Ξ":m.base==="GOLD"?"Au":"W";
   $("sizeAsset").textContent=m.base;
   $("markPrice").textContent=money(Number(m.markPrice));
@@ -159,6 +170,7 @@ async function refreshMarket() {
 
 function updateSummary() {
   const m=currentMarket();
+  if (!m) return;
   const px=orderType==="MARKET"?Number(m.markPrice):Number(($("priceInput") as HTMLInputElement).value);
   const size=Number(($("sizeInput") as HTMLInputElement).value);
   const value=px*size;
@@ -209,6 +221,7 @@ function updateSideButton() {
 async function placeOrder() {
   if (!tradingClient) return connectWallet();
   const m=currentMarket();
+  if (!m) return toast("No ACTIVE market available.");
   const size=($("sizeInput") as HTMLInputElement).value;
   const price=($("priceInput") as HTMLInputElement).value;
   try {
@@ -231,17 +244,14 @@ $("submitOrder").onclick=placeOrder;
 
 async function boot() {
   try {
-    const [status,marketResponse]=await Promise.all([publicClient.status(),publicClient.markets()]) as any[];
+    const [status,marketResponse]=await Promise.all([publicClient.status(),publicClient.markets({status:"ACTIVE"})]) as any[];
     markets=marketResponse.markets;
-    $("apiState").textContent=status.status==="up"?"WMCORE API ONLINE":"API DEGRADED";
+    selectedSymbol=markets[0]?.symbol || "";
+    $("apiState").textContent=status.status==="up"?"WMCORE API ONLINE · REGISTRY v"+marketResponse.registryVersion:"API DEGRADED";
   } catch {
-    markets=[
-      {symbol:"BTC-USD-PERP",base:"BTC",quote:"USD",maxLeverage:100,tickSize:"0.1",lotSize:"0.001",markPrice:"95000"},
-      {symbol:"ETH-USD-PERP",base:"ETH",quote:"USD",maxLeverage:100,tickSize:"0.01",lotSize:"0.01",markPrice:"3500"},
-      {symbol:"WMC-USD-PERP",base:"WMC",quote:"USD",maxLeverage:25,tickSize:"0.0001",lotSize:"1",markPrice:"0.1"},
-      {symbol:"GOLD-USD-PERP",base:"GOLD",quote:"USD",maxLeverage:50,tickSize:"0.1",lotSize:"0.01",markPrice:"2750"}
-    ];
-    $("apiState").textContent="STATIC PREVIEW";
+    markets=[];
+    selectedSymbol="";
+    $("apiState").textContent="WMCORE API OFFLINE";
   }
   renderMarkets();
   await refreshMarket();
