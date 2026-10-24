@@ -41,7 +41,21 @@ const server = http.createServer(async (req, res) => {
     const path = url.pathname;
 
     if (req.method === 'GET' && path === '/api/v1/status') return json(res, 200, engine.status());
-    if (req.method === 'GET' && path === '/api/v1/markets') return json(res, 200, { markets: engine.markets() });
+    if (req.method === 'GET' && path === '/api/v1/markets') {
+      const filters = {
+        category: url.searchParams.get('category') || undefined,
+        kind: url.searchParams.get('kind') || undefined,
+        status: url.searchParams.get('status') || 'ACTIVE',
+        q: url.searchParams.get('q') || undefined
+      };
+      return json(res, 200, { markets: engine.markets(filters), registryVersion: engine.status().registryVersion });
+    }
+
+    if (req.method === 'POST' && path === '/api/v1/markets/proposals') {
+      const proposal = engine.proposeMarket(await body(req));
+      broadcast({ channel: 'markets.registry', sequence: proposal.sequence, data: proposal });
+      return json(res, 202, proposal);
+    }
 
     let match = path.match(/^\/api\/v1\/markets\/([^/]+)$/);
     if (req.method === 'GET' && match) return json(res, 200, engine.market(decodeURIComponent(match[1])));
