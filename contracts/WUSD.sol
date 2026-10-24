@@ -22,6 +22,7 @@ contract WMUSD is ERC20, ERC20Pausable, AccessControl {
 
     uint256 public mintCap;
     bool public mintingEnabled;
+    bool public redemptionEnabled;
     uint256 public totalMintedAgainstReserve;
     mapping(bytes32 reserveReference => bool used) public reserveReferences;
 
@@ -34,6 +35,7 @@ contract WMUSD is ERC20, ERC20Pausable, AccessControl {
     event RedemptionBurned(address indexed account, uint256 amount, bytes32 indexed redemptionReference, address indexed operator);
     event MintCapUpdated(uint256 previousCap, uint256 newCap);
     event MintingStatusUpdated(bool enabled);
+    event RedemptionStatusUpdated(bool enabled);
 
     constructor(address admin, address minter, address burner, address pauser, uint256 initialMintCap)
         ERC20("Winmar USD Stablecoin", "WMUSD")
@@ -45,8 +47,10 @@ contract WMUSD is ERC20, ERC20Pausable, AccessControl {
         _grantRole(PAUSER_ROLE, pauser);
         mintCap = initialMintCap;
         mintingEnabled = false;
+        redemptionEnabled = false;
         emit MintCapUpdated(0, initialMintCap);
         emit MintingStatusUpdated(false);
+        emit RedemptionStatusUpdated(false);
     }
 
     function decimals() public pure override returns (uint8) {
@@ -75,6 +79,7 @@ contract WMUSD is ERC20, ERC20Pausable, AccessControl {
         onlyRole(BURNER_ROLE)
         whenNotPaused
     {
+        if (!redemptionEnabled) revert MintingDisabled();
         if (account == address(0)) revert ZeroAddress();
         if (redemptionReference == bytes32(0)) revert EmptyReserveReference();
         _spendAllowance(account, msg.sender, amount);
@@ -93,6 +98,12 @@ contract WMUSD is ERC20, ERC20Pausable, AccessControl {
     function setMintingEnabled(bool enabled) external onlyRole(DEFAULT_ADMIN_ROLE) {
         mintingEnabled = enabled;
         emit MintingStatusUpdated(enabled);
+    }
+
+    /// @notice Enables or disables redemption after legal and operational approval.
+    function setRedemptionEnabled(bool enabled) external onlyRole(DEFAULT_ADMIN) {
+        redemptionEnabled = enabled;
+        emit RedemptionStatusUpdated(enabled);
     }
 
     function pause() external onlyRole(PAUSER_ROLE) { _pause(); }
