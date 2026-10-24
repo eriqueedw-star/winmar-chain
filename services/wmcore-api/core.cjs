@@ -6,12 +6,13 @@ const { getAddress, verifyMessage } = require('ethers');
 const PROTOCOL = 'wmcore';
 const VERSION = 1;
 const ENVIRONMENT = 'testnet';
+const LEVERAGE_TIERS = Object.freeze([1, 2, 3, 5, 10, 20, 25, 50, 75, 100]);
 
 const MARKETS = Object.freeze([
-  { symbol: 'BTC-USD-PERP', base: 'BTC', quote: 'USD', maxLeverage: 5, tickSize: '0.1', lotSize: '0.001', markPrice: '95000.0' },
-  { symbol: 'ETH-USD-PERP', base: 'ETH', quote: 'USD', maxLeverage: 5, tickSize: '0.01', lotSize: '0.01', markPrice: '3500.00' },
-  { symbol: 'WMC-USD-PERP', base: 'WMC', quote: 'USD', maxLeverage: 5, tickSize: '0.0001', lotSize: '1', markPrice: '0.1000' },
-  { symbol: 'GOLD-USD-PERP', base: 'GOLD', quote: 'USD', maxLeverage: 5, tickSize: '0.1', lotSize: '0.01', markPrice: '2750.0' }
+  { symbol: 'BTC-USD-PERP', base: 'BTC', quote: 'USD', maxLeverage: 100, tickSize: '0.1', lotSize: '0.001', markPrice: '95000.0' },
+  { symbol: 'ETH-USD-PERP', base: 'ETH', quote: 'USD', maxLeverage: 100, tickSize: '0.01', lotSize: '0.01', markPrice: '3500.00' },
+  { symbol: 'WMC-USD-PERP', base: 'WMC', quote: 'USD', maxLeverage: 25, tickSize: '0.0001', lotSize: '1', markPrice: '0.1000' },
+  { symbol: 'GOLD-USD-PERP', base: 'GOLD', quote: 'USD', maxLeverage: 50, tickSize: '0.1', lotSize: '0.01', markPrice: '2750.0' }
 ]);
 
 class ApiError extends Error {
@@ -93,8 +94,8 @@ function createEngine(options = {}) {
     return {
       symbol,
       sequence,
-      bids: Array.from({ length: 5 }, (_, i) => [(mark - step * (i + 1)).toFixed(4), String(1 + i)]),
-      asks: Array.from({ length: 5 }, (_, i) => [(mark + step * (i + 1)).toFixed(4), String(1 + i)])
+      bids: Array.from({ length: 8 }, (_, i) => [(mark - step * (i + 1)).toFixed(4), String(1 + i * 0.75)]),
+      asks: Array.from({ length: 8 }, (_, i) => [(mark + step * (i + 1)).toFixed(4), String(1 + i * 0.75)])
     };
   }
 
@@ -104,7 +105,7 @@ function createEngine(options = {}) {
     const m = market(p.market);
     if (!['BUY', 'SELL'].includes(p.side)) throw new ApiError(400, 'BAD_SIDE');
     if (!['LIMIT', 'MARKET'].includes(p.type)) throw new ApiError(400, 'BAD_ORDER_TYPE');
-    if (![1, 2, 3, 5].includes(p.leverage) || p.leverage > m.maxLeverage) throw new ApiError(400, 'BAD_LEVERAGE');
+    if (!LEVERAGE_TIERS.includes(p.leverage) || p.leverage > m.maxLeverage) throw new ApiError(400, 'BAD_LEVERAGE');
     if (!(Number(p.size) > 0)) throw new ApiError(400, 'BAD_SIZE');
     if (p.type === 'LIMIT' && !(Number(p.price) > 0)) throw new ApiError(400, 'BAD_PRICE');
     sequence += 1;
@@ -160,4 +161,4 @@ function createEngine(options = {}) {
   };
 }
 
-module.exports = { ApiError, PROTOCOL, VERSION, ENVIRONMENT, MARKETS, stable, payloadHash, signingMessage, createEngine };
+module.exports = { ApiError, PROTOCOL, VERSION, ENVIRONMENT, LEVERAGE_TIERS, MARKETS, stable, payloadHash, signingMessage, createEngine };
