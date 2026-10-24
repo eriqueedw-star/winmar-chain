@@ -43,7 +43,7 @@ button { cursor: pointer; }
 .market-row { width:100%; border:0; border-bottom:1px solid #151d28; background:transparent; color:var(--text); padding:13px 14px; text-align:left; }
 .market-row:hover, .market-row.active { background:#111925; }
 .market-row.active { box-shadow:inset 2px 0 0 var(--gold); }
-.row-symbol { font-weight:800; font-size:12px; }
+.row-symbol { font-weight:800; font-size:12px; }\n.row-category { color:var(--gold); font-size:9px; margin-top:4px; letter-spacing:.04em; }
 .row-price { color:var(--muted); font-size:11px; margin-top:5px; display:flex; justify-content:space-between; }
 .center { min-width:0; border-right:1px solid var(--line); }
 .chart-head { height:45px; display:flex; align-items:center; justify-content:space-between; padding:0 14px; border-bottom:1px solid var(--line); }
