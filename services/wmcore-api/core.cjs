@@ -2,18 +2,12 @@
 
 const { createHash, randomUUID } = require('node:crypto');
 const { getAddress, verifyMessage } = require('ethers');
+const { createMarketRegistry, SEED_MARKETS } = require('./market-registry.cjs');
 
 const PROTOCOL = 'wmcore';
 const VERSION = 1;
 const ENVIRONMENT = 'testnet';
 const LEVERAGE_TIERS = Object.freeze([1, 2, 3, 5, 10, 20, 25, 50, 75, 100]);
-
-const MARKETS = Object.freeze([
-  { symbol: 'BTC-USD-PERP', base: 'BTC', quote: 'USD', maxLeverage: 100, tickSize: '0.1', lotSize: '0.001', markPrice: '95000.0' },
-  { symbol: 'ETH-USD-PERP', base: 'ETH', quote: 'USD', maxLeverage: 100, tickSize: '0.01', lotSize: '0.01', markPrice: '3500.00' },
-  { symbol: 'WMC-USD-PERP', base: 'WMC', quote: 'USD', maxLeverage: 25, tickSize: '0.0001', lotSize: '1', markPrice: '0.1000' },
-  { symbol: 'GOLD-USD-PERP', base: 'GOLD', quote: 'USD', maxLeverage: 50, tickSize: '0.1', lotSize: '0.01', markPrice: '2750.0' }
-]);
 
 class ApiError extends Error {
   constructor(status, code, message = code) {
@@ -54,8 +48,15 @@ function signingMessage(envelope) {
   ].join('\n');
 }
 
+function registryError(error) {
+  const code = String(error?.message || 'MARKET_REGISTRY_ERROR');
+  const status = code === 'MARKET_NOT_FOUND' ? 404 : code === 'MARKET_ALREADY_EXISTS' ? 409 : 400;
+  return new ApiError(status, code);
+}
+
 function createEngine(options = {}) {
   const now = options.now || (() => Date.now());
+  const registry = options.registry || createMarketRegistry(options.initialMarkets || SEED_MARKETS);
   const orders = new Map();
   const accountOrders = new Map();
   const lastNonce = new Map();
@@ -82,18 +83,21 @@ function createEngine(options = {}) {
   }
 
   function market(symbol) {
-    const found = MARKETS.find((item) => item.symbol === symbol);
-    if (!found) throw new ApiError(404, 'MARKET_NOT_FOUND');
-    return found;
+    try { return registry.require(symbol); } catch (error) { throw registryError(error); }
+  }
+
+  function activeMarket(symbol) {
+    try { return registry.requireActive(symbol); } catch (error) { throw registryError(error); }
   }
 
   function orderbook(symbol) {
-    const m = market(symbol);
+    const m = activeMarket(symbol);
     const mark = Number(m.markPrice);
     const step = Number(m.tickSize) * 10;
     return {
-      symbol,
+      symbol: m.symbol,
       sequence,
+      registryVersion: registry.version(),
       bids: Array.from({ length: 8 }, (_, i) => [(mark - step * (i + 1)).toFixed(4), String(1 + i * 0.75)]),
       asks: Array.from({ length: 8 }, (_, i) => [(mark + step * (i + 1)).toFixed(4), String(1 + i * 0.75)])
     };
@@ -102,7 +106,7 @@ function createEngine(options = {}) {
   function place(input) {
     const { envelope, account } = verifyEnvelope(input, 'order.place');
     const p = envelope.payload || {};
-    const m = market(p.market);
+    const m = activeMarket(p.market);
     if (!['BUY', 'SELL'].includes(p.side)) throw new ApiError(400, 'BAD_SIDE');
     if (!['LIMIT', 'MARKET'].includes(p.type)) throw new ApiError(400, 'BAD_ORDER_TYPE');
     if (!LEVERAGE_TIERS.includes(p.leverage) || p.leverage > m.maxLeverage) throw new ApiError(400, 'BAD_LEVERAGE');
@@ -111,7 +115,7 @@ function createEngine(options = {}) {
     sequence += 1;
     const id = randomUUID();
     const order = {
-      id, sequence, account, market: p.market, side: p.side, type: p.type,
+      id, sequence, account, market: m.symbol, side: p.side, type: p.type,
       price: p.type === 'MARKET' ? m.markPrice : String(p.price),
       size: String(p.size), leverage: p.leverage, reduceOnly: p.reduceOnly === true,
       status: 'OPEN', createdAt: new Date(now()).toISOString()
@@ -137,6 +141,17 @@ function createEngine(options = {}) {
     return order;
   }
 
+  function proposeMarket(input) {
+    const { envelope, account } = verifyEnvelope(input, 'market.propose');
+    try {
+      const proposal = registry.propose(envelope.payload || {}, account);
+      sequence += 1;
+      return { ...proposal, sequence, registryVersion: registry.version() };
+    } catch (error) {
+      throw registryError(error);
+    }
+  }
+
   function listOrders(account) {
     let address;
     try { address = getAddress(account); } catch (_) { throw new ApiError(400, 'BAD_ACCOUNT'); }
@@ -144,21 +159,23 @@ function createEngine(options = {}) {
   }
 
   return {
-    status: () => ({ status: 'up', protocol: PROTOCOL, version: VERSION, environment: ENVIRONMENT, execution: 'simulation', sequence }),
-    markets: () => MARKETS,
+    status: () => ({ status: 'up', protocol: PROTOCOL, version: VERSION, environment: ENVIRONMENT, execution: 'simulation', sequence, registryVersion: registry.version() }),
+    markets: (filters = {}) => registry.list(filters),
     market,
     orderbook,
     oracle: (symbol) => {
-      const m = market(symbol);
-      return { symbol, oraclePrice: m.markPrice, indexPrice: m.markPrice, markPrice: m.markPrice, source: 'TESTNET_SIMULATION', timestamp: new Date(now()).toISOString() };
+      const m = activeMarket(symbol);
+      return { symbol: m.symbol, oraclePrice: m.markPrice, indexPrice: m.markPrice, markPrice: m.markPrice, source: m.oracle.source, feed: m.oracle.feed, timestamp: new Date(now()).toISOString() };
     },
+    proposeMarket,
     place,
     cancel,
     listOrders,
     positions: () => [],
     fills: () => fills.slice(),
-    commitment: () => ({ sequence, stateRoot: null, status: 'NOT_YET_CONNECTED_TO_SETTLEMENT', environment: ENVIRONMENT })
+    commitment: () => ({ sequence, registryVersion: registry.version(), stateRoot: null, status: 'NOT_YET_CONNECTED_TO_SETTLEMENT', environment: ENVIRONMENT }),
+    registry
   };
 }
 
-module.exports = { ApiError, PROTOCOL, VERSION, ENVIRONMENT, LEVERAGE_TIERS, MARKETS, stable, payloadHash, signingMessage, createEngine };
+module.exports = { ApiError, PROTOCOL, VERSION, ENVIRONMENT, LEVERAGE_TIERS, stable, payloadHash, signingMessage, createEngine };
