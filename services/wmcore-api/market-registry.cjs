@@ -13,7 +13,14 @@ const SEED_MARKETS = Object.freeze([
   { symbol:'XRP-USD-PERP', kind:'PERPETUAL', category:'CRYPTO', base:'XRP', quote:'USD', maxLeverage:25, tickSize:'0.0001', lotSize:'1', markPrice:'2.50', oracle:{source:'TESTNET_SIMULATION', feed:'XRP/USD'}, status:'ACTIVE' },
   { symbol:'WMC-USD-PERP', kind:'PERPETUAL', category:'WINMAR_ECOSYSTEM', base:'WMC', quote:'USD', maxLeverage:25, tickSize:'0.0001', lotSize:'1', markPrice:'0.1000', oracle:{source:'TESTNET_SIMULATION', feed:'WMC/USD'}, status:'ACTIVE' },
   { symbol:'GOLD-USD-PERP', kind:'PERPETUAL', category:'COMMODITY', base:'GOLD', quote:'USD', maxLeverage:50, tickSize:'0.1', lotSize:'0.01', markPrice:'2750.0', oracle:{source:'TESTNET_SIMULATION', feed:'XAU/USD'}, status:'ACTIVE' },
-  { symbol:'SILVER-USD-PERP', kind:'PERPETUAL', category:'COMMODITY', base:'SILVER', quote:'USD', maxLeverage:25, tickSize:'0.001', lotSize:'0.1', markPrice:'34.00', oracle:{source:'TESTNET_SIMULATION', feed:'XAG/USD'}, status:'ACTIVE' }
+  { symbol:'SILVER-USD-PERP', kind:'PERPETUAL', category:'COMMODITY', base:'SILVER', quote:'USD', maxLeverage:25, tickSize:'0.001', lotSize:'0.1', markPrice:'34.00', oracle:{source:'TESTNET_SIMULATION', feed:'XAG/USD'}, status:'ACTIVE' },
+  { symbol:'OIL-USD-PERP', kind:'PERPETUAL', category:'COMMODITY', base:'OIL', quote:'USD', maxLeverage:50, tickSize:'0.01', lotSize:'0.1', markPrice:'78.21', oracle:{source:'TESTNET_SIMULATION', feed:'WTI/USD'}, status:'ACTIVE' },
+  { symbol:'NASDAQ-USD-PERP', kind:'PERPETUAL', category:'INDEX', base:'NASDAQ', quote:'USD', maxLeverage:50, tickSize:'0.1', lotSize:'0.01', markPrice:'21432.10', oracle:{source:'TESTNET_SIMULATION', feed:'NASDAQ/USD'}, status:'ACTIVE' },
+  { symbol:'SP500-USD-PERP', kind:'PERPETUAL', category:'INDEX', base:'SP500', quote:'USD', maxLeverage:50, tickSize:'0.1', lotSize:'0.01', markPrice:'6102.40', oracle:{source:'TESTNET_SIMULATION', feed:'SP500/USD'}, status:'ACTIVE' },
+  { symbol:'NVDA-USD-PERP', kind:'PERPETUAL', category:'EQUITY', base:'NVDA', quote:'USD', maxLeverage:25, tickSize:'0.01', lotSize:'0.1', markPrice:'134.21', oracle:{source:'TESTNET_SIMULATION', feed:'NVDA/USD'}, status:'ACTIVE' },
+  { symbol:'TSLA-USD-PERP', kind:'PERPETUAL', category:'EQUITY', base:'TSLA', quote:'USD', maxLeverage:25, tickSize:'0.01', lotSize:'0.1', markPrice:'248.31', oracle:{source:'TESTNET_SIMULATION', feed:'TSLA/USD'}, status:'ACTIVE' },
+  { symbol:'EUR-USD-PERP', kind:'PERPETUAL', category:'FX', base:'EUR', quote:'USD', maxLeverage:50, tickSize:'0.0001', lotSize:'100', markPrice:'1.0821', oracle:{source:'TESTNET_SIMULATION', feed:'EUR/USD'}, status:'ACTIVE' },
+  { symbol:'GBP-USD-PERP', kind:'PERPETUAL', category:'FX', base:'GBP', quote:'USD', maxLeverage:50, tickSize:'0.0001', lotSize:'100', markPrice:'1.2754', oracle:{source:'TESTNET_SIMULATION', feed:'GBP/USD'}, status:'ACTIVE' }
 ]);
 
 function normalizeSymbol(value) {
