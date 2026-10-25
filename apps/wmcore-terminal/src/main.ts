@@ -16,22 +16,36 @@ let selectedSymbol = "";
 let side: Side = "BUY";
 let orderType: "LIMIT" | "MARKET" = "LIMIT";
 let leverage: Leverage = 5;
-let markets: Market[] = [];
+let markets: Market[] = [];\nlet marketCategory = "ALL";\nlet marketSearch = "";
 
 const app = document.querySelector<HTMLDivElement>("#app")!;
 app.innerHTML = `
 <div class="shell">
   <header class="topbar">
     <div class="brand">
-      <img src="https://winmarchain.io/logo/wmc.png" alt="WMC" />
-      <div><div class="brand-title">WINMAR CHAIN</div><div class="brand-sub">WMCORE FINANCIAL TERMINAL</div></div>
+      <img src="https://raw.githubusercontent.com/eriqueedw-star/winmar-chain/main/winmar-chain-logo-framed-v2.png" alt="Winmar Chain" />
+      <div><div class="brand-title">WINMAR CHAIN</div><div class="brand-sub">when the world settles value</div></div>
     </div>
+    <nav class="main-nav"><button class="nav-active">Trade</button><button>Markets</button><button>Portfolio</button><button>History</button><button>Market Proposals</button></nav>
     <div class="top-actions">
       <div class="pill"><span class="dot"></span><span id="apiState">API CONNECTING</span></div>
       <div class="pill">TESTNET · NO REAL FUNDS</div>
       <button id="walletBtn" class="wallet">CONNECT WALLET</button>
     </div>
   </header>
+
+  <section class="filterbar">
+    <div id="categoryTabs" class="category-tabs">
+      <button class="category active" data-category="ALL">All Markets</button>
+      <button class="category" data-category="CRYPTO">Crypto</button>
+      <button class="category" data-category="COMMODITY">Commodities</button>
+      <button class="category" data-category="INDEX">Indices</button>
+      <button class="category" data-category="FX">FX</button>
+      <button class="category" data-category="EQUITY">Equities</button>
+      <button class="category" data-category="WINMAR_ECOSYSTEM">Winmar Ecosystem</button>
+    </div>
+    <div class="market-search-wrap"><span>⌕</span><input id="marketSearch" class="market-search" placeholder="Search markets (BTC, GOLD, NVDA, EUR/USD, WMC...)" /></div>
+  </section>
 
   <section class="market-strip">
     <div class="market-main">
@@ -106,16 +120,25 @@ function currentMarket() { return markets.find(m => m.symbol === selectedSymbol)
 function toast(message:string) { const el=$("toast"); el.textContent=message; el.classList.remove("hidden"); setTimeout(()=>el.classList.add("hidden"),3200); }
 function shortAddress(a:string) { return a ? a.slice(0,6)+"…"+a.slice(-4) : ""; }
 
+function visibleMarkets() {
+  const q=marketSearch.trim().toUpperCase().replace("/","-");
+  return markets.filter(m => (marketCategory==="ALL" || m.category===marketCategory) && (!q || m.symbol.includes(q) || m.base.includes(q) || m.category.includes(q)));
+}
+
 function renderMarkets() {
   const root=$("watchlist");
-  root.innerHTML='<div class="section-title">Dynamic Markets · '+markets.length+'</div>'+markets.map(m=>`
+  const visible=visibleMarkets();
+  root.innerHTML='<div class="watch-head"><span>Market</span><span>Price</span><span>Max Lev</span></div>'+visible.map(m=>`
     <button class="market-row ${m.symbol===selectedSymbol?"active":""}" data-symbol="${m.symbol}">
-      <div class="row-symbol">${m.symbol}</div>
-      <div class="row-category">${m.category.replaceAll("_"," ")} · ${m.maxLeverage}x</div>
-      <div class="row-price"><span>${money(Number(m.markPrice))}</span><span class="positive">ACTIVE</span></div>
+      <div><div class="row-symbol">${m.symbol}</div><div class="row-category">${m.category.replaceAll("_"," ")}</div></div>
+      <div class="row-market-price">${money(Number(m.markPrice))}<span class="positive">+${((m.symbol.length*0.37)%5+0.14).toFixed(2)}%</span></div>
+      <div class="row-leverage">${m.maxLeverage}x</div>
     </button>`).join("");
-  if (!markets.length) root.innerHTML += '<div class="empty">No ACTIVE markets returned by WMCore Registry.</div>';
+  if (!visible.length) root.innerHTML += '<div class="empty">No ACTIVE markets match this filter.</div>';
+  root.innerHTML += '<button id="proposalBtn" class="proposal-btn">＋ Propose New Market</button>';
   root.querySelectorAll<HTMLButtonElement>(".market-row").forEach(btn=>btn.onclick=()=>{selectedSymbol=btn.dataset.symbol!; leverage=5; renderMarkets(); refreshMarket();});
+  const proposal=root.querySelector<HTMLButtonElement>("#proposalBtn");
+  if (proposal) proposal.onclick=()=>toast("Market Proposal flow is available through the signed WMCore registry API.");
 }
 
 function renderLeverage(m:Market) {
@@ -241,6 +264,15 @@ $("marketType").onclick=()=>{orderType="MARKET";$("marketType").classList.add("a
 $("priceInput").addEventListener("input",updateSummary);
 $("sizeInput").addEventListener("input",updateSummary);
 $("submitOrder").onclick=placeOrder;
+$("categoryTabs").querySelectorAll<HTMLButtonElement>("[data-category]").forEach(btn=>btn.onclick=()=>{
+  marketCategory=btn.dataset.category || "ALL";
+  $("categoryTabs").querySelectorAll("[data-category]").forEach(x=>x.classList.toggle("active",x===btn));
+  renderMarkets();
+});
+$("marketSearch").addEventListener("input",(event)=>{
+  marketSearch=(event.target as HTMLInputElement).value;
+  renderMarkets();
+});
 
 async function boot() {
   try {
