@@ -170,7 +170,9 @@
     field(ctx, 347, 1217, 540, 'Winmar Chain Mainnet');
     // The QR contains the complete, canonical verification URL. The printed
     // reference must remain within the owner-locked one-line artwork box.
-    const displayVerificationUrl = `scan.winmarchain.io/verify/${id.slice(0, 12)}…`;
+    // The printed explorer reference must resolve to the on-chain transaction.
+    // The QR remains the public document-verification route above.
+    const displayVerificationUrl = `scan.winmarchain.io/tx/${verified.registrationTransactionHash.slice(0, 12)}…`;
     field(ctx, 347, 1265, 420, displayVerificationUrl, { size: 11, color: '#086cfa' });
     field(ctx, 97, 1377, 254, report, { size: 14, weight: '600' });
     field(ctx, 487, 1377, 151, verified.pageLabel, { size: 15, weight: '600' });
@@ -182,3 +184,4 @@
   root.WinmarCertificateRenderer = { render, loadApprovedMaster,
     APPROVED_SHA256: ORIGINAL_MASTER_SHA256 };
 })(typeof window === 'undefined' ? globalThis : window);
+
