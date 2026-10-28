@@ -3,4 +3,5 @@ artifacts/
 cache/
 types/
 qr-output/
+deploy-ui/config.js
 .env
