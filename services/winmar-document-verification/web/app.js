@@ -33,6 +33,13 @@ let pendingPayment = null;
 let confirmedRecord = null;
 let fileSelectionVersion = 0;
 let issuancePending = false;
+const RESUME_KEY = 'winmar-document-verification-pending-payment';
+
+function readPendingPayment() {
+  try { return JSON.parse(sessionStorage.getItem(RESUME_KEY) || 'null'); } catch { return null; }
+}
+function savePendingPayment(payment) { sessionStorage.setItem(RESUME_KEY, JSON.stringify(payment)); }
+function clearPendingPayment() { sessionStorage.removeItem(RESUME_KEY); }
 
 function validHash(value) { return /^0x[0-9a-fA-F]{64}$/.test(value); }
 function canIssue() {
@@ -106,11 +113,34 @@ async function getDocument(documentId) {
 
 async function walletAccount() {
   if (!window.ethereum) throw new Error('No compatible wallet was found. Open this page in a browser with an EVM wallet.');
+  await window.ethereum.request({ method: 'wallet_requestPermissions', params: [{ eth_accounts: {} }] });
   const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
   if (!accounts?.[0]) throw new Error('Select a wallet account first.');
   const chain = await window.ethereum.request({ method: 'eth_chainId' });
   if (chain.toLowerCase() !== CHAIN_ID) throw new Error('Switch your wallet to Winmar Chain Mainnet first.');
   return accounts[0];
+}
+
+async function syncConnectedWallet(accounts = null) {
+  if (!window.ethereum) return;
+  const current = accounts || await window.ethereum.request({ method: 'eth_accounts' });
+  if (!current?.[0]) {
+    ui.walletAddress.textContent = 'Not connected';
+    ui.walletBalance.textContent = '-';
+    ui.walletNetwork.textContent = '';
+    ui.walletNote.textContent = 'Connect a wallet to read your WMC balance.';
+    ui.connect.textContent = 'Connect Wallet';
+    return;
+  }
+  const chain = await window.ethereum.request({ method: 'eth_chainId' });
+  if (chain.toLowerCase() !== CHAIN_ID) return;
+  const account = current[0];
+  const balance = await window.ethereum.request({ method: 'eth_getBalance', params: [account, 'latest'] });
+  ui.walletAddress.textContent = shortAddress(account);
+  ui.walletBalance.textContent = weiToWmc(balance);
+  ui.walletNetwork.textContent = 'Winmar Chain Mainnet · Chain ID 12142816';
+  ui.walletNote.textContent = 'Wallet connected. A separate confirmation is required to issue a document.';
+  ui.connect.textContent = 'Wallet connected';
 }
 
 async function waitForReceipt(txHash, attempts = 50) {
@@ -161,7 +191,7 @@ async function waitForRegistration(documentId, fromBlock) {
 function resetForFile() {
   selectedFile = null;
   selectedHash = '';
-  pendingPayment = null;
+  pendingPayment = readPendingPayment();
   confirmedRecord = null;
   ui.download.hidden = true;
   ui.verificationLink.hidden = true;
@@ -192,6 +222,16 @@ ui.input.addEventListener('change', async () => {
     if (version !== fileSelectionVersion) return;
     selectedHash = digest;
     selectedFile = file;
+    const savedPayment = readPendingPayment();
+    if (savedPayment?.documentId?.toLowerCase() === digest.toLowerCase()) {
+      pendingPayment = savedPayment;
+      if (savedPayment.subject && !ui.subject.value) ui.subject.value = savedPayment.subject;
+      if (savedPayment.issuer && !ui.issuer.value) ui.issuer.value = savedPayment.issuer;
+      ui.issue.textContent = 'Resume Verification';
+      setStatus('Payment found · ready to resume');
+    } else {
+      pendingPayment = null;
+    }
     ui.fileStatus.textContent = `Selected: ${file.name} (${Math.ceil(file.size / 1024)} KB · ${pdf.getPageCount()} pages)`;
     ui.hash.textContent = selectedHash;
     ui.documentId.textContent = selectedHash;
@@ -241,6 +281,7 @@ ui.issue.addEventListener('click', async () => {
       });
       payment = { txHash, payer, documentId: selectedHash };
       pendingPayment = payment;
+      savePendingPayment({ ...payment, subject: ui.subject.value.trim(), issuer: ui.issuer.value.trim() });
       ui.input.disabled = true;
       ui.subject.readOnly = true;
       ui.issuer.readOnly = true;
@@ -264,6 +305,7 @@ ui.issue.addEventListener('click', async () => {
     ui.issue.textContent = 'Document Recorded';
     ui.progress.hidden = true;
     setStatus('Verified on-chain', true);
+    clearPendingPayment();
   } catch (error) {
     const message = error?.message || 'The request could not be completed.';
     setStatus(message);
@@ -288,10 +330,6 @@ ui.download.addEventListener('click', async () => {
   if (!selectedFile || !confirmedRecord) return;
   ui.download.disabled = true;
   try {
-    const record = await getDocument(confirmedRecord.documentId);
-    if (record.hash.toLowerCase() !== confirmedRecord.documentId.toLowerCase() || record.revokedAt !== 0) {
-      throw new Error('Document record is missing or revoked. Download cancelled.');
-    }
     const output = await makeVerifiedPdf(selectedFile, confirmedRecord);
     const blob = new Blob([output.bytes], { type: 'application/pdf' });
     const url = URL.createObjectURL(blob);
@@ -338,15 +376,15 @@ ui.connect.addEventListener('click', async () => {
   try {
     ui.connect.disabled = true;
     const account = await walletAccount();
-    const balance = await window.ethereum.request({ method: 'eth_getBalance', params: [account, 'latest'] });
-    ui.walletAddress.textContent = shortAddress(account);
-    ui.walletBalance.textContent = weiToWmc(balance);
-    ui.walletNetwork.textContent = 'Winmar Chain Mainnet · Chain ID 12142816';
-    ui.walletNote.textContent = 'Wallet connected. A separate confirmation is required to issue a document.';
-    ui.connect.textContent = 'Wallet connected';
+    await syncConnectedWallet([account]);
   } catch (error) { ui.walletNote.textContent = error.message || 'Wallet connection was cancelled.'; }
   finally { ui.connect.disabled = false; }
 });
+
+if (window.ethereum?.on) {
+  window.ethereum.on('accountsChanged', (accounts) => syncConnectedWallet(accounts).catch(() => {}));
+  window.ethereum.on('chainChanged', () => syncConnectedWallet().catch(() => {}));
+}
 
 refreshRpcStatus();
 setInterval(refreshRpcStatus, 60000);

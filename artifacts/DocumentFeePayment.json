@@ -1,0 +1,238 @@
+{
+  "contractName": "DocumentFeePayment",
+  "sourceName": "contracts/DocumentFeePayment.sol",
+  "abi": [
+    {
+      "inputs": [
+        {
+          "internalType": "address payable",
+          "name": "initialTreasury",
+          "type": "address"
+        },
+        {
+          "internalType": "uint256",
+          "name": "initialFee",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "nonpayable",
+      "type": "constructor"
+    },
+    {
+      "inputs": [],
+      "name": "AlreadyPaid",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "EmptyDocumentId",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "IncorrectPayment",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "InvalidFee",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "NotAdmin",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "TransferFailed",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "ZeroAddress",
+      "type": "error"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "previousAdmin",
+          "type": "address"
+        },
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "newAdmin",
+          "type": "address"
+        }
+      ],
+      "name": "AdminTransferred",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "treasury",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "documentFee",
+          "type": "uint256"
+        }
+      ],
+      "name": "FeeConfigUpdated",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "bytes32",
+          "name": "documentId",
+          "type": "bytes32"
+        },
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "payer",
+          "type": "address"
+        },
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "treasury",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "amount",
+          "type": "uint256"
+        }
+      ],
+      "name": "FeePaid",
+      "type": "event"
+    },
+    {
+      "stateMutability": "payable",
+      "type": "fallback"
+    },
+    {
+      "inputs": [],
+      "name": "admin",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "documentFee",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "bytes32",
+          "name": "documentId",
+          "type": "bytes32"
+        }
+      ],
+      "name": "paidDocuments",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "paid",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "bytes32",
+          "name": "documentId",
+          "type": "bytes32"
+        }
+      ],
+      "name": "pay",
+      "outputs": [],
+      "stateMutability": "payable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address payable",
+          "name": "newTreasury",
+          "type": "address"
+        },
+        {
+          "internalType": "uint256",
+          "name": "newFee",
+          "type": "uint256"
+        }
+      ],
+      "name": "setFeeConfig",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "newAdmin",
+          "type": "address"
+        }
+      ],
+      "name": "transferAdmin",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "treasury",
+      "outputs": [
+        {
+          "internalType": "address payable",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "stateMutability": "payable",
+      "type": "receive"
+    }
+  ],
+  "bytecode": "0x608060405234801561001057600080fd5b5060405161066838038061066883398101604081905261002f916100e6565b6001600160a01b0382166100565760405163d92e233d60e01b815260040160405180910390fd5b80600003610077576040516358d620b360e01b815260040160405180910390fd5b600080546001600160a01b03199081163317909155600180546001600160a01b03851692168217905560028290556040517fe42708d93b95810922305119a3271ca42233da9ebe1e1e503f0e887817a32c7a906100d79084815260200190565b60405180910390a25050610120565b600080604083850312156100f957600080fd5b82516001600160a01b038116811461011057600080fd5b6020939093015192949293505050565b6105398061012f6000396000f3fe6080604052600436106100745760003560e01c80638c4232031161004e5780638c4232031461011d578063e07a31111461015d578063e22efe1b1461017d578063f851a440146101a157610092565b806361d027b3146100ab57806375829def146100e85780638609cad11461010a57610092565b366100925760405163569e8c1160e01b815260040160405180910390fd5b60405163569e8c1160e01b815260040160405180910390fd5b3480156100b757600080fd5b506001546100cb906001600160a01b031681565b6040516001600160a01b0390911681526020015b60405180910390f35b3480156100f457600080fd5b5061010861010336600461049a565b6101c1565b005b6101086101183660046104be565b61026e565b34801561012957600080fd5b5061014d6101383660046104be565b60036020526000908152604090205460ff1681565b60405190151581526020016100df565b34801561016957600080fd5b506101086101783660046104d7565b6103b5565b34801561018957600080fd5b5061019360025481565b6040519081526020016100df565b3480156101ad57600080fd5b506000546100cb906001600160a01b031681565b6000546001600160a01b031633146101ec57604051637bfa4b9f60e01b815260040160405180910390fd5b6001600160a01b0381166102135760405163d92e233d60e01b815260040160405180910390fd5b600080546040516001600160a01b03808516939216917ff8ccb027dfcd135e000e9d45e6cc2d662578a8825d4c45b5e32e0adf67e79ec691a3600080546001600160a01b0319166001600160a01b0392909216919091179055565b8061028c576040516302836b5f60e61b815260040160405180910390fd5b60008181526003602052604090205460ff16156102bc57604051630d70a0e360e41b815260040160405180910390fd5b60025434146102de5760405163569e8c1160e01b815260040160405180910390fd5b600081815260036020526040808220805460ff191660019081179091555490516001600160a01b039091169034908381818185875af1925050503d8060008114610344576040519150601f19603f3d011682016040523d82523d6000602084013e610349565b606091505b505090508061036b576040516312171d8360e31b815260040160405180910390fd5b6001546040513481526001600160a01b0390911690339084907f3e8af3edd4cc6c38e4b22a0110ebdcaa13f693b0954b418c7fddcae70f8f864d9060200160405180910390a45050565b6000546001600160a01b031633146103e057604051637bfa4b9f60e01b815260040160405180910390fd5b6001600160a01b0382166104075760405163d92e233d60e01b815260040160405180910390fd5b80600003610428576040516358d620b360e01b815260040160405180910390fd5b600180546001600160a01b0319166001600160a01b03841690811790915560028290556040518281527fe42708d93b95810922305119a3271ca42233da9ebe1e1e503f0e887817a32c7a9060200160405180910390a25050565b6001600160a01b038116811461049757600080fd5b50565b6000602082840312156104ac57600080fd5b81356104b781610482565b9392505050565b6000602082840312156104d057600080fd5b5035919050565b600080604083850312156104ea57600080fd5b82356104f581610482565b94602093909301359350505056fea26469706673582212206cc62a59a074975c432b2d31d09e70192e0667515d6e439091e63084d6bfbeed64736f6c63430008250033",
+  "metadata": "{\"compiler\":{\"version\":\"0.8.37+commit.f401782d\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"inputs\":[{\"internalType\":\"address payable\",\"name\":\"initialTreasury\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"initialFee\",\"type\":\"uint256\"}],\"stateMutability\":\"nonpayable\",\"type\":\"constructor\"},{\"inputs\":[],\"name\":\"AlreadyPaid\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"EmptyDocumentId\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"IncorrectPayment\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"InvalidFee\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"NotAdmin\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"TransferFailed\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"ZeroAddress\",\"type\":\"error\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"previousAdmin\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"newAdmin\",\"type\":\"address\"}],\"name\":\"AdminTransferred\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"treasury\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"documentFee\",\"type\":\"uint256\"}],\"name\":\"FeeConfigUpdated\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"documentId\",\"type\":\"bytes32\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"payer\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"treasury\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"name\":\"FeePaid\",\"type\":\"event\"},{\"stateMutability\":\"payable\",\"type\":\"fallback\"},{\"inputs\":[],\"name\":\"admin\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"documentFee\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"documentId\",\"type\":\"bytes32\"}],\"name\":\"paidDocuments\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"paid\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"documentId\",\"type\":\"bytes32\"}],\"name\":\"pay\",\"outputs\":[],\"stateMutability\":\"payable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address payable\",\"name\":\"newTreasury\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"newFee\",\"type\":\"uint256\"}],\"name\":\"setFeeConfig\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"newAdmin\",\"type\":\"address\"}],\"name\":\"transferAdmin\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"treasury\",\"outputs\":[{\"internalType\":\"address payable\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"stateMutability\":\"payable\",\"type\":\"receive\"}],\"devdoc\":{\"details\":\"Gas is charged separately by the network. This contract only handles      the application-level document fee.\",\"kind\":\"dev\",\"methods\":{},\"title\":\"Winmar Document Verification Fee Payment\",\"version\":1},\"userdoc\":{\"kind\":\"user\",\"methods\":{},\"notice\":\"Collects the application fee in native WMC and forwards it to the         approved Document Verification Treasury.\",\"version\":1}},\"settings\":{\"compilationTarget\":{\"contracts/DocumentFeePayment.sol\":\"DocumentFeePayment\"},\"evmVersion\":\"berlin\",\"libraries\":{},\"metadata\":{\"bytecodeHash\":\"ipfs\"},\"optimizer\":{\"enabled\":true,\"runs\":200},\"remappings\":[]},\"sources\":{\"contracts/DocumentFeePayment.sol\":{\"keccak256\":\"0x154885ec8cfa2864d2f0e94d418962e81a4e3eef0f1055070253c91af2270f05\",\"license\":\"MIT\",\"urls\":[\"bzz-raw://ca4cb247470a249c0cf95c5792f6de23f1cce78a634940f3e9c6af611724ec9f\",\"dweb:/ipfs/QmbcP7UQmcbwyvDyN8GpfgtetVs1aGed4uQuLxmtV3rSMB\"]}},\"version\":1}"
+}

@@ -26,7 +26,9 @@ function drawField(ctx, x, y, width, value, options = {}) {
     if (ctx.measureText(value).width <= width - 10) break;
     fontSize -= 1;
   } while (fontSize > 11);
-  ctx.fillText(value, x + 5, y + height / 2, width - 10);
+  const textWidth = ctx.measureText(value).width;
+  const textX = options.align === 'center' ? Math.max(5, (width - textWidth) / 2) : 5;
+  ctx.fillText(value, x + textX, y + height / 2, width - 10);
 }
 
 function utcParts(unixSeconds) {
@@ -45,8 +47,8 @@ export async function renderCertificateCanvas(record, pageCount) {
 
   const { date, timestamp } = utcParts(record.issuedAt);
   const reportId = `WMC-${date.slice(0, 4)}-${record.documentId.slice(2, 12).toUpperCase()}`;
-  drawField(ctx, 581, 113, 202, reportId, { weight: '700' });
-  drawField(ctx, 581, 185, 202, date, { weight: '700' });
+  drawField(ctx, 581, 113, 202, reportId, { weight: '700', align: 'center', height: 28 });
+  drawField(ctx, 581, 185, 202, date, { weight: '700', align: 'center', height: 28 });
   drawField(ctx, 346, 493, 590, reportId, { fill: '#f7fbff', weight: '700' });
   drawField(ctx, 346, 538, 590, 'Verified PDF Document', { fill: '#f7fbff' });
   drawField(ctx, 346, 583, 590, record.subject, { fill: '#f7fbff' });
@@ -57,18 +59,19 @@ export async function renderCertificateCanvas(record, pageCount) {
   drawField(ctx, 355, 1084, 578, `#${record.blockNumber}`, { height: 35 });
   drawField(ctx, 355, 1127, 578, timestamp, { size: 15, height: 35 });
   drawField(ctx, 355, 1171, 578, record.issuerWallet, { size: 15, height: 35 });
+  drawField(ctx, 355, 1215, 578, 'Winmar Chain', { height: 35 });
   drawField(ctx, 355, 1264, 435, record.explorerUrl, { size: 12, color: '#0064e6' });
-  drawField(ctx, 101, 1382, 245, reportId, { weight: '700' });
-  drawField(ctx, 497, 1382, 145, `${pageCount + 1} of ${pageCount + 1}`, { weight: '700' });
+  drawField(ctx, 101, 1382, 245, reportId, { weight: '700', align: 'center', height: 28 });
+  drawField(ctx, 497, 1382, 145, '1 of 1', { weight: '700', align: 'center', height: 28 });
 
   const qrCanvas = document.createElement('canvas');
   await QRCode.toCanvas(qrCanvas, record.explorerUrl, {
-    width: 112, margin: 1, errorCorrectionLevel: 'M',
+    width: 110, margin: 1, errorCorrectionLevel: 'M',
     color: { dark: '#000000', light: '#ffffff' },
   });
   ctx.fillStyle = '#fff';
-  ctx.fillRect(857, 88, 113, 113);
-  ctx.drawImage(qrCanvas, 858, 89, 111, 111);
+  ctx.fillRect(840, 74, 145, 140);
+  ctx.drawImage(qrCanvas, 850, 86, 114, 114);
 
   return { canvas, reportId };
 }

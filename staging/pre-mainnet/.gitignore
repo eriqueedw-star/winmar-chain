@@ -1,0 +1,10 @@
+# Runtime state and validator/deployer secrets never belong in Git.
+isolated-runtime/keys/
+isolated-runtime/deployer/key.priv
+rotated-output/keys/
+*.priv
+*.key
+
+# Keep generated public metadata/genesis only when explicitly reviewed.
+!isolated-runtime/genesis.json
+!isolated-runtime/validator-addresses.json

@@ -9,6 +9,8 @@
     "deploy:dry-run": "node deploy-document-fee-payment.mjs --dry-run",
     "deploy:staging": "node deploy-document-fee-payment.mjs --environment staging",
     "deploy:production": "node deploy-document-fee-payment.mjs --environment production --confirm-mainnet"
+    ,"deploy:wmusd:dry-run": "node deploy-wmusd.mjs --dry-run"
+    ,"deploy:wmusd:staging": "node deploy-wmusd.mjs"
     ,"deploy:verification:staging": "node deploy-document-verification.mjs --environment staging"
     ,"deploy:verification:production": "node deploy-document-verification.mjs --environment production --confirm-mainnet"
     ,"authorize:issuer": "node authorize-issuer.mjs"

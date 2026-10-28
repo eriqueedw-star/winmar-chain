@@ -1,0 +1,11 @@
+{
+  "lastBlock": 791459,
+  "processed": {
+    "0x7262d0c54da9d32d88be4cef11c6cb191ef627b639967f4eaf4a18f101325e65:0x477a80f1f39d85e3b746f621a5271a17c3aa1b6adc9d88401cc7bbf58ae209fc": {
+      "status": "registered",
+      "paymentTx": "0x7262d0c54da9d32d88be4cef11c6cb191ef627b639967f4eaf4a18f101325e65",
+      "verificationTx": "0xbe95962ea545e9fd714e2dc971bd8300dba5c7da52e2aa6cfebb509a7ffbfb68",
+      "block": 781363
+    }
+  }
+}

@@ -58,7 +58,7 @@
 +  }
    const formatNumber = (value) => new Intl.NumberFormat('en-US').format(Number(value || 0));
 @@ -188,1 +227,1 @@
--        rpcUrls: ['https://rpc.winmarchain.org'], blockExplorerUrls: ['https://scan.winmarchain.io'],
+-        rpcUrls: ['https://rpc.winmarchain.com'], blockExplorerUrls: ['https://scan.winmarchain.io'],
 +        rpcUrls: ['https://rpc.winmarchain.io', 'https://rpc.winmarchain.com'], blockExplorerUrls: ['https://scan.winmarchain.io'],
 @@ -192,1 +231,24 @@
 +  async function loadConsensusValidators() {

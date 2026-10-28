@@ -1,0 +1,85 @@
+services:
+  stockholm:
+    image: hyperledger/besu:26.10.0
+    environment:
+      JAVA_TOOL_OPTIONS: "-Dwinmar.treasury=0xd854F57E1375B9128D643F1F812484d1c2FfAd46"
+    container_name: wmc-pre-mainnet-stockholm
+    command: ["--data-path=/var/lib/besu", "--genesis-file=/config/genesis.json", "--node-private-key-file=/keys/stockholm/key.priv", "--p2p-port=30303", "--p2p-host=172.30.0.2", "--rpc-http-enabled", "--rpc-http-host=0.0.0.0", "--rpc-http-api=ETH,NET,WEB3,QBFT", "--rpc-http-port=8545", "--rpc-http-cors-origins=*", "--host-allowlist=*", "--min-gas-price=1000000000", "--sync-min-peers=1"]
+    volumes:
+      - ${WMC_PREMAINNET_RUNTIME}/genesis.json:/config/genesis.json:ro
+      - ${WMC_PREMAINNET_KEYS}:/keys:ro
+      - pre-stockholm-data:/var/lib/besu
+    ports: ["28545:8545", "32303:30303"]
+    networks:
+      default:
+        ipv4_address: 172.30.0.2
+
+  singapore:
+    image: hyperledger/besu:26.10.0
+    environment:
+      JAVA_TOOL_OPTIONS: "-Dwinmar.treasury=0xd854F57E1375B9128D643F1F812484d1c2FfAd46"
+    container_name: wmc-pre-mainnet-singapore
+    command: ["--data-path=/var/lib/besu", "--genesis-file=/config/genesis.json", "--node-private-key-file=/keys/singapore/key.priv", "--p2p-port=30304", "--bootnodes=enode://f685c9ccb3a1df1c51c048cef8f6cb1fb38539eafa30ed82e2ad36eb17d5d39ba3e0c4221df7fcf77e54a629732352681ec9b9df0d4e325b51472c2a7a5e1054@172.30.0.2:30303", "--min-gas-price=1000000000", "--sync-min-peers=1"]
+    volumes:
+      - ${WMC_PREMAINNET_RUNTIME}/genesis.json:/config/genesis.json:ro
+      - ${WMC_PREMAINNET_KEYS}:/keys:ro
+      - pre-singapore-data:/var/lib/besu
+    networks:
+      default:
+        ipv4_address: 172.30.0.3
+
+  sydney:
+    image: hyperledger/besu:26.10.0
+    environment:
+      JAVA_TOOL_OPTIONS: "-Dwinmar.treasury=0xd854F57E1375B9128D643F1F812484d1c2FfAd46"
+    container_name: wmc-pre-mainnet-sydney
+    command: ["--data-path=/var/lib/besu", "--genesis-file=/config/genesis.json", "--node-private-key-file=/keys/sydney/key.priv", "--p2p-port=30305", "--bootnodes=enode://f685c9ccb3a1df1c51c048cef8f6cb1fb38539eafa30ed82e2ad36eb17d5d39ba3e0c4221df7fcf77e54a629732352681ec9b9df0d4e325b51472c2a7a5e1054@172.30.0.2:30303", "--min-gas-price=1000000000", "--sync-min-peers=1"]
+    volumes:
+      - ${WMC_PREMAINNET_RUNTIME}/genesis.json:/config/genesis.json:ro
+      - ${WMC_PREMAINNET_KEYS}:/keys:ro
+      - pre-sydney-data:/var/lib/besu
+    networks:
+      default:
+        ipv4_address: 172.30.0.4
+
+  tokyo2:
+    image: hyperledger/besu:26.10.0
+    environment:
+      JAVA_TOOL_OPTIONS: "-Dwinmar.treasury=0xd854F57E1375B9128D643F1F812484d1c2FfAd46"
+    container_name: wmc-pre-mainnet-tokyo2
+    command: ["--data-path=/var/lib/besu", "--genesis-file=/config/genesis.json", "--node-private-key-file=/keys/tokyo2/key.priv", "--p2p-port=30306", "--bootnodes=enode://f685c9ccb3a1df1c51c048cef8f6cb1fb38539eafa30ed82e2ad36eb17d5d39ba3e0c4221df7fcf77e54a629732352681ec9b9df0d4e325b51472c2a7a5e1054@172.30.0.2:30303", "--min-gas-price=1000000000", "--sync-min-peers=1"]
+    volumes:
+      - ${WMC_PREMAINNET_RUNTIME}/genesis.json:/config/genesis.json:ro
+      - ${WMC_PREMAINNET_KEYS}:/keys:ro
+      - pre-tokyo2-data:/var/lib/besu
+    networks:
+      default:
+        ipv4_address: 172.30.0.5
+
+  tokyo7:
+    image: hyperledger/besu:26.10.0
+    environment:
+      JAVA_TOOL_OPTIONS: "-Dwinmar.treasury=0xd854F57E1375B9128D643F1F812484d1c2FfAd46"
+    container_name: wmc-pre-mainnet-tokyo7
+    command: ["--data-path=/var/lib/besu", "--genesis-file=/config/genesis.json", "--node-private-key-file=/keys/tokyo7/key.priv", "--p2p-port=30307", "--bootnodes=enode://f685c9ccb3a1df1c51c048cef8f6cb1fb38539eafa30ed82e2ad36eb17d5d39ba3e0c4221df7fcf77e54a629732352681ec9b9df0d4e325b51472c2a7a5e1054@172.30.0.2:30303", "--min-gas-price=1000000000", "--sync-min-peers=1"]
+    volumes:
+      - ${WMC_PREMAINNET_RUNTIME}/genesis.json:/config/genesis.json:ro
+      - ${WMC_PREMAINNET_KEYS}:/keys:ro
+      - pre-tokyo7-data:/var/lib/besu
+    networks:
+      default:
+        ipv4_address: 172.30.0.6
+
+volumes:
+  pre-stockholm-data: {}
+  pre-singapore-data: {}
+  pre-sydney-data: {}
+  pre-tokyo2-data: {}
+  pre-tokyo7-data: {}
+
+networks:
+  default:
+    ipam:
+      config:
+        - subnet: 172.30.0.0/24
+

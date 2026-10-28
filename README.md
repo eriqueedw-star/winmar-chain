@@ -12,9 +12,13 @@ This repository is the canonical project index for public network information, o
 | Chain ID | `12142816` (`0xB948E0`) |
 | Native currency | WMC |
 | Consensus | QBFT Proof of Authority |
-| Public RPC | `https://rpc.winmarchain.io` |
-| Explorer | `https://scan.winmarchain.io` |
+| Primary RPC | `https://rpc.winmarchain.io` |
+| Backup RPC | `https://rpc.winmarchain.com` |
+| Primary explorer | `https://scan.winmarchain.io` |
+| Backup explorer | `https://scan.winmarchain.com` |
 | Website | `https://winmarchain.io` |
+| Network logo (direct PNG) | `https://winmarchain.io/assets/winmar-logo.png` |
+| RPC privacy policy | `https://winmarchain.io/privacy.html` |
 | Bridge | `https://bridge.winmarchain.io` |
 
 The machine-readable public metadata lives in [`config/network.json`](config/network.json).

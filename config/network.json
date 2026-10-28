@@ -9,14 +9,25 @@
   },
   "consensus": "QBFT Proof of Authority",
   "rpc": [
-    "https://rpc.winmarchain.io"
+    "https://rpc.winmarchain.io",
+    "https://rpc.winmarchain.com"
   ],
+  "rpcPrimary": "https://rpc.winmarchain.io",
+  "rpcBackup": "https://rpc.winmarchain.com",
   "explorers": [
     {
       "name": "Winmar Chain Explorer",
-      "url": "https://scan.winmarchain.io"
+      "url": "https://scan.winmarchain.io",
+      "role": "primary"
+    },
+    {
+      "name": "Winmar Chain Explorer (Backup)",
+      "url": "https://scan.winmarchain.com",
+      "role": "backup"
     }
   ],
+  "logoUrl": "https://winmarchain.io/assets/winmar-logo.png",
+  "privacyPolicy": "https://winmarchain.io/privacy.html",
   "website": "https://winmarchain.io",
   "bridge": "https://bridge.winmarchain.io"
 }

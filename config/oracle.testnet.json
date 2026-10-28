@@ -1,0 +1,15 @@
+{
+  "environment": "testnet",
+  "chainId": 12142818,
+  "rpcUrl": "http://127.0.0.1:28545",
+  "router": {
+    "deployment": "not_deployed",
+    "updater": "configure_from_testnet_secret_store"
+  },
+  "feeds": [
+    { "symbol": "BTC/USD", "decimals": 8, "heartbeatSeconds": 60, "maxDeviationBps": 500 },
+    { "symbol": "ETH/USD", "decimals": 8, "heartbeatSeconds": 60, "maxDeviationBps": 500 },
+    { "symbol": "XAU/USD", "decimals": 8, "heartbeatSeconds": 300, "maxDeviationBps": 300 },
+    { "symbol": "WMC/USD", "decimals": 8, "heartbeatSeconds": 60, "maxDeviationBps": 1000 }
+  ]
+}

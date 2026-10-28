@@ -25,7 +25,8 @@ async function main() {
   const source = lines.join('\n');
   new vm.Script(source);
   assert(!source.includes('const VALIDATORS = new Set'));
-  assert(!source.includes('rpc.winmarchain.org'));
+  assert(source.includes('https://rpc.winmarchain.io'));
+  assert(source.includes('https://rpc.winmarchain.com'));
   assert(source.includes("validators ? `${producers.size} / ${validators.size} producing` : 'Unavailable'"));
   const decoder = source.slice(source.indexOf('function consensusValidators'), source.indexOf('const formatNumber'));
   const rpcLoader = source.slice(source.indexOf('async function loadConsensusValidators'), source.indexOf('async function loadLiveData'));

@@ -1,0 +1,17 @@
+{
+  "name": "Winmar USD Stablecoin",
+  "symbol": "WMUSD",
+  "decimals": 6,
+  "network": "Winmar Chain",
+  "chainId": 12142816,
+  "contractAddress": "0x61E3Bce195AcEb0D48726b8b7Eba104C94dA2fCC",
+  "deploymentTransaction": "0x26a75d409e2312e823fb4bbb1e8e1c3c00418065356adf912e0ff18620c8afab",
+  "explorer": "https://scan.winmarchain.io/address/0x61E3Bce195AcEb0D48726b8b7Eba104C94dA2fCC",
+  "issuer": "Winmar Holdings Pte. Ltd.",
+  "status": "mainnet-dormant",
+  "mintingEnabled": false,
+  "redemptionEnabled": false,
+  "mintCap": "0",
+  "logoURI": "https://winmarchain.io/assets/wmusd.png",
+  "description": "WMUSD is a planned USD-referenced reserve-backed token on Winmar Chain. Minting and public distribution remain disabled pending reserve verification, attestation, legal review, and smart contract audit."
+}

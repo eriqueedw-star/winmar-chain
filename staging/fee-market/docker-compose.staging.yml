@@ -1,0 +1,63 @@
+services:
+  stockholm:
+    image: winmar/besu-fee-staging:configurable-treasury
+    environment:
+      JAVA_TOOL_OPTIONS: "-Dwinmar.treasury=0xd854F57E1375B9128D643F1F812484d1c2FfAd46 -Dwinmar.fee-routing-block=${WINMAR_FEE_ROUTING_BLOCK:?Set WINMAR_FEE_ROUTING_BLOCK for staging}"
+    container_name: wmc-fee-staging-stockholm
+    command: ["--data-path=/var/lib/besu", "--genesis-file=/config/genesis.json", "--node-private-key-file=/keys/VALIDATOR1/key", "--p2p-port=30303", "--rpc-http-enabled", "--rpc-http-host=0.0.0.0", "--rpc-http-api=ETH,NET,WEB3,QBFT", "--rpc-http-port=8545", "--host-allowlist=*", "--min-gas-price=1000000000"]
+    volumes:
+      - ${WMC_STAGING_RUNTIME}/genesis.json:/config/genesis.json:ro
+      - ${WMC_STAGING_KEYS}:/keys:ro
+      - stockholm-data:/var/lib/besu
+    ports: ["8545:8545", "30303:30303"]
+
+  singapore:
+    image: winmar/besu-fee-staging:configurable-treasury
+    environment:
+      JAVA_TOOL_OPTIONS: "-Dwinmar.treasury=0xd854F57E1375B9128D643F1F812484d1c2FfAd46 -Dwinmar.fee-routing-block=${WINMAR_FEE_ROUTING_BLOCK:?Set WINMAR_FEE_ROUTING_BLOCK for staging}"
+    container_name: wmc-fee-staging-singapore
+    command: ["--data-path=/var/lib/besu", "--genesis-file=/config/genesis.json", "--node-private-key-file=/keys/VALIDATOR2/key", "--p2p-port=30304", "--bootnodes=enode://e1464f2d5a857bcf7a6503485988d8b8a3e8357c7713c27bbf54f996d6f0b6670ee255c5e975bbc0277debbc70b43038b1b45e107892b8ddff90307c3b4af605@172.18.0.2:30303", "--min-gas-price=1000000000"]
+    volumes:
+      - ${WMC_STAGING_RUNTIME}/genesis.json:/config/genesis.json:ro
+      - ${WMC_STAGING_KEYS}:/keys:ro
+      - singapore-data:/var/lib/besu
+
+  sydney:
+    image: winmar/besu-fee-staging:configurable-treasury
+    environment:
+      JAVA_TOOL_OPTIONS: "-Dwinmar.treasury=0xd854F57E1375B9128D643F1F812484d1c2FfAd46 -Dwinmar.fee-routing-block=${WINMAR_FEE_ROUTING_BLOCK:?Set WINMAR_FEE_ROUTING_BLOCK for staging}"
+    container_name: wmc-fee-staging-sydney
+    command: ["--data-path=/var/lib/besu", "--genesis-file=/config/genesis.json", "--node-private-key-file=/keys/VALIDATOR3/key", "--p2p-port=30305", "--bootnodes=enode://e1464f2d5a857bcf7a6503485988d8b8a3e8357c7713c27bbf54f996d6f0b6670ee255c5e975bbc0277debbc70b43038b1b45e107892b8ddff90307c3b4af605@172.18.0.2:30303", "--min-gas-price=1000000000"]
+    volumes:
+      - ${WMC_STAGING_RUNTIME}/genesis.json:/config/genesis.json:ro
+      - ${WMC_STAGING_KEYS}:/keys:ro
+      - sydney-data:/var/lib/besu
+
+  tokyo2:
+    image: winmar/besu-fee-staging:configurable-treasury
+    environment:
+      JAVA_TOOL_OPTIONS: "-Dwinmar.treasury=0xd854F57E1375B9128D643F1F812484d1c2FfAd46 -Dwinmar.fee-routing-block=${WINMAR_FEE_ROUTING_BLOCK:?Set WINMAR_FEE_ROUTING_BLOCK for staging}"
+    container_name: wmc-fee-staging-tokyo2
+    command: ["--data-path=/var/lib/besu", "--genesis-file=/config/genesis.json", "--node-private-key-file=/keys/VALIDATOR4/key", "--p2p-port=30306", "--bootnodes=enode://e1464f2d5a857bcf7a6503485988d8b8a3e8357c7713c27bbf54f996d6f0b6670ee255c5e975bbc0277debbc70b43038b1b45e107892b8ddff90307c3b4af605@172.18.0.2:30303", "--min-gas-price=1000000000"]
+    volumes:
+      - ${WMC_STAGING_RUNTIME}/genesis.json:/config/genesis.json:ro
+      - ${WMC_STAGING_KEYS}:/keys:ro
+      - tokyo2-data:/var/lib/besu
+
+  tokyo7:
+    image: winmar/besu-fee-staging:configurable-treasury
+    environment:
+      JAVA_TOOL_OPTIONS: "-Dwinmar.treasury=0xd854F57E1375B9128D643F1F812484d1c2FfAd46 -Dwinmar.fee-routing-block=${WINMAR_FEE_ROUTING_BLOCK:?Set WINMAR_FEE_ROUTING_BLOCK for staging}"
+    container_name: wmc-fee-staging-tokyo7
+    command: ["--data-path=/var/lib/besu", "--genesis-file=/config/genesis.json", "--node-private-key-file=/keys/VALIDATOR5/key", "--p2p-port=30307", "--bootnodes=enode://e1464f2d5a857bcf7a6503485988d8b8a3e8357c7713c27bbf54f996d6f0b6670ee255c5e975bbc0277debbc70b43038b1b45e107892b8ddff90307c3b4af605@172.18.0.2:30303", "--min-gas-price=1000000000"]
+    volumes:
+      - ${WMC_STAGING_RUNTIME}/genesis.json:/config/genesis.json:ro
+      - ${WMC_STAGING_KEYS}:/keys:ro
+      - tokyo7-data:/var/lib/besu
+
+volumes:
+  stockholm-data: {}
+  singapore-data: {}
+  sydney-data: {}
+  tokyo2-data: {}
+  tokyo7-data: {}
