@@ -3,13 +3,12 @@ import { BrowserProvider } from "https://esm.sh/ethers@6.15.0";
 import { WALLETCONNECT_PROJECT_ID } from "./config.js";
 
 const status = document.querySelector("#status");
-const button = document.querySelector("#connect");
 const signers = document.querySelector("#signers");
-const applyButton = document.querySelector("#apply");
+const connectButtons = [document.querySelector("#connect1"), document.querySelector("#connect2")];
+const applyButtons = [document.querySelector("#apply1"), document.querySelector("#apply2")];
 const applyStatus = document.querySelector("#applyStatus");
-const signerAddresses = new Set();
-const signedAddresses = new Set();
-let currentAddress = "";
+const signerAddresses = [null, null];
+const signedAddresses = [false, false];
 
 const provider = await EthereumProvider.init({
   projectId: WALLETCONNECT_PROJECT_ID,
@@ -25,9 +24,9 @@ const provider = await EthereumProvider.init({
   },
 });
 
-async function connect() {
-  status.textContent = "Opening WalletConnect…";
-  if (signerAddresses.size > 0 && provider.session) {
+async function connect(slot) {
+  status.textContent = `Opening WalletConnect for Signer ${slot + 1}…`;
+  if (provider.session) {
     await provider.disconnect();
   }
   await provider.connect();
@@ -36,62 +35,57 @@ async function connect() {
   const browser = new BrowserProvider(provider);
   const signer = await browser.getSigner();
   const connectedAddress = await signer.getAddress();
-  currentAddress = connectedAddress.toLowerCase();
-  signerAddresses.add(connectedAddress.toLowerCase());
-  renderSigners();
-  if (signedAddresses.has(currentAddress)) {
-    status.textContent = "This wallet has already approved. Switch SafePal account before connecting the second signer.";
-    applyButton.disabled = true;
-    applyStatus.textContent = "Wallet already signed. Switch to the other SafePal account, then connect again.";
-    return;
+  const address = connectedAddress.toLowerCase();
+  const otherSlot = slot === 0 ? 1 : 0;
+  if (signerAddresses[otherSlot] === address) {
+    throw new Error(`This wallet is already assigned to Signer ${otherSlot + 1}. Switch SafePal account first.`);
   }
-  status.textContent = `${signerAddresses.size}/2 signer wallet connected. Review every transaction in the wallet.`;
-  button.textContent = signerAddresses.size < 2 ? "Connect second SafePal wallet" : "Reconnect signer wallet";
-  applyButton.disabled = signerAddresses.size !== 2;
-  applyStatus.textContent = signerAddresses.size === 2
-    ? "Both signers connected. Click Apply to request the active wallet signature."
-    : "Waiting for both signer wallets.";
+  signerAddresses[slot] = address;
+  renderSigners();
+  status.textContent = `${signerAddresses.filter(Boolean).length}/2 signer wallets connected.`;
+  connectButtons[slot].textContent = `Reconnect Signer ${slot + 1}`;
+  applyButtons[slot].disabled = signedAddresses[slot];
+  applyStatus.textContent = signerAddresses.every(Boolean)
+    ? "Both signers connected. Approve each signer separately."
+    : "Connect both signer wallets.";
 }
 
 function renderSigners() {
   signers.innerHTML = "";
-  [...signerAddresses].forEach((wallet, index) => {
+  signerAddresses.forEach((wallet, index) => {
     const row = document.createElement("p");
-    const state = signedAddresses.has(wallet) ? " — approved" : " — waiting for approval";
-    row.innerHTML = `<b>Signer ${index + 1}${state}</b><br><code>${wallet}</code>`;
+    const state = signedAddresses[index] ? " — approved" : wallet ? " — waiting for approval" : " — not connected";
+    row.innerHTML = `<b>Signer ${index + 1}${state}</b><br><code>${wallet || "—"}</code>`;
     signers.append(row);
   });
 }
 
-applyButton.addEventListener("click", () => {
-  requestApproval().catch((error) => {
-    applyButton.disabled = false;
+connectButtons.forEach((button, slot) => button.addEventListener("click", () => connect(slot).catch((error) => {
+  status.textContent = error?.message || "Wallet connection failed";
+})));
+
+applyButtons.forEach((button, slot) => button.addEventListener("click", () => {
+  requestApproval(slot).catch((error) => {
+    button.disabled = false;
     applyStatus.textContent = error?.message || "Signature request was rejected.";
   });
-});
+}));
 
-async function requestApproval() {
-  if (signerAddresses.size !== 2 || !currentAddress) return;
-  if (signedAddresses.has(currentAddress)) {
-    applyButton.disabled = true;
-    throw new Error("This wallet already approved. Switch to the other SafePal account first.");
-  }
-  applyButton.disabled = true;
-  applyStatus.textContent = "Signature request sent. Approve it in the active SafePal wallet…";
-  const message = `Winmar 2-of-2 signer approval\nChain ID: 12142816\nSigner: ${currentAddress}`;
+async function requestApproval(slot) {
+  const address = signerAddresses[slot];
+  if (!address) throw new Error(`Connect Signer ${slot + 1} first.`);
+  if (signedAddresses[slot]) throw new Error(`Signer ${slot + 1} already approved.`);
+  applyButtons[slot].disabled = true;
+  applyStatus.textContent = `Signature request sent for Signer ${slot + 1}. Approve it in SafePal…`;
+  const message = `Winmar 2-of-2 signer approval\nChain ID: 12142816\nSigner ${slot + 1}: ${address}`;
   await provider.request({
     method: "personal_sign",
-    params: [message, currentAddress],
+    params: [message, address],
   });
-  signedAddresses.add(currentAddress);
+  signedAddresses[slot] = true;
   renderSigners();
-  const signed = signedAddresses.size;
+  const signed = signedAddresses.filter(Boolean).length;
   applyStatus.textContent = signed === 2
     ? "Both signer approvals received. Ready for the separately reviewed deployment transaction."
-    : `Approval received from ${currentAddress}. Connect the other signer and apply again (${signed}/2).`;
-  applyButton.disabled = signed === 2;
+    : `Signer ${slot + 1} approved. Approve the other signer (${signed}/2).`;
 }
-
-button.addEventListener("click", () => connect().catch((error) => {
-  status.textContent = error?.message || "Wallet connection failed";
-}));
