@@ -39,6 +39,12 @@ async function connect() {
   currentAddress = connectedAddress.toLowerCase();
   signerAddresses.add(connectedAddress.toLowerCase());
   renderSigners();
+  if (signedAddresses.has(currentAddress)) {
+    status.textContent = "This wallet has already approved. Switch SafePal account before connecting the second signer.";
+    applyButton.disabled = true;
+    applyStatus.textContent = "Wallet already signed. Switch to the other SafePal account, then connect again.";
+    return;
+  }
   status.textContent = `${signerAddresses.size}/2 signer wallet connected. Review every transaction in the wallet.`;
   button.textContent = signerAddresses.size < 2 ? "Connect second SafePal wallet" : "Reconnect signer wallet";
   applyButton.disabled = signerAddresses.size !== 2;
@@ -51,7 +57,8 @@ function renderSigners() {
   signers.innerHTML = "";
   [...signerAddresses].forEach((wallet, index) => {
     const row = document.createElement("p");
-    row.innerHTML = `<b>Signer ${index + 1}</b><br><code>${wallet}</code>`;
+    const state = signedAddresses.has(wallet) ? " — approved" : " — waiting for approval";
+    row.innerHTML = `<b>Signer ${index + 1}${state}</b><br><code>${wallet}</code>`;
     signers.append(row);
   });
 }
@@ -73,6 +80,7 @@ async function requestApproval() {
     params: [message, currentAddress],
   });
   signedAddresses.add(currentAddress);
+  renderSigners();
   const signed = signedAddresses.size;
   applyStatus.textContent = signed === 2
     ? "Both signer approvals received. Ready for the separately reviewed deployment transaction."
