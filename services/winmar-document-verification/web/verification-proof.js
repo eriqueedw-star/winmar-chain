@@ -263,6 +263,7 @@
       issuedAt: new Date(Number(record.issuedAt) * 1000).toISOString()
         .replace('T', ' ').replace('.000Z', ' UTC'),
       verificationUrl: 'https://scan.winmarchain.io/verify/' + hash,
+      transactionUrl: 'https://scan.winmarchain.io/tx/' + event.transactionHash,
     };
   }
 
@@ -310,6 +311,7 @@
       issuedAt: new Date(Number(record.issuedAt) * 1000).toISOString()
         .replace('T', ' ').replace('.000Z', ' UTC'),
       verificationUrl: 'https://scan.winmarchain.io/verify/' + hash,
+      transactionUrl: 'https://scan.winmarchain.io/tx/' + event.transactionHash,
     };
   }
 
@@ -320,3 +322,4 @@
       FEE_WEI, FEE_SELECTOR, FEE_EVENT, REGISTERED_EVENT },
   };
 })(typeof window === 'undefined' ? globalThis : window);
+
