@@ -9,6 +9,10 @@ const applyButtons = [document.querySelector("#apply1"), document.querySelector(
 const applyStatus = document.querySelector("#applyStatus");
 const signerAddresses = [null, null];
 const signedAddresses = [false, false];
+const expectedSigners = [
+  "0xf66287c43eb62f238c333393b4c29da19001e97f",
+  "0x2a94dfdbaf51c71f5e554260d56fff14fee43624",
+];
 
 const provider = await EthereumProvider.init({
   projectId: WALLETCONNECT_PROJECT_ID,
@@ -36,6 +40,9 @@ async function connect(slot) {
   const signer = await browser.getSigner();
   const connectedAddress = await signer.getAddress();
   const address = connectedAddress.toLowerCase();
+  if (address !== expectedSigners[slot]) {
+    throw new Error(`Wrong wallet for Signer ${slot + 1}. Use ${expectedSigners[slot]}.`);
+  }
   const otherSlot = slot === 0 ? 1 : 0;
   if (signerAddresses[otherSlot] === address) {
     throw new Error(`This wallet is already assigned to Signer ${otherSlot + 1}. Switch SafePal account first.`);
