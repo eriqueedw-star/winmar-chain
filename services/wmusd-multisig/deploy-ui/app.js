@@ -3,8 +3,9 @@ import { BrowserProvider } from "https://esm.sh/ethers@6.15.0";
 import { WALLETCONNECT_PROJECT_ID } from "./config.js";
 
 const status = document.querySelector("#status");
-const address = document.querySelector("#address");
 const button = document.querySelector("#connect");
+const signers = document.querySelector("#signers");
+const signerAddresses = new Set();
 
 const provider = await EthereumProvider.init({
   projectId: WALLETCONNECT_PROJECT_ID,
@@ -22,13 +23,28 @@ const provider = await EthereumProvider.init({
 
 async function connect() {
   status.textContent = "Opening WalletConnect…";
+  if (signerAddresses.size > 0 && provider.session) {
+    await provider.disconnect();
+  }
   await provider.connect();
   const chain = await provider.request({ method: "eth_chainId" });
   if (BigInt(chain) !== 12142816n) throw new Error(`Wrong network: ${chain}`);
   const browser = new BrowserProvider(provider);
   const signer = await browser.getSigner();
-  address.textContent = await signer.getAddress();
-  status.textContent = "SafePal connected on Winmar Chain. Review every transaction in the wallet.";
+  const connectedAddress = await signer.getAddress();
+  signerAddresses.add(connectedAddress.toLowerCase());
+  renderSigners();
+  status.textContent = `${signerAddresses.size}/2 signer wallet connected. Review every transaction in the wallet.`;
+  button.textContent = signerAddresses.size < 2 ? "Connect second SafePal wallet" : "Reconnect signer wallet";
+}
+
+function renderSigners() {
+  signers.innerHTML = "";
+  [...signerAddresses].forEach((wallet, index) => {
+    const row = document.createElement("p");
+    row.innerHTML = `<b>Signer ${index + 1}</b><br><code>${wallet}</code>`;
+    signers.append(row);
+  });
 }
 
 button.addEventListener("click", () => connect().catch((error) => {
