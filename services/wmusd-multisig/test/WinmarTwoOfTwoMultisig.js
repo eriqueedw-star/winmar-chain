@@ -1,5 +1,12 @@
-const { expect } = require('chai');
-const { ethers } = require('hardhat');
+import { expect } from 'chai';
+import hre from 'hardhat';
+import { before, describe, it } from 'mocha';
+
+let ethers;
+
+before(async function () {
+  ({ ethers } = await hre.network.getOrCreate());
+});
 
 describe('WinmarTwoOfTwoMultisig', function () {
   async function fixture() {
@@ -28,6 +35,13 @@ describe('WinmarTwoOfTwoMultisig', function () {
     expect(await wallet.signerA()).to.equal(signerA.address);
     expect(await wallet.signerB()).to.equal(signerB.address);
     expect(await wallet.nonce()).to.equal(0n);
+  });
+
+  it('rejects zero or duplicate signer configuration', async function () {
+    const [signerA] = await ethers.getSigners();
+    const Factory = await ethers.getContractFactory('WinmarTwoOfTwoMultisig');
+    await expect(Factory.deploy(ethers.ZeroAddress, signerA.address)).to.be.revertedWith('zero signer');
+    await expect(Factory.deploy(signerA.address, signerA.address)).to.be.revertedWith('duplicate signer');
   });
 
   it('executes only with both signatures and increments nonce', async function () {

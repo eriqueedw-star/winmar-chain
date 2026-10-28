@@ -2,12 +2,13 @@
   "name": "@winmar/wmusd-multisig",
   "private": true,
   "version": "0.1.0",
+  "type": "module",
   "scripts": {
     "compile": "hardhat compile",
     "test": "hardhat test"
   },
   "devDependencies": {
-    "@nomicfoundation/hardhat-toolbox": "^5.0.0",
-    "hardhat": "^2.22.15"
+    "@nomicfoundation/hardhat-toolbox-mocha-ethers": "^4.0.0",
+    "hardhat": "^3.21.1"
   }
 }
