@@ -205,15 +205,55 @@
       try { const [address] = await window.ethereum.request({ method: 'eth_requestAccounts' }); wallet.textContent = address; button.textContent = 'Wallet connected'; } catch { wallet.textContent = 'Connection cancelled'; }
     });
     const reserveStatus = document.querySelector('#reserve-upload-status');
-    document.querySelector('#submit-reserve-review').addEventListener('click', async () => {
+    const reserveButton = document.querySelector('#submit-reserve-review');
+    const reserveApiUrl = '/api/wmusd/reserve-review';
+    const maxReserveBytes = 10 * 1024 * 1024;
+    const setReserveStatus = (message, kind = '') => {
+      reserveStatus.textContent = message;
+      reserveStatus.dataset.state = kind;
+    };
+    const reserveDraft = () => {
+      try { return JSON.parse(localStorage.getItem('wmusd_reserve_review_draft') || 'null'); } catch { return null; }
+    };
+    const restoreReserveDraft = () => {
+      const draft = reserveDraft();
+      if (draft?.status === 'PENDING_REVIEW' && draft.attestation?.name && draft.bank?.name) {
+        setReserveStatus(`Draft ready · ${draft.attestation.name} + ${draft.bank.name}. Select the files again to submit them securely.`, 'draft');
+      }
+    };
+    restoreReserveDraft();
+    reserveButton.addEventListener('click', async () => {
       const attestation = document.querySelector('#reserve-attestation').files[0];
       const bank = document.querySelector('#reserve-bank').files[0];
       if (!attestation || !bank) { reserveStatus.textContent = 'Select both the attestation report and bank confirmation first.'; return; }
+      const allowed = /^(application\/pdf|image\/(png|jpeg))$/;
+      if (![attestation, bank].every(file => allowed.test(file.type) && file.size > 0 && file.size <= maxReserveBytes)) {
+        setReserveStatus('Each file must be a non-empty PDF, PNG, or JPEG up to 10 MB.', 'error');
+        return;
+      }
       const digest = async (file) => [...new Uint8Array(await crypto.subtle.digest('SHA-256', await file.arrayBuffer()))].map(b => b.toString(16).padStart(2, '0')).join('');
-      reserveStatus.textContent = 'Preparing verification request…';
-      const request = { attestation: { name: attestation.name, size: attestation.size, sha256: await digest(attestation) }, bank: { name: bank.name, size: bank.size, sha256: await digest(bank) }, submittedAt: new Date().toISOString(), status: 'PENDING_REVIEW' };
-      sessionStorage.setItem('wmusd_reserve_review', JSON.stringify(request));
-      reserveStatus.textContent = `Submitted for review · ${attestation.name} + ${bank.name}. Minting remains locked until approval.`;
+      reserveButton.disabled = true;
+      try {
+        setReserveStatus('Hashing both files locally…', 'working');
+        const request = { attestation: { name: attestation.name, size: attestation.size, sha256: await digest(attestation) }, bank: { name: bank.name, size: bank.size, sha256: await digest(bank) }, submittedAt: new Date().toISOString(), status: 'PENDING_REVIEW' };
+        localStorage.setItem('wmusd_reserve_review_draft', JSON.stringify(request));
+        setReserveStatus('Uploading securely…', 'working');
+        const body = new FormData();
+        body.append('attestation', attestation, attestation.name);
+        body.append('bank', bank, bank.name);
+        const token = sessionStorage.getItem('wmusd_id_token');
+        const response = await fetch(reserveApiUrl, { method: 'POST', headers: token ? { Authorization: `Bearer ${token}` } : {}, body, credentials: 'include' });
+        const result = await response.json().catch(() => ({}));
+        if (!response.ok) throw new Error(result.message || result.error || `Upload failed (${response.status})`);
+        const saved = { ...request, ...result, status: result.status || 'PENDING_REVIEW' };
+        localStorage.setItem('wmusd_reserve_review', JSON.stringify(saved));
+        localStorage.removeItem('wmusd_reserve_review_draft');
+        setReserveStatus(`Received for review · ${attestation.name} + ${bank.name}. Minting remains locked until approval.`, 'success');
+      } catch (error) {
+        setReserveStatus(`Upload not completed: ${error.message}. Nothing was approved or minted; try again.`, 'error');
+      } finally {
+        reserveButton.disabled = false;
+      }
     });
     const sha256Hex = async (value) => {
       const bytes = new TextEncoder().encode(value);
