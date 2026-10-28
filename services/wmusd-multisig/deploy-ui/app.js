@@ -72,6 +72,10 @@ applyButton.addEventListener("click", () => {
 
 async function requestApproval() {
   if (signerAddresses.size !== 2 || !currentAddress) return;
+  if (signedAddresses.has(currentAddress)) {
+    applyButton.disabled = true;
+    throw new Error("This wallet already approved. Switch to the other SafePal account first.");
+  }
   applyButton.disabled = true;
   applyStatus.textContent = "Signature request sent. Approve it in the active SafePal wallet…";
   const message = `Winmar 2-of-2 signer approval\nChain ID: 12142816\nSigner: ${currentAddress}`;
