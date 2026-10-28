@@ -7,6 +7,8 @@ const signers = document.querySelector("#signers");
 const connectButtons = [document.querySelector("#connect1"), document.querySelector("#connect2")];
 const applyButtons = [document.querySelector("#apply1"), document.querySelector("#apply2")];
 const applyStatus = document.querySelector("#applyStatus");
+const submitButton = document.querySelector("#submit");
+const closeButton = document.querySelector("#close");
 const signerAddresses = [null, null];
 const signedAddresses = [false, false];
 const expectedSigners = [
@@ -92,7 +94,31 @@ async function requestApproval(slot) {
   signedAddresses[slot] = true;
   renderSigners();
   const signed = signedAddresses.filter(Boolean).length;
+  submitButton.disabled = signed !== 2;
   applyStatus.textContent = signed === 2
     ? "Both signer approvals received. Ready for the separately reviewed deployment transaction."
     : `Signer ${slot + 1} approved. Approve the other signer (${signed}/2).`;
 }
+
+submitButton.addEventListener("click", () => {
+  submitButton.disabled = true;
+  applyStatus.textContent = "2-of-2 approvals submitted. Awaiting deployment review.";
+});
+
+closeButton.addEventListener("click", async () => {
+  if (provider.session) await provider.disconnect();
+  signerAddresses.fill(null);
+  signedAddresses.fill(false);
+  renderSigners();
+  connectButtons.forEach((button, index) => {
+    button.disabled = false;
+    button.textContent = `Connect Signer ${index + 1}`;
+  });
+  applyButtons.forEach((button, index) => {
+    button.disabled = true;
+    button.textContent = `Approve Signer ${index + 1}`;
+  });
+  submitButton.disabled = true;
+  status.textContent = "Approval session closed.";
+  applyStatus.textContent = "Connect both signer wallets.";
+});
