@@ -24,7 +24,7 @@ async function connect() {
   status.textContent = "Opening WalletConnect…";
   await provider.connect();
   const chain = await provider.request({ method: "eth_chainId" });
-  if (chain !== "0xb948e0") throw new Error(`Wrong network: ${chain}`);
+  if (BigInt(chain) !== 12142816n) throw new Error(`Wrong network: ${chain}`);
   const browser = new BrowserProvider(provider);
   const signer = await browser.getSigner();
   address.textContent = await signer.getAddress();
