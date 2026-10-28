@@ -198,12 +198,39 @@
     };
     document.querySelector('#auth-login').addEventListener('click', beginCognitoLogin);
     finishCognitoCallback();
+    const WINMAR_CHAIN_ID = '0xb948e0';
+    const APPROVED_ADMIN_WALLETS = new Set([
+      '0x2a94dfdbaf51c71f5e554260d56fff14fee43624',
+      '0xf66287c43eb62f238c333393b4c29da19001e97f'
+    ]);
+    const setWalletState = (message, connected = false) => {
+      const wallet = document.querySelector('#wallet');
+      const button = document.querySelector('#connect');
+      const pill = button.closest('.card')?.querySelector('.pill');
+      wallet.textContent = message;
+      button.textContent = connected ? 'Admin wallet connected' : 'Connect admin wallet';
+      if (pill) { pill.textContent = connected ? 'ADMIN VERIFIED' : 'NOT CONNECTED'; pill.className = `pill ${connected ? 'safe' : 'pending'}`; }
+    };
+    const requestAdminWallet = async () => {
+      if (!window.ethereum) throw new Error('No EVM wallet detected. Open MetaMask or SafePal in this browser.');
+      try { await window.ethereum.request({ method: 'wallet_requestPermissions', params: [{ eth_accounts: {} }] }); } catch (error) {
+        if (error?.code !== -32002 && error?.code !== 4001) throw error;
+      }
+      const [address] = await window.ethereum.request({ method: 'eth_requestAccounts' });
+      if (!address) throw new Error('Select an admin wallet to continue.');
+      const chainId = (await window.ethereum.request({ method: 'eth_chainId' })).toLowerCase();
+      if (chainId !== WINMAR_CHAIN_ID) throw new Error('Switch the wallet to Winmar Chain Mainnet (Chain ID 12142816).');
+      const normalized = address.toLowerCase();
+      if (!APPROVED_ADMIN_WALLETS.has(normalized)) throw new Error(`Connected wallet ${address} is not one of the two approved admin signers.`);
+      return address;
+    };
     document.querySelector('#connect').addEventListener('click', async () => {
       const button = document.querySelector('#connect');
-      const wallet = document.querySelector('#wallet');
-      if (!window.ethereum) { wallet.textContent = 'No compatible wallet detected'; return; }
-      try { const [address] = await window.ethereum.request({ method: 'eth_requestAccounts' }); wallet.textContent = address; button.textContent = 'Wallet connected'; } catch { wallet.textContent = 'Connection cancelled'; }
+      try { button.disabled = true; setWalletState('Requesting admin wallet approval…'); const address = await requestAdminWallet(); setWalletState(`Admin signer verified: ${address}`, true); }
+      catch (error) { setWalletState(error?.message || 'Connection cancelled.'); }
+      finally { button.disabled = false; }
     });
+    if (window.ethereum?.on) window.ethereum.on('accountsChanged', () => setWalletState('Wallet changed. Reconnect an approved admin signer.'));
     const reserveStatus = document.querySelector('#reserve-upload-status');
     const reserveButton = document.querySelector('#submit-reserve-review');
     const reserveApiUrl = '/api/wmusd/reserve-review';
