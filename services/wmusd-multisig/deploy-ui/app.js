@@ -8,6 +8,8 @@ const signers = document.querySelector("#signers");
 const applyButton = document.querySelector("#apply");
 const applyStatus = document.querySelector("#applyStatus");
 const signerAddresses = new Set();
+const signedAddresses = new Set();
+let currentAddress = "";
 
 const provider = await EthereumProvider.init({
   projectId: WALLETCONNECT_PROJECT_ID,
@@ -34,13 +36,14 @@ async function connect() {
   const browser = new BrowserProvider(provider);
   const signer = await browser.getSigner();
   const connectedAddress = await signer.getAddress();
+  currentAddress = connectedAddress.toLowerCase();
   signerAddresses.add(connectedAddress.toLowerCase());
   renderSigners();
   status.textContent = `${signerAddresses.size}/2 signer wallet connected. Review every transaction in the wallet.`;
   button.textContent = signerAddresses.size < 2 ? "Connect second SafePal wallet" : "Reconnect signer wallet";
   applyButton.disabled = signerAddresses.size !== 2;
   applyStatus.textContent = signerAddresses.size === 2
-    ? "Both signers connected. Ready to apply the 2-of-2 set."
+    ? "Both signers connected. Click Apply to request the active wallet signature."
     : "Waiting for both signer wallets.";
 }
 
@@ -54,13 +57,28 @@ function renderSigners() {
 }
 
 applyButton.addEventListener("click", () => {
-  applyButton.disabled = true;
-  applyStatus.textContent = "Applying 2-of-2 signer set…";
-  window.setTimeout(() => {
-    applyStatus.textContent = "2-of-2 signer set ready. Review and approve the deployment transaction in both wallets.";
+  requestApproval().catch((error) => {
     applyButton.disabled = false;
-  }, 700);
+    applyStatus.textContent = error?.message || "Signature request was rejected.";
+  });
 });
+
+async function requestApproval() {
+  if (signerAddresses.size !== 2 || !currentAddress) return;
+  applyButton.disabled = true;
+  applyStatus.textContent = "Signature request sent. Approve it in the active SafePal wallet…";
+  const message = `Winmar 2-of-2 signer approval\nChain ID: 12142816\nSigner: ${currentAddress}`;
+  await provider.request({
+    method: "personal_sign",
+    params: [message, currentAddress],
+  });
+  signedAddresses.add(currentAddress);
+  const signed = signedAddresses.size;
+  applyStatus.textContent = signed === 2
+    ? "Both signer approvals received. Ready for the separately reviewed deployment transaction."
+    : `Approval received from ${currentAddress}. Connect the other signer and apply again (${signed}/2).`;
+  applyButton.disabled = signed === 2;
+}
 
 button.addEventListener("click", () => connect().catch((error) => {
   status.textContent = error?.message || "Wallet connection failed";
