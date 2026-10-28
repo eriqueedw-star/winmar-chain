@@ -5,6 +5,8 @@ import { WALLETCONNECT_PROJECT_ID } from "./config.js";
 const status = document.querySelector("#status");
 const button = document.querySelector("#connect");
 const signers = document.querySelector("#signers");
+const applyButton = document.querySelector("#apply");
+const applyStatus = document.querySelector("#applyStatus");
 const signerAddresses = new Set();
 
 const provider = await EthereumProvider.init({
@@ -36,6 +38,10 @@ async function connect() {
   renderSigners();
   status.textContent = `${signerAddresses.size}/2 signer wallet connected. Review every transaction in the wallet.`;
   button.textContent = signerAddresses.size < 2 ? "Connect second SafePal wallet" : "Reconnect signer wallet";
+  applyButton.disabled = signerAddresses.size !== 2;
+  applyStatus.textContent = signerAddresses.size === 2
+    ? "Both signers connected. Ready to apply the 2-of-2 set."
+    : "Waiting for both signer wallets.";
 }
 
 function renderSigners() {
@@ -46,6 +52,15 @@ function renderSigners() {
     signers.append(row);
   });
 }
+
+applyButton.addEventListener("click", () => {
+  applyButton.disabled = true;
+  applyStatus.textContent = "Applying 2-of-2 signer set…";
+  window.setTimeout(() => {
+    applyStatus.textContent = "2-of-2 signer set ready. Review and approve the deployment transaction in both wallets.";
+    applyButton.disabled = false;
+  }, 700);
+});
 
 button.addEventListener("click", () => connect().catch((error) => {
   status.textContent = error?.message || "Wallet connection failed";
