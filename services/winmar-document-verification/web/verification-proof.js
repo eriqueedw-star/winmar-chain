@@ -20,6 +20,16 @@
   const FEE_EVENT = '0x3e8af3edd4cc6c38e4b22a0110ebdcaa13f693b0954b418c7fddcae70f8f864d';
   const REGISTERED_EVENT = '0x5b89de9f4846bfc83db0a655fd2c69d1a30f49b5f2b09c485c167d39374210f2';
   const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000';
+  const REQUEST_TIMEOUT_MS = 10000;
+
+  async function fetchWithTimeout(url, options = {}) {
+    const Controller = root.AbortController || (typeof AbortController !== 'undefined' ? AbortController : null);
+    if (!Controller) return root.fetch(url, options);
+    const controller = new Controller();
+    const timer = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
+    try { return await root.fetch(url, { ...options, signal: controller.signal }); }
+    finally { clearTimeout(timer); }
+  }
 
   function docId(value) {
     if (typeof value !== 'string' || !/^0x[0-9a-f]{64}$/i.test(value)) throw new Error('Invalid document ID');
@@ -144,7 +154,7 @@
         throw new Error('Explorer log pagination repeated unexpectedly.');
       }
       seen.add(target.href);
-      const response = await root.fetch(target.href, {
+      const response = await fetchWithTimeout(target.href, {
         cache: 'no-store', credentials: 'omit', mode: 'cors',
       });
       if (!response?.ok) throw new Error('Explorer registration index is unavailable.');
