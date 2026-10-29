@@ -1,0 +1,19 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Winmar Fixed Price Oracle</title>
+<script src="https://cdn.jsdelivr.net/npm/ethers@6.15.0/dist/ethers.umd.min.js"></script>
+<style>body{font:16px system-ui;max-width:760px;margin:40px auto;padding:0 20px;color:#102044;background:#f7f9fd}.card{background:#fff;border:1px solid #dbe4f2;border-radius:18px;padding:28px;box-shadow:0 8px 30px #10204412}h1{margin-top:0}label{display:block;margin:16px 0 6px;font-weight:700}input{width:100%;box-sizing:border-box;padding:12px;border:1px solid #cbd7eb;border-radius:9px;font:inherit}button{margin-top:20px;padding:13px 18px;border:0;border-radius:9px;background:#146ef5;color:#fff;font-weight:700;cursor:pointer}button:disabled{opacity:.5;cursor:not-allowed}.meta{color:#64748b;word-break:break-all}.ok{color:#087f5b;font-weight:700}.warn{color:#a15c00;font-weight:700}</style></head>
+<body><main class="card"><h1>Winmar Fixed Price Oracle</h1><p>Deploys a fixed WMC/USD reference feed. Review everything in your wallet before signing.</p>
+<label>Network</label><input value="Winmar Chain · Chain ID 12142816" disabled>
+<label>Oracle admin multisig</label><input id="admin" value="0x6f6c6a209dc3297021aa3b2b9a63fc6c59577f6f" readonly>
+<label>Initial price</label><input value="$2,000.00 per WMC" disabled>
+<label>Heartbeat</label><input value="24 hours" disabled>
+<p id="wallet" class="meta">Wallet not connected.</p><button id="connect">Connect deployer wallet</button><button id="deploy" disabled>Deploy Oracle &amp; sign</button><p id="status" role="status" class="meta">Connect a funded deployer wallet to begin.</p></main>
+<script>
+const ABI=['constructor(address admin_,uint256 heartbeat_,int256 initialAnswer_)'];
+const ADMIN='0x6f6c6a209dc3297021aa3b2b9a63fc6c59577f6f',CHAIN=12142816n,PRICE=200000000000n;
+let provider,signer;
+const $=id=>document.getElementById(id);
+async function connect(){if(!window.ethereum)throw Error('Browser wallet extension tidak ditemukan.');provider=new ethers.BrowserProvider(window.ethereum);await provider.send('eth_requestAccounts',[]);const net=await provider.getNetwork();if(net.chainId!==CHAIN)throw Error('Pilih Winmar Chain (Chain ID 12142816).');signer=await provider.getSigner();$('wallet').textContent='Deployer: '+await signer.getAddress();$('deploy').disabled=false;$('status').textContent='Wallet connected. Review and sign the deployment transaction.'}
+async function deploy(){const artifact=await fetch('../artifacts/contracts/WinmarFixedPriceOracle.sol/WinmarFixedPriceOracle.json',{cache:'no-store'}).then(r=>{if(!r.ok)throw Error('Artifact belum tersedia. Jalankan npm run compile dari folder multisig.');return r.json()});const factory=new ethers.ContractFactory(artifact.abi,artifact.bytecode,signer);$('deploy').disabled=true;$('status').textContent='Review the deployment transaction in your wallet…';const oracle=await factory.deploy(ADMIN,86400,PRICE);$('status').textContent='Waiting for confirmation…';await oracle.waitForDeployment();$('status').innerHTML='<span class="ok">Oracle deployed: '+await oracle.getAddress()+'</span>'}
+$('connect').onclick=()=>connect().catch(e=>{$('status').innerHTML='<span class="warn">'+(e.shortMessage||e.message)+'</span>'});$('deploy').onclick=()=>deploy().catch(e=>{$('deploy').disabled=false;$('status').innerHTML='<span class="warn">'+(e.shortMessage||e.message)+'</span>'});
+</script></body></html>
