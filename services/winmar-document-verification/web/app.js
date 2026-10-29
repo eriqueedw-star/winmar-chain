@@ -122,6 +122,7 @@ input.addEventListener('change', async () => {
             // The local SHA-256 is the canonical document ID. Do not trust a
             // missing/legacy documentId field from an indexer lookup.
             expectedDocumentId: id,
+            verifiedProof: { ...existing, documentId: id, sha256: id.slice(2), status: 'verified' },
             subject: subjectInput.value.trim() || 'On-chain Document Record',
             issuer: issuerInput.value.trim() || existing.issuerWallet,
             documentType: 'Document Verification Record',

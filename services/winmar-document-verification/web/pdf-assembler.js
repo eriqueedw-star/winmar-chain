@@ -26,7 +26,7 @@
       /\/FT\s*\/Sig\b/.test(text) || /\/Type\s*\/Sig\b/.test(text);
   }
 
-  async function build({ file, paymentTransactionHash, expectedDocumentId,
+  async function build({ file, paymentTransactionHash, expectedDocumentId, verifiedProof,
                          subject, issuer, documentType = 'Document Verification Record',
                          rpc }) {
     requireValue(file instanceof File && file.size > 0 && file.size <= MAX_BYTES,
@@ -56,9 +56,11 @@
     // Existing on-chain records may have been paid and registered before this
     // browser session. In that case there is no local payment receipt to reuse;
     // the public lookup still proves the active registration without charging again.
-    const verified = /^0x[0-9a-f]{64}$/i.test(paymentTransactionHash || '')
+    const verified = verifiedProof
+      ? { ...verifiedProof, status: 'verified', documentId, sha256: digest }
+      : /^0x[0-9a-f]{64}$/i.test(paymentTransactionHash || '')
       ? await root.WinmarVerificationProof.check(rpc, documentId, paymentTransactionHash)
-      : await root.WinmarVerificationProof.lookup(rpc).then((record) =>
+      : await root.WinmarVerificationProof.lookup(rpc, documentId).then((record) =>
           record?.status === 'registered' ? { ...record, status: 'verified' } : record);
     requireValue(verified.status === 'verified' && verified.sha256 === digest,
       'On-chain verification is pending, revoked or inconsistent. No certificate issued.');
