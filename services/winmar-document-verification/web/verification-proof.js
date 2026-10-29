@@ -32,8 +32,10 @@
   }
 
   function docId(value) {
-    if (typeof value !== 'string' || !/^0x[0-9a-f]{64}$/i.test(value)) throw new Error('Invalid document ID');
-    return value.toLowerCase();
+    const raw = typeof value === 'string' ? value.trim() : '';
+    const hash = raw.replace(/^0x/i, '');
+    if (!/^[0-9a-f]{64}$/i.test(hash)) throw new Error('Invalid document ID');
+    return `0x${hash.toLowerCase()}`;
   }
 
   function wordAddress(topic) {
