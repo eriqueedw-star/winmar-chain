@@ -102,6 +102,32 @@ input.addEventListener('change', async () => {
     pdfPreview.src = previewUrl;
     documentPreview.hidden = false;
     canIssue();
+    // If this PDF is already registered, continue from the existing on-chain
+    // record instead of forcing a second payment. The original file hash is
+    // still checked again when the certificate is generated.
+    if (window.WinmarVerificationProof?.lookup) {
+      try {
+        const existing = await window.WinmarVerificationProof.lookup(rpc, id);
+        if (version !== fileSelectionVersion) return;
+        if (existing.status === 'registered') {
+          verifiedIssuance = {
+            file, paymentTransactionHash: null,
+            expectedDocumentId: existing.documentId,
+            subject: subjectInput.value.trim() || 'On-chain Document Record',
+            issuer: issuerInput.value.trim() || existing.issuerWallet,
+            documentType: 'Document Verification Record',
+          };
+          certificateDownload.textContent = 'Download Verified PDF';
+          certificateDownload.hidden = false;
+          document.querySelector('#status-value').textContent = 'Already verified on-chain';
+          document.querySelector('#status-value').className = 'status confirmed';
+          issueProgress.hidden = false;
+          issueProgressText.textContent = 'Existing on-chain record found. No new payment is required.';
+        }
+      } catch {
+        // Normal new-document flow remains available when the registry is slow.
+      }
+    }
   } catch {
     if (version !== fileSelectionVersion) return;
     fileStatus.textContent = 'Unable to read PDF. Please select another file.';

@@ -53,7 +53,12 @@
 
     // Re-check current issuer authorization and revocation status at the moment
     // of download, not merely the proof shown earlier in the session.
-    const verified = await root.WinmarVerificationProof.check(rpc, documentId, paymentTransactionHash);
+    // Existing on-chain records may have been paid and registered before this
+    // browser session. In that case there is no local payment receipt to reuse;
+    // the public lookup still proves the active registration without charging again.
+    const verified = /^0x[0-9a-f]{64}$/i.test(paymentTransactionHash || '')
+      ? await root.WinmarVerificationProof.check(rpc, documentId, paymentTransactionHash)
+      : await root.WinmarVerificationProof.lookup(rpc, documentId);
     requireValue(verified.status === 'verified' && verified.sha256 === digest,
       'On-chain verification is pending, revoked or inconsistent. No certificate issued.');
 
