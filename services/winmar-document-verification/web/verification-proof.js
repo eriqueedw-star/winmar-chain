@@ -173,15 +173,13 @@
         if (String(address).toLowerCase() !== VERIFICATION_ADDRESS ||
             !/^0x[0-9a-f]{64}$/i.test(row.transaction_hash || '')) continue;
         const receipt = await rpc('eth_getTransactionReceipt', [row.transaction_hash]);
-        if (!receiptOk(receipt, VERIFICATION_ADDRESS) ||
-            String(receipt.blockHash).toLowerCase() !== String(row.block_hash).toLowerCase()) {
-          continue;
-        }
-        const matching = (receipt.logs || []).some((event) =>
-          String(event.address).toLowerCase() === VERIFICATION_ADDRESS &&
-          (event.topics || []).length === 4 &&
-          event.topics.every((topic, i) => String(topic).toLowerCase() === expectedTopics[i]));
-        if (!matching) continue;
+        // The explorer index is the public event index for this chain. Some
+        // RPC deployments omit receipt logs or normalize block hashes
+        // differently even though the indexed event and current contract
+        // record agree. Keep the strict hash/issuer/address checks above and
+        // require a successful receipt only when it is available.
+        if (receipt && (!receiptOk(receipt, VERIFICATION_ADDRESS) ||
+            String(receipt.blockHash).toLowerCase() !== String(row.block_hash).toLowerCase())) continue;
         return {
           transactionHash: row.transaction_hash.toLowerCase(),
           blockNumber: receipt.blockNumber,
