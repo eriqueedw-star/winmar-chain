@@ -27,6 +27,13 @@ let issuancePending = false;
 let verifiedIssuance = null;
 let pdfDownloadPending = false;
 
+function withTimeout(promise, ms = 30000) {
+  return Promise.race([
+    promise,
+    new Promise((_, reject) => setTimeout(() => reject(new Error('Certificate generation timed out while reading the on-chain record. Refresh and try again.')), ms)),
+  ]);
+}
+
 function canIssue() {
   issueButton.disabled = issuancePending || !(selectedDocumentHash && subjectInput.value.trim());
 }
@@ -267,9 +274,11 @@ certificateDownload.addEventListener('click', async () => {
   certificateDownload.disabled = true;
   certificateDownload.textContent = 'Creating verified PDF…';
   try {
-    const result = await window.WinmarPdfAssembler.build({
+    issueProgress.hidden = false;
+    issueProgressText.textContent = 'Checking the active on-chain record and creating the certificate…';
+    const result = await withTimeout(window.WinmarPdfAssembler.build({
       ...verifiedIssuance, rpc,
-    });
+    }), 45000);
     if (verifiedIssuance.expectedDocumentId !== result.documentId) {
       throw new Error('Document reference changed during PDF generation.');
     }
