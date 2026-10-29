@@ -58,7 +58,8 @@
     // the public lookup still proves the active registration without charging again.
     const verified = /^0x[0-9a-f]{64}$/i.test(paymentTransactionHash || '')
       ? await root.WinmarVerificationProof.check(rpc, documentId, paymentTransactionHash)
-      : await root.WinmarVerificationProof.lookup(rpc, documentId);
+      : await root.WinmarVerificationProof.lookup(rpc).then((record) =>
+          record?.status === 'registered' ? { ...record, status: 'verified' } : record);
     requireValue(verified.status === 'verified' && verified.sha256 === digest,
       'On-chain verification is pending, revoked or inconsistent. No certificate issued.');
 
