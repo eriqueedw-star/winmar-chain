@@ -182,7 +182,9 @@
             String(receipt.blockHash).toLowerCase() !== String(row.block_hash).toLowerCase())) continue;
         return {
           transactionHash: row.transaction_hash.toLowerCase(),
-          blockNumber: receipt.blockNumber,
+          // Explorer rows remain usable when the public RPC omits the
+          // receipt temporarily; the indexed row carries the same block.
+          blockNumber: receipt?.blockNumber || ('0x' + BigInt(row.block_number).toString(16)),
         };
       }
       if (!data.next_page_params) return null;
