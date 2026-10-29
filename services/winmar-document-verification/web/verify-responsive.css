@@ -1,0 +1,29 @@
+.page-shell{max-width:1180px}
+.verification-grid{align-items:start}
+.details-card,.certificate-card{min-width:0;overflow:hidden}
+.record-list dd{min-width:0;word-break:break-word}
+.certificate-frame{width:100%;max-width:650px;margin:0 auto;border-radius:10px;overflow:hidden}
+.certificate-frame img{max-width:100%;height:auto}
+.certificate-actions .button{min-height:46px}
+@media (max-width:980px){
+  .site-header{width:min(100% - 32px,1180px)}
+  .page-shell{width:min(100% - 32px,900px);padding-top:42px}
+  .verification-grid{grid-template-columns:minmax(0,1fr);gap:18px}
+  .certificate-card{order:2}.details-card{order:1}
+}
+@media (max-width:600px){
+  .page-shell{width:calc(100% - 24px);padding:28px 0 44px}
+  .site-header{width:calc(100% - 24px);height:auto;padding:14px 0}
+  .brand strong{font-size:15px}.brand small{font-size:9px}
+  .explorer{font-size:11px;padding:9px 11px}
+  .details-card,.certificate-card{padding:16px;border-radius:12px}
+  .page-shell h1{font-size:34px}.intro{font-size:15px;line-height:1.45}
+  .record-list>div{grid-template-columns:1fr;gap:4px;padding:11px 0}
+  .record-list dd{font-size:12px;line-height:1.4}
+  .certificate-frame{padding:6px;border-radius:8px}
+  .certificate-overlay{inset:6px;padding:12px;font-size:11px}
+  .certificate-actions{display:grid;grid-template-columns:1fr;gap:8px}
+  .certificate-actions .button{width:100%;min-height:44px}
+  .site-footer{width:calc(100% - 24px);grid-template-columns:1fr;padding-top:28px}
+  .footer-brand{grid-column:auto}
+}
