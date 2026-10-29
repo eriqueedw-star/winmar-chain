@@ -1,0 +1,17 @@
+{
+  "type": "WMUSD",
+  "chainId": 12142816,
+  "rpcUrl": "https://rpc.winmarchain.io",
+  "name": "Winmar USD Stablecoin",
+  "symbol": "WMUSD",
+  "decimals": 6,
+  "initialMintCap": "100000000000000",
+  "mintingEnabled": true,
+  "initialPaused": true,
+  "admin": "0x6f6c6a209dc3297021aa3b2b9a63fc6c59577f6f",
+  "minter": "0x0a8E959ED2488EB82CE9EC41499113C73da41975",
+  "burner": "0x01Dbd53F01aA55C38D7b1A8B5e575cd5D6F9DbD9",
+  "pauser": "0x424a1311f90c1D58AC222088c11f15955290A088",
+  "oracle": "0x82DE71c11FE08e0742F646f67f36102c4C971631",
+  "requiresMainnetWalletSignature": true
+}
