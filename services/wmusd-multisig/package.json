@@ -7,7 +7,8 @@
     "compile": "hardhat compile",
     "test": "hardhat test",
     "deploy:winmar": "hardhat run scripts/deploy.js --network winmar",
-    "prepare:deploy-qr": "hardhat run scripts/prepare-deploy-qr.js --network winmar"
+    "prepare:deploy-qr": "hardhat run scripts/prepare-deploy-qr.js --network winmar",
+    "deploy:fixed-oracle": "hardhat run scripts/deploy-fixed-oracle.js --network winmar"
   },
   "devDependencies": {
     "@nomicfoundation/hardhat-toolbox-mocha-ethers": "^4.0.0",
