@@ -119,7 +119,9 @@ input.addEventListener('change', async () => {
         if (existing.status === 'registered') {
           verifiedIssuance = {
             file, paymentTransactionHash: null,
-            expectedDocumentId: existing.documentId,
+            // The local SHA-256 is the canonical document ID. Do not trust a
+            // missing/legacy documentId field from an indexer lookup.
+            expectedDocumentId: id,
             subject: subjectInput.value.trim() || 'On-chain Document Record',
             issuer: issuerInput.value.trim() || existing.issuerWallet,
             documentType: 'Document Verification Record',
