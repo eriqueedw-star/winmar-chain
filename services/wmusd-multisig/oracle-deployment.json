@@ -1,0 +1,11 @@
+{
+  "type": "WinmarFixedPriceOracle",
+  "chainId": 12142816,
+  "rpcUrl": "https://rpc.winmarchain.io",
+  "adminMultisig": "0x6f6c6a209dc3297021aa3b2b9a63fc6c59577f6f",
+  "initialPriceUsd": "2000",
+  "answer": "200000000000",
+  "decimals": 8,
+  "heartbeatSeconds": 86400,
+  "requiresWalletSignature": true
+}
