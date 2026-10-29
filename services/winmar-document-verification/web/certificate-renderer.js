@@ -94,9 +94,11 @@
       const bitmap = offscreen.querySelector('canvas');
       requireState(bitmap && bitmap.width === 110, 'QR generator returned no canvas.');
       // Top-right QR white area INSIDE the ORIGINAL border and label.
+      // The approved master QR starts at (858, 89); clear the complete
+      // inner bitmap so no pixels from the sample QR remain at the right edge.
       ctx.fillStyle = '#ffffff';
-      ctx.fillRect(831, 83, 113, 114);
-      ctx.drawImage(bitmap, 832, 84, 110, 110);
+      ctx.fillRect(855, 86, 116, 116);
+      ctx.drawImage(bitmap, 858, 89, 110, 110);
     } finally {
       offscreen.remove();
     }
@@ -170,7 +172,9 @@
     field(ctx, 347, 1217, 540, 'Winmar Chain Mainnet');
     // The QR contains the complete, canonical verification URL. The printed
     // reference must remain within the owner-locked one-line artwork box.
-    const displayVerificationUrl = `scan.winmarchain.io/verify/${id.slice(0, 12)}…`;
+    // The printed explorer reference must resolve to the on-chain transaction.
+    // The QR remains the public document-verification route above.
+    const displayVerificationUrl = `scan.winmarchain.io/tx/${verified.registrationTransactionHash.slice(0, 12)}…`;
     field(ctx, 347, 1265, 420, displayVerificationUrl, { size: 11, color: '#086cfa' });
     field(ctx, 97, 1377, 254, report, { size: 14, weight: '600' });
     field(ctx, 487, 1377, 151, verified.pageLabel, { size: 15, weight: '600' });

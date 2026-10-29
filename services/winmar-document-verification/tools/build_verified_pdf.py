@@ -279,7 +279,9 @@ def make_certificate_image(master_bytes, evidence, title, subject, page_number):
     code=qr.make_image(fill_color="black",back_color="white").convert("RGBA")
     code=code.resize((110,110),Image.Resampling.NEAREST)
     # The frame, SCAN TO VERIFY label, logo and footer remain from the master.
-    image.paste(code,(831,83))
+    # Replace the complete inner QR bitmap from the approved master.  The
+    # previous coordinates left a strip of the sample QR visible on the right.
+    image.paste(code,(858,89))
     return image
 
 
