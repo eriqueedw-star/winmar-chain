@@ -94,7 +94,7 @@ async function reviewRecords() {
 
 async function findDuplicate(attestationSha256, bankSha256) {
   const records = await reviewRecords();
-  return records.find((record) => record.attestation?.sha256 === attestationSha256 && record.bank?.sha256 === bankSha256) || null;
+  return records.find((record) => record.status !== 'REJECTED' && record.attestation?.sha256 === attestationSha256 && record.bank?.sha256 === bankSha256) || null;
 }
 
 async function writeReview(record) {
