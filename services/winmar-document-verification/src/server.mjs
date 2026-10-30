@@ -92,6 +92,11 @@ async function reviewRecords() {
   return records.sort((a, b) => String(b.submittedAt).localeCompare(String(a.submittedAt)));
 }
 
+async function findDuplicate(attestationSha256, bankSha256) {
+  const records = await reviewRecords();
+  return records.find((record) => record.attestation?.sha256 === attestationSha256 && record.bank?.sha256 === bankSha256) || null;
+}
+
 async function writeReview(record) {
   const folder = path.join(uploadDir, record.reviewId); const temporary = path.join(folder, 'review.json.tmp');
   await fs.writeFile(temporary, JSON.stringify(record, null, 2), { mode: 0o600 }); await fs.rename(temporary, path.join(folder, 'review.json'));
@@ -112,6 +117,10 @@ function route(req, res) {
       const fields = await readMultipart(req);
       if (!fields.attestation || !fields.bank) return json(res, 400, { error: 'both_files_required', requestId: id });
       for (const file of [fields.attestation, fields.bank]) if (file.data.length === 0 || file.data.length > maxBytes || !/\.(pdf|png|jpe?g)$/i.test(file.name)) return json(res, 400, { error: 'invalid_file', requestId: id });
+      const attestationSha256 = crypto.createHash('sha256').update(fields.attestation.data).digest('hex');
+      const bankSha256 = crypto.createHash('sha256').update(fields.bank.data).digest('hex');
+      const duplicate = await findDuplicate(attestationSha256, bankSha256);
+      if (duplicate) return json(res, 200, { ...duplicate, duplicate: true, message: 'This reserve submission is already recorded.' });
       await fs.mkdir(uploadDir, { recursive: true, mode: 0o700 });
       const reviewId = crypto.randomUUID(); const folder = path.join(uploadDir, reviewId); await fs.mkdir(folder, { mode: 0o700 });
       const save = async (file, key) => { const sha256 = crypto.createHash('sha256').update(file.data).digest('hex'); await fs.writeFile(path.join(folder, `${key}-${file.name}`), file.data, { mode: 0o600 }); return { name: file.name, size: file.data.length, sha256 }; };
