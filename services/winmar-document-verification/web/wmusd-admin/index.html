@@ -73,11 +73,11 @@
     </section>
 
     <section class="kpi-strip" aria-label="Treasury key metrics">
-      <article class="kpi-card"><span>TOTAL WMUSD SUPPLY</span><strong>0</strong><small>WMUSD · on-chain feed pending</small><em>—</em></article>
-      <article class="kpi-card"><span>CIRCULATING SUPPLY</span><strong>0</strong><small>WMUSD · indexer feed pending</small><em>—</em></article>
-      <article class="kpi-card"><span>TREASURY RESERVE VALUE</span><strong>—</strong><small>USD · attestation pending</small><em>NOT VERIFIED</em></article>
-      <article class="kpi-card"><span>DAILY MINTED</span><strong>0</strong><small>WMUSD · minting locked</small><em>SAFE</em></article>
-      <article class="kpi-card"><span>DAILY BURNED</span><strong>0</strong><small>WMUSD · burn feed pending</small><em>SAFE</em></article>
+      <article class="kpi-card"><span>TOTAL WMUSD SUPPLY</span><strong id="kpi-total-supply">—</strong><small>WMUSD · live RPC</small><em id="kpi-total-state">LOADING</em></article>
+      <article class="kpi-card"><span>CIRCULATING SUPPLY</span><strong id="kpi-circulating">—</strong><small>WMUSD · live RPC</small><em id="kpi-circulating-state">ON-CHAIN</em></article>
+      <article class="kpi-card"><span>TREASURY RESERVE VALUE</span><strong id="kpi-reserve">—</strong><small>USD · verified feed required</small><em>NOT VERIFIED</em></article>
+      <article class="kpi-card"><span>DAILY MINTED</span><strong id="kpi-daily-minted">—</strong><small>WMUSD · Transfer events</small><em id="kpi-minted-state">LOADING</em></article>
+      <article class="kpi-card"><span>DAILY BURNED</span><strong id="kpi-daily-burned">—</strong><small>WMUSD · Transfer events</small><em id="kpi-burned-state">LOADING</em></article>
     </section>
 
     <section class="command-strip" aria-label="Treasury overview">
@@ -402,6 +402,38 @@
       if (printWindow) { printWindow.document.write(`<html><head><title>${docId}</title><style>body{font:14px monospace;white-space:pre-wrap;padding:40px;color:#102653}h1{font:20px sans-serif}</style></head><body><h1>Winmar Chain — WMUSD Operations Document</h1><pre>${report.replace(/[&<>]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]))}</pre></body></html>`); printWindow.document.close(); printWindow.focus(); setTimeout(() => printWindow.print(), 250); }
     };
     document.querySelector('#generate-document').addEventListener('click', makeOperationDocument);
+    const WMUSD_KPI_CONTRACT = '0x2E2c29D4B2CcF15F74f2D22796DcAa6f5446D2C3';
+    const WMUSD_KPI_RPC = 'https://rpc.winmarchain.io';
+    const TRANSFER_TOPIC = '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef';
+    const ZERO_TOPIC = `0x${'0'.repeat(64)}`;
+    const rpcRead = async (method, params) => { const response = await fetch(WMUSD_KPI_RPC, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ jsonrpc: '2.0', id: Date.now(), method, params }) }); const result = await response.json(); if (!response.ok || result.error) throw new Error(result.error?.message || `RPC ${response.status}`); return result.result; };
+    const formatWmusd = (value) => { const amount = Number(value) / 1e6; return Number.isFinite(amount) ? amount.toLocaleString('en-US', { maximumFractionDigits: 2 }) : '—'; };
+    const sumTransferLogs = (logs) => logs.reduce((sum, log) => sum + BigInt(log.data || '0x0'), 0n);
+    const loadKpis = async () => {
+      const ids = ['kpi-total-supply', 'kpi-daily-minted', 'kpi-daily-burned'];
+      try {
+        const latest = BigInt(await rpcRead('eth_blockNumber', [])); const from = latest > 7200n ? latest - 7200n : 0n;
+        const totalRaw = BigInt(await rpcRead('eth_call', [{ to: WMUSD_KPI_CONTRACT, data: '0x18160ddd' }, 'latest']));
+        const [mintLogs, burnLogs] = await Promise.all([
+          rpcRead('eth_getLogs', [{ address: WMUSD_KPI_CONTRACT, fromBlock: `0x${from.toString(16)}`, toBlock: 'latest', topics: [TRANSFER_TOPIC, ZERO_TOPIC] }]),
+          rpcRead('eth_getLogs', [{ address: WMUSD_KPI_CONTRACT, fromBlock: `0x${from.toString(16)}`, toBlock: 'latest', topics: [TRANSFER_TOPIC, null, ZERO_TOPIC] }])
+        ]);
+        document.querySelector('#kpi-total-supply').textContent = formatWmusd(totalRaw);
+        document.querySelector('#kpi-total-state').textContent = 'LIVE';
+        document.querySelector('#kpi-daily-minted').textContent = formatWmusd(sumTransferLogs(mintLogs));
+        document.querySelector('#kpi-daily-burned').textContent = formatWmusd(sumTransferLogs(burnLogs));
+        document.querySelector('#kpi-minted-state').textContent = 'LAST 7,200 BLOCKS';
+        document.querySelector('#kpi-burned-state').textContent = 'LAST 7,200 BLOCKS';
+      } catch (error) {
+        ids.forEach((id) => { const node = document.getElementById(id); if (node) node.textContent = '—'; });
+        document.querySelector('#kpi-total-state').textContent = 'RPC UNAVAILABLE';
+        document.querySelector('#kpi-minted-state').textContent = 'RPC UNAVAILABLE';
+        document.querySelector('#kpi-burned-state').textContent = 'RPC UNAVAILABLE';
+        console.warn('WMUSD KPI read failed', error);
+      }
+    };
+    loadKpis();
+    setInterval(loadKpis, 60000);
   </script>
 </body>
 </html>
