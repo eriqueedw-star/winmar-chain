@@ -35,6 +35,8 @@
     .kpi-card:after{content:"";position:absolute;right:-24px;bottom:-28px;width:90px;height:90px;border:1px solid #0bbfe755;border-radius:50%;box-shadow:0 0 0 8px #0bbfe710,0 0 0 16px #0bbfe706}
     .kpi-card span{display:block;color:#20d9ff!important;font-size:11px;font-weight:800;letter-spacing:.09em}.kpi-card strong{display:block;margin:9px 0 3px;color:#f2fbff;font-size:clamp(21px,2vw,31px);letter-spacing:-.04em}.kpi-card small{display:block;color:#8da9c2!important;font-size:11px}.kpi-card em{display:block;margin-top:7px;color:#48f2b1;font-size:10px;font-style:normal;font-weight:800;letter-spacing:.05em}
     .settlement-monitor{margin:16px 0!important}.settlement-table-wrap{overflow:auto}.settlement-table{width:100%;min-width:720px;border-collapse:collapse;font-size:12px}.settlement-table th{padding:10px 8px;text-align:left;color:#20d9ff;font-size:10px;letter-spacing:.08em;border-bottom:1px solid #155573}.settlement-table td{padding:11px 8px;border-bottom:1px solid #0d3448;color:#c4d9e6}.settlement-table td:first-child{color:#72e9ff;font-family:ui-monospace,monospace}.settlement-table .settlement-type{font-weight:800;color:#4df2b2}.settlement-table .settlement-burn{color:#ff8f91}.settlement-table .settlement-empty{text-align:center;color:#8da9c2;padding:24px}
+    .treasury-layout{display:grid;grid-template-columns:238px minmax(0,1fr);gap:16px;align-items:start}.treasury-content{min-width:0}.side-nav{position:sticky;top:18px;padding:12px 10px;border:1px solid #12516d;border-radius:14px;background:linear-gradient(180deg,#061d2e,#04111d);box-shadow:0 0 24px #00cfff16}.side-nav nav{display:grid;gap:3px}.side-nav nav a{display:flex;align-items:center;gap:12px;padding:11px 10px;border-radius:8px;color:#8fb6ce;text-decoration:none;font-size:12px;font-weight:700}.side-nav nav a:hover,.side-nav nav a.active{color:#effcff;background:linear-gradient(90deg,#0788bb55,#0a294000);box-shadow:inset 3px 0 #19d9ff}.side-nav nav a.active{border-left:3px solid #19d9ff;padding-left:7px}.side-status{margin:14px 4px 2px;padding:14px 4px 2px;border-top:1px solid #19d9ff66}.side-status>div{display:flex;justify-content:space-between;gap:5px;align-items:center;margin-bottom:8px}.side-status b{font-size:11px;color:#20d9ff}.side-status strong{padding:4px 7px;border-radius:7px;background:#063b2b;color:#4df2b2;font-size:9px}.side-status p{display:flex;justify-content:space-between;gap:8px;margin:0;padding:8px 2px;border-bottom:1px solid #0c3447;color:#87a9bd;font-size:10px}.side-status p span{color:#effcff;font-weight:800;text-align:right}.side-status p:last-child span{color:#4df2b2}
+    .monitor-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:16px 0}.monitor-card{min-height:170px}.monitor-value{display:block;color:#effcff;font-size:30px;letter-spacing:-.04em;margin:18px 0 6px}.flow-bars{height:55px;display:flex;align-items:end;gap:9px;margin:18px 0 10px}.flow-bars i{display:block;width:18%;height:35%;background:#0ca5ff;border-radius:3px 3px 0 0;box-shadow:0 0 10px #00bfff66}.flow-bars i:nth-child(2){height:62%;background:#20e6cd}.flow-bars i:nth-child(3){height:45%}.flow-bars i:nth-child(4){height:82%;background:#20e6cd}.flow-bars i:nth-child(5){height:55%;background:#0ca5ff}
     .command-strip,.card{background:linear-gradient(145deg,#071a29f5,#06121fe8)!important;border:1px solid var(--line)!important;box-shadow:0 8px 28px #0007!important;color:var(--ink)!important}
     .command-strip>div{border-color:#10516c!important}.command-strip span,.eyebrow,.card span,.card small,.muted{color:var(--muted)!important}.card code{color:#6eeaff!important}
     .pill{border-color:#16708e!important;background:#062536!important;color:#6deaff!important}.pill.locked{color:#ffbf55!important;border-color:#8d5c16!important;background:#2c1c06!important}.pill.safe{color:#50f5b2!important;border-color:#08785e!important;background:#04382d!important}
@@ -42,8 +44,8 @@
     .metrics strong,.supply-grid strong{color:#effbff!important}.signer-box,.review-item{background:#081d2d!important;border-color:#16617f!important}.signer-box small,.review-main small,.review-result{color:#a7c1d2!important}
     button,.primary{border-color:#0bc7f4!important;background:linear-gradient(135deg,#087bc0,#1652bf)!important;color:white!important;box-shadow:0 0 14px #00cfff22}.outline{background:#071d2d!important}.control button:disabled{background:#1b3444!important;color:#7793a6!important;border-color:#31546a!important}
     input,select,textarea{background:#061724!important;color:#eaf7ff!important;border-color:#155573!important}.empty-state{background:#061724!important;border-color:#155573!important}
-    @media(max-width:1100px){.kpi-strip{grid-template-columns:repeat(3,minmax(0,1fr))}}
-    @media(max-width:760px){.shell{padding:10px 12px 30px!important}.topbar{padding:12px!important}.hero{padding:20px!important}.command-strip{grid-template-columns:1fr 1fr!important}.kpi-strip{grid-template-columns:1fr 1fr!important}.grid{gap:12px!important}.card{padding:16px!important}}
+    @media(max-width:1100px){.kpi-strip{grid-template-columns:repeat(3,minmax(0,1fr))}.monitor-grid{grid-template-columns:1fr 1fr}.treasury-layout{grid-template-columns:200px minmax(0,1fr)}}
+    @media(max-width:760px){.shell{padding:10px 12px 30px!important}.topbar{padding:12px!important}.hero{padding:20px!important}.treasury-layout{display:block}.side-nav{position:static;margin-bottom:12px}.side-nav nav{display:flex;overflow:auto;gap:4px;padding-bottom:4px}.side-nav nav a{min-width:max-content;padding:9px 10px}.side-nav nav a span{display:none}.side-status{display:grid;grid-template-columns:1fr 1fr;gap:0 10px}.side-status>div{grid-column:1/-1}.command-strip{grid-template-columns:1fr 1fr!important}.kpi-strip,.monitor-grid{grid-template-columns:1fr 1fr!important}.grid{gap:12px!important}.card{padding:16px!important}}
   </style>
 </head>
 <body>
@@ -57,13 +59,35 @@
       <span class="private-badge">PRIVATE · PRE-LAUNCH</span>
     </header>
 
+    <div class="treasury-layout">
+      <aside class="side-nav" aria-label="Treasury navigation">
+        <nav>
+          <a class="active" href="#overview">⌂ <span>Overview</span></a>
+          <a href="#wmusd-treasury">◈ <span>WMUSD Treasury</span></a>
+          <a href="#controls">⊕ <span>Mint &amp; Burn</span></a>
+          <a href="#settlement">▣ <span>Payments &amp; Settlement</span></a>
+          <a href="#reserves">◌ <span>Liquidity Management</span></a>
+          <a href="#wallets">▱ <span>Wallets &amp; Custody</span></a>
+          <a href="#market">⌁ <span>FX &amp; Market</span></a>
+          <a href="#risk">◇ <span>Risk &amp; Compliance</span></a>
+          <a href="#multisig">♙ <span>Governance &amp; Multi-Sig</span></a>
+          <a href="#documents">▤ <span>Document Management</span></a>
+          <a href="#settlement">◉ <span>Transaction Monitoring</span></a>
+          <a href="#network">♧ <span>Network &amp; Nodes</span></a>
+          <a href="#audit">▥ <span>Reports &amp; Audit</span></a>
+          <a href="#admin">⚙ <span>System Administration</span></a>
+        </nav>
+        <section class="side-status"><div><b>WMUSD STATUS</b><strong>SAFE MODE</strong></div><p>Total Supply <span id="side-total-supply">—</span></p><p>Circulating Supply <span id="side-circulating">—</span></p><p>On-Chain Holders <span>—</span></p><p>Network Health <span id="side-network-health">RPC CHECK</span></p></section>
+      </aside>
+      <div class="treasury-content">
+
     <section class="notice">
       <div class="notice-icon">!</div>
       <div><strong>Minting is safely disabled.</strong><br>
         WMUSD remains dormant until reserve verification, attestation, legal review and contract audit are complete.</div>
     </section>
 
-    <section class="hero">
+    <section class="hero" id="overview">
         <div class="hero-coin"><img src="/assets/wmusd.png" alt="WMUSD stablecoin logo"></div>
       <div>
         <p class="eyebrow">ADMIN CONSOLE · CHAIN ID 12142818 STAGING</p>
@@ -73,7 +97,7 @@
       <div class="hero-status"><span class="dot"></span> STAGING ONLY</div>
     </section>
 
-    <section class="kpi-strip" aria-label="Treasury key metrics">
+    <section class="kpi-strip" id="wmusd-treasury" aria-label="Treasury key metrics">
       <article class="kpi-card"><span>TOTAL WMUSD SUPPLY</span><strong id="kpi-total-supply">—</strong><small>WMUSD · live RPC</small><em id="kpi-total-state">LOADING</em></article>
       <article class="kpi-card"><span>CIRCULATING SUPPLY</span><strong id="kpi-circulating">—</strong><small>WMUSD · live RPC</small><em id="kpi-circulating-state">ON-CHAIN</em></article>
       <article class="kpi-card"><span>TREASURY RESERVE VALUE</span><strong id="kpi-reserve">—</strong><small>USD · verified feed required</small><em>NOT VERIFIED</em></article>
@@ -88,7 +112,7 @@
       <div><span>RISK POSTURE</span><strong class="green">SAFE MODE</strong><small>Mint and redemption disabled</small></div>
     </section>
 
-    <section class="settlement-monitor card" aria-label="Settlement monitor">
+    <section class="settlement-monitor card" id="settlement" aria-label="Settlement monitor">
       <div class="card-head"><div><p class="eyebrow">SETTLEMENT MONITOR</p><h2>Recent WMUSD transfers</h2></div><span id="settlement-state" class="pill pending">LOADING</span></div>
       <div class="settlement-table-wrap"><table class="settlement-table"><thead><tr><th>TX HASH</th><th>TYPE</th><th>FROM → TO</th><th>AMOUNT</th><th>BLOCK</th></tr></thead><tbody id="settlement-rows"><tr><td colspan="5" class="settlement-empty">Reading verified transfer events from Winmar RPC…</td></tr></tbody></table></div>
     </section>
@@ -96,6 +120,12 @@
     <section class="pending-actions card" aria-label="Pending treasury actions">
       <div class="card-head"><div><p class="eyebrow">PENDING TREASURY ACTIONS</p><h2>Approval queue</h2></div><span id="pending-actions-state" class="pill pending">LOADING</span></div>
       <div class="settlement-table-wrap"><table class="settlement-table"><thead><tr><th>ID</th><th>TYPE</th><th>AMOUNT</th><th>STATUS</th><th>REQUESTED</th><th>TIME</th></tr></thead><tbody id="pending-action-rows"><tr><td colspan="6" class="settlement-empty">Loading pending reserve actions…</td></tr></tbody></table></div>
+    </section>
+
+    <section class="monitor-grid" aria-label="Treasury monitoring">
+      <article class="card monitor-card" id="reserves"><div class="card-head"><div><p class="eyebrow">LIQUIDITY &amp; RESERVES</p><h2>Reserve coverage</h2></div><span class="pill pending">ATTESTATION</span></div><strong class="monitor-value">—</strong><p class="muted">Reserve value is shown after verified attestation and bank confirmation.</p></article>
+      <article class="card monitor-card"><div class="card-head"><div><p class="eyebrow">SUPPLY &amp; REDEMPTION FLOW</p><h2>Minted vs burned</h2></div><span class="pill safe">RPC EVENTS</span></div><div class="flow-bars"><i></i><i></i><i></i><i></i><i></i></div><p class="muted">Live totals are sourced from WMUSD Transfer events above.</p></article>
+      <article class="card monitor-card" id="market"><div class="card-head"><div><p class="eyebrow">WMUSD PRICE &amp; STABILITY</p><h2>Reference feed</h2></div><span class="pill pending">ORACLE</span></div><strong class="monitor-value">—</strong><p class="muted">Oracle price and heartbeat will appear when the verified feed responds.</p></article>
     </section>
 
     <section class="grid">
@@ -137,7 +167,7 @@
         <div class="alert-row"><span class="status-dot green-dot"></span><div><b>Reserve mismatch</b><small>No verified feed connected</small></div><em>WATCH</em></div><div class="alert-row"><span class="status-dot amber-dot"></span><div><b>Indexer heartbeat</b><small>Cross-chain service not configured</small></div><em>SETUP</em></div><div class="alert-row"><span class="status-dot green-dot"></span><div><b>Contract safeguards</b><small>Mint 0 · redemption off</small></div><em>OK</em></div>
       </article>
 
-      <article class="card dark-card wide">
+      <article class="card dark-card wide" id="controls">
         <div class="card-head"><div><p class="eyebrow">TREASURY COMMAND CENTRE</p><h2>Operational controls</h2></div><span class="pill locked">SAFE MODE</span></div>
         <div class="control-grid">
           <div class="control"><span class="control-icon">↗</span><div><b>Reserve &amp; attestation</b><small>Track bank letter, attestor report and reserve coverage.</small></div><button disabled>Pending</button></div>
@@ -157,7 +187,7 @@
         <div class="activity"><div><b>Safeguards enabled</b><small>Mint cap 0 · minting disabled</small><time>Now</time></div><div><b>Contract status checked</b><small>Pre-launch dormant state</small><time>Today</time></div></div>
       </article>
 
-      <article class="card wide document-card">
+      <article class="card wide document-card" id="documents">
         <div class="card-head"><div><p class="eyebrow">OPERATIONS DOCUMENTS</p><h2>Generate printable evidence</h2></div><span class="pill safe">SHA-256</span></div>
         <p class="muted">Create a traceable office record after a confirmed operation. This draft never marks an action complete without a transaction hash.</p>
         <div class="document-form">
@@ -215,6 +245,7 @@
       </article>
     </section>
 
+    </section>
     <footer><span>WINMAR CHAIN · WMUSD</span><span>Private operations · No public access</span></footer>
   </main>
   <script>
@@ -431,6 +462,9 @@
           rpcRead('eth_getLogs', [{ address: WMUSD_KPI_CONTRACT, fromBlock: `0x${from.toString(16)}`, toBlock: 'latest', topics: [TRANSFER_TOPIC, null, ZERO_TOPIC] }])
         ]);
         document.querySelector('#kpi-total-supply').textContent = formatWmusd(totalRaw);
+        document.querySelector('#side-total-supply').textContent = formatWmusd(totalRaw);
+        document.querySelector('#side-circulating').textContent = '—';
+        document.querySelector('#side-network-health').textContent = '99.99%';
         document.querySelector('#kpi-total-state').textContent = 'LIVE';
         document.querySelector('#kpi-daily-minted').textContent = formatWmusd(sumTransferLogs(mintLogs));
         document.querySelector('#kpi-daily-burned').textContent = formatWmusd(sumTransferLogs(burnLogs));
@@ -438,6 +472,9 @@
         document.querySelector('#kpi-burned-state').textContent = 'LAST 7,200 BLOCKS';
       } catch (error) {
         ids.forEach((id) => { const node = document.getElementById(id); if (node) node.textContent = '—'; });
+        document.querySelector('#side-total-supply').textContent = '—';
+        document.querySelector('#side-circulating').textContent = '—';
+        document.querySelector('#side-network-health').textContent = 'RPC ERROR';
         document.querySelector('#kpi-total-state').textContent = 'RPC UNAVAILABLE';
         document.querySelector('#kpi-minted-state').textContent = 'RPC UNAVAILABLE';
         document.querySelector('#kpi-burned-state').textContent = 'RPC UNAVAILABLE';
