@@ -79,6 +79,24 @@ async function readMultipart(req) {
   return fields;
 }
 
+async function readJson(req) {
+  const chunks = []; let total = 0;
+  for await (const chunk of req) { total += chunk.length; if (total > 256 * 1024) throw Object.assign(new Error('payload_too_large'), { status: 413 }); chunks.push(chunk); }
+  return JSON.parse(Buffer.concat(chunks).toString('utf8') || '{}');
+}
+
+async function reviewRecords() {
+  await fs.mkdir(uploadDir, { recursive: true, mode: 0o700 });
+  const entries = await fs.readdir(uploadDir, { withFileTypes: true }); const records = [];
+  for (const entry of entries) if (entry.isDirectory()) try { records.push(JSON.parse(await fs.readFile(path.join(uploadDir, entry.name, 'review.json'), 'utf8'))); } catch {}
+  return records.sort((a, b) => String(b.submittedAt).localeCompare(String(a.submittedAt)));
+}
+
+async function writeReview(record) {
+  const folder = path.join(uploadDir, record.reviewId); const temporary = path.join(folder, 'review.json.tmp');
+  await fs.writeFile(temporary, JSON.stringify(record, null, 2), { mode: 0o600 }); await fs.rename(temporary, path.join(folder, 'review.json'));
+}
+
 function route(req, res) {
   const id = requestId(req);
   res.setHeader('x-request-id', id);
@@ -101,6 +119,22 @@ function route(req, res) {
       await fs.writeFile(path.join(folder, 'review.json'), JSON.stringify(record, null, 2), { mode: 0o600 });
       return json(res, 201, record);
     }).catch((error) => json(res, error.status || 500, { error: error.message === 'payload_too_large' ? 'payload_too_large' : 'upload_failed', requestId: id }));
+  }
+  if (url.pathname === '/api/wmusd/reserve-review' || url.pathname.startsWith('/api/wmusd/reserve-review/')) {
+    return authenticateCognito(req).then(async (ok) => {
+      if (!ok) return json(res, 401, { error: 'unauthorized', message: 'Valid admin identity token required.', requestId: id });
+      if (req.method === 'GET') return json(res, 200, { reviews: await reviewRecords() });
+      const match = url.pathname.match(/^\/api\/wmusd\/reserve-review\/([^/]+)\/decision$/);
+      if (req.method !== 'POST' || !match) return json(res, 405, { error: 'method_not_allowed', requestId: id });
+      const record = (await reviewRecords()).find((item) => item.reviewId === match[1]);
+      if (!record) return json(res, 404, { error: 'review_not_found', requestId: id });
+      const body = await readJson(req); const decision = String(body.decision || '').toUpperCase();
+      if (!['APPROVED', 'REJECTED'].includes(decision)) return json(res, 400, { error: 'invalid_decision', requestId: id });
+      const capacity = body.capacityWmusd === undefined || body.capacityWmusd === '' ? 0 : Number(body.capacityWmusd);
+      if (!Number.isFinite(capacity) || capacity < 0 || capacity > 100000000) return json(res, 400, { error: 'invalid_capacity', requestId: id });
+      record.status = decision; record.verifiedCapacityWmusd = decision === 'APPROVED' ? capacity : 0; record.reviewedAt = new Date().toISOString(); record.reviewNote = String(body.note || '').slice(0, 1000);
+      await writeReview(record); return json(res, 200, record);
+    }).catch((error) => json(res, error.status || 500, { error: error.message === 'payload_too_large' ? 'payload_too_large' : 'review_failed', requestId: id }));
   }
   if (!process.env.API_KEY_PEPPER) return json(res, 503, { error: 'service_not_configured', requestId: id });
   const auth = authenticate(req);

@@ -11,6 +11,7 @@
   <link rel="stylesheet" href="treasury.css?v=reconciliation-1">
   <link rel="stylesheet" href="documents.css?v=sha256-1">
   <style>.hero-coin{flex:0 0 132px;height:132px;border-radius:50%;padding:7px;background:#071a3caa;box-shadow:0 8px 22px #00183c66}.hero-coin img{width:100%;height:100%;object-fit:contain;border-radius:50%}.brand .tagline{font-size:11px;line-height:1.25;margin-top:1px}.auth-gate{position:fixed;inset:0;z-index:10;display:grid;place-items:center;padding:20px;background:#071a3cf2}.auth-card{width:min(100%,430px);background:#fff;border-radius:20px;padding:30px;box-shadow:0 24px 70px #0008}.auth-card>img{width:66px;height:66px;object-fit:cover;border-radius:50%;mix-blend-mode:multiply;background:transparent;margin-bottom:12px}.auth-card h1{margin:4px 0 10px;color:#102653}.auth-card label{display:block;color:#6b7d9d;font-size:12px;font-weight:700;margin:14px 0}.auth-card input{display:block;width:100%;margin-top:6px;padding:12px;border:1px solid #dce6f5;border-radius:10px}.auth-card .primary{width:100%;padding:12px;border:0;border-radius:10px;background:#1978ed;color:#fff;font-weight:800}.auth-card small{display:block;color:#8492a8;font-size:11px;margin-top:16px}@media(max-width:700px){.hero-coin{width:96px;height:96px;margin-bottom:18px}}</style>
+  <style>.multisig-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}.signer-box{display:grid;gap:8px;padding:16px;border:1px solid #dce6f5;border-radius:14px;background:#f8fbff}.signer-box small{color:#6b7d9d;word-break:break-all}.review-queue{display:grid;gap:12px}.review-item{display:grid;grid-template-columns:minmax(0,1fr) minmax(260px,340px);gap:18px;padding:16px;border:1px solid #dce6f5;border-radius:14px;background:#f8fbff}.review-main{display:grid;gap:6px}.review-main>b{color:#102653;word-break:break-all}.review-main small,.review-result{color:#6b7d9d;word-break:break-word}.review-actions{display:grid;gap:8px;align-content:start}.review-actions input{width:100%;padding:11px;border:1px solid #dce6f5;border-radius:9px}.review-actions button{padding:10px}.review-result{display:block;grid-column:2}@media(max-width:760px){.multisig-grid,.review-item{grid-template-columns:1fr}.review-result{grid-column:1}}</style>
 </head>
 <body>
   <section class="auth-gate" aria-label="Private admin sign in"><div class="auth-card"><img src="/assets/wmusd.png" alt="WMUSD"><p class="eyebrow">PRIVATE OPERATIONS</p><h1>WMUSD Admin access</h1><p class="muted">Sign in through the secured Winmar identity service. Cognito will request the team password and authenticator code when MFA is enrolled.</p><button id="auth-login" class="primary" type="button">Continue securely</button><small>Private pre-launch console · wallet role verification remains required after sign-in.</small></div></section>
@@ -51,17 +52,17 @@
         <div class="card-head"><div><p class="eyebrow">CONTRACT STATUS</p><h2>Pre-launch safeguards</h2></div><span class="pill locked">LOCKED</span></div>
         <div class="metrics">
           <div><span>Minting</span><strong class="red">Disabled</strong></div>
-          <div><span>Mint cap</span><strong>0 WMUSD</strong></div>
+          <div><span>Mint cap</span><strong>100,000,000 WMUSD</strong></div>
           <div><span>Supply</span><strong>0 WMUSD</strong></div>
           <div><span>Public sale</span><strong class="red">Off</strong></div>
         </div>
-        <p class="muted">Contract <code>0xE9f1…08252</code> · WMUSD · 6 decimals</p>
+        <p class="muted">Contract <code>0x2E2c…D2C3</code> · WMUSD · 6 decimals · Oracle <code>0x82DE…1631</code></p>
       </article>
 
       <article class="card wide">
         <div class="card-head"><div><p class="eyebrow">SUPPLY RECONCILIATION</p><h2>WMUSD circulation map</h2></div><span class="pill pending">INDEXER PENDING</span></div>
         <div class="supply-grid">
-          <div><span>Winmar Chain supply</span><strong>0 WMUSD</strong><small>On-chain totalSupply()</small></div>
+          <div><span>Winmar Chain supply</span><strong>0 WMUSD</strong><small>On-chain totalSupply() · Mainnet</small></div>
           <div><span>External-chain supply</span><strong>—</strong><small>Requires bridge/indexer feeds</small></div>
           <div><span>Treasury custody</span><strong>—</strong><small>Custodian API not connected</small></div>
           <div><span>Redeemed / burned</span><strong>0 WMUSD</strong><small>Burn event ledger</small></div>
@@ -129,6 +130,19 @@
         <label>Reserve reference<input placeholder="Attestation ID / bank confirmation hash" disabled></label>
         <label>Verified capacity<input placeholder="0 WMUSD" disabled></label>
         <button class="primary" disabled>Awaiting verification</button>
+      </article>
+
+      <article class="card wide" id="review-queue-card">
+        <div class="card-head"><div><p class="eyebrow">ADMIN REVIEW</p><h2>Reserve submissions</h2></div><span class="pill pending" id="review-count">Loading</span></div>
+        <p class="muted" id="review-queue-status">Loading reserve submissions…</p>
+        <div id="review-queue" class="review-queue"></div>
+      </article>
+
+      <article class="card wide" id="multisig-review-card">
+        <div class="card-head"><div><p class="eyebrow">MULTISIG REVIEW</p><h2>Two-signer approval</h2></div><span class="pill pending" id="multisig-count">0 / 2 CONNECTED</span></div>
+        <p class="muted">Connect each approved external signer wallet separately. Both signers must be connected before an approval action is enabled.</p>
+        <div class="multisig-grid"><div class="signer-box"><b>Signer 1</b><small id="signer-1-address">Not connected</small><button class="outline" id="connect-signer-1" type="button">Connect signer 1</button></div><div class="signer-box"><b>Signer 2</b><small id="signer-2-address">Not connected</small><button class="outline" id="connect-signer-2" type="button">Connect signer 2</button></div></div>
+        <p class="muted" id="multisig-status">No signer session connected.</p>
       </article>
 
       <article class="card">
@@ -235,6 +249,29 @@
     const reserveStatus = document.querySelector('#reserve-upload-status');
     const reserveButton = document.querySelector('#submit-reserve-review');
     const reserveApiUrl = '/api/wmusd/reserve-review';
+    const reviewQueue = document.querySelector('#review-queue');
+    const reviewQueueStatus = document.querySelector('#review-queue-status');
+    const reviewCount = document.querySelector('#review-count');
+    const APPROVED_REVIEW_SIGNERS = ['0x2a94dfdbaf51c71f5e554260d56fff14fee43624', '0xf66287c43eb62f238c33393b4c29da19001e97f'];
+    const signerAddresses = [null, null];
+    const signerButtons = [document.querySelector('#connect-signer-1'), document.querySelector('#connect-signer-2')];
+    const signerLabels = [document.querySelector('#signer-1-address'), document.querySelector('#signer-2-address')];
+    const multisigCount = document.querySelector('#multisig-count');
+    const multisigStatus = document.querySelector('#multisig-status');
+    const shortAddress = (value) => value ? `${value.slice(0, 8)}…${value.slice(-6)}` : 'Not connected';
+    const updateMultisig = () => { const connected = signerAddresses.filter(Boolean).length; multisigCount.textContent = `${connected} / 2 CONNECTED`; multisigCount.className = `pill ${connected === 2 ? 'safe' : 'pending'}`; multisigStatus.textContent = connected === 2 ? 'Both external signer wallets connected. Review approval can proceed to the multisig signing step.' : 'Connect both approved external signer wallets.'; document.querySelectorAll('.review-approve').forEach((button) => { button.disabled = connected !== 2; }); };
+    const connectSigner = async (index) => { if (!window.ethereum) { multisigStatus.textContent = 'No external EVM wallet detected. Open MetaMask/SafePal.'; return; } const button = signerButtons[index]; button.disabled = true; try { const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' }); const address = accounts?.[0]; if (!address) throw new Error('No wallet account selected.'); const chainId = (await window.ethereum.request({ method: 'eth_chainId' })).toLowerCase(); if (chainId !== WINMAR_CHAIN_ID) throw new Error('Switch wallet to Winmar Chain Mainnet (Chain ID 12142816).'); if (address.toLowerCase() !== APPROVED_REVIEW_SIGNERS[index]) throw new Error(`Wrong signer selected. Connect the approved Signer ${index + 1} wallet.`); signerAddresses[index] = address; signerLabels[index].textContent = shortAddress(address); button.textContent = `Signer ${index + 1} connected`; updateMultisig(); } catch (error) { multisigStatus.textContent = error.message || 'Signer connection failed.'; } finally { button.disabled = false; } };
+    signerButtons.forEach((button, index) => button.addEventListener('click', () => connectSigner(index)));
+    const authHeaders = () => { const token = sessionStorage.getItem('wmusd_id_token'); return token ? { Authorization: `Bearer ${token}` } : {}; };
+    const escapeHtml = (value) => String(value ?? '').replace(/[&<>"']/g, (char) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[char]));
+    const renderReviews = (reviews) => {
+      reviewCount.textContent = `${reviews.filter((item) => item.status === 'PENDING_REVIEW').length} OPEN`;
+      if (!reviews.length) { reviewQueue.innerHTML = '<div class="empty-state"><b>No reserve submissions</b><small>Uploaded attestation and bank confirmation files will appear here.</small></div>'; return; }
+      reviewQueue.innerHTML = reviews.map((item) => `<div class="review-item" data-review-id="${escapeHtml(item.reviewId)}"><div class="review-main"><b>${escapeHtml(item.reviewId)}</b><span class="pill ${item.status === 'APPROVED' ? 'safe' : item.status === 'REJECTED' ? 'locked' : 'pending'}">${escapeHtml(item.status)}</span><small>${escapeHtml(new Date(item.submittedAt).toLocaleString())}</small><small>Attestation: ${escapeHtml(item.attestation?.name)} · SHA-256 ${escapeHtml(item.attestation?.sha256)}</small><small>Bank: ${escapeHtml(item.bank?.name)} · SHA-256 ${escapeHtml(item.bank?.sha256)}</small></div>${item.status === 'PENDING_REVIEW' ? `<div class="review-actions"><input class="review-capacity" type="number" min="0" max="100000000" step="0.000001" placeholder="Capacity WMUSD"><input class="review-note" type="text" maxlength="1000" placeholder="Review note (optional)"><button class="primary review-approve" type="button">Approve</button><button class="outline review-reject" type="button">Reject</button></div>` : `<small class="review-result">Capacity: ${escapeHtml(item.verifiedCapacityWmusd || 0)} WMUSD · ${escapeHtml(item.reviewNote || 'No note')}</small>`}</div>`).join('');
+    };
+    const loadReviews = async () => { try { const response = await fetch(reserveApiUrl, { headers: authHeaders(), credentials: 'include' }); const result = await response.json(); if (!response.ok) throw new Error(result.message || result.error || `Load failed (${response.status})`); renderReviews(result.reviews || []); updateMultisig(); reviewQueueStatus.textContent = 'Review locally stored submissions before any mint action.'; } catch (error) { reviewQueueStatus.textContent = `Review queue unavailable: ${error.message}`; reviewCount.textContent = 'ERROR'; } };
+    const decideReview = async (button, decision) => { const item = button.closest('.review-item'); const capacity = item.querySelector('.review-capacity')?.value || 0; const note = item.querySelector('.review-note')?.value || ''; button.disabled = true; try { const response = await fetch(`${reserveApiUrl}/${item.dataset.reviewId}/decision`, { method: 'POST', headers: { ...authHeaders(), 'content-type': 'application/json' }, body: JSON.stringify({ decision, capacityWmusd: capacity, note }), credentials: 'include' }); const result = await response.json(); if (!response.ok) throw new Error(result.message || result.error || `Decision failed (${response.status})`); await loadReviews(); } catch (error) { reviewQueueStatus.textContent = `Decision failed: ${error.message}`; button.disabled = false; } };
+    reviewQueue.addEventListener('click', (event) => { const button = event.target.closest('button'); if (button) decideReview(button, button.classList.contains('review-approve') ? 'APPROVED' : 'REJECTED'); });
     const maxReserveBytes = 10 * 1024 * 1024;
     const setReserveStatus = (message, kind = '') => {
       reserveStatus.textContent = message;
@@ -250,6 +287,7 @@
       }
     };
     restoreReserveDraft();
+    window.addEventListener('load', loadReviews);
     reserveButton.addEventListener('click', async () => {
       const attestation = document.querySelector('#reserve-attestation').files[0];
       const bank = document.querySelector('#reserve-bank').files[0];
