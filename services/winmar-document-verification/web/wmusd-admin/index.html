@@ -34,6 +34,7 @@
     .kpi-card{position:relative;min-height:118px;padding:16px 17px;border:1px solid #12617f;border-radius:12px;background:linear-gradient(145deg,#071e31,#061522);box-shadow:0 0 18px #00cfff14,inset 0 0 22px #0077aa12;overflow:hidden}
     .kpi-card:after{content:"";position:absolute;right:-24px;bottom:-28px;width:90px;height:90px;border:1px solid #0bbfe755;border-radius:50%;box-shadow:0 0 0 8px #0bbfe710,0 0 0 16px #0bbfe706}
     .kpi-card span{display:block;color:#20d9ff!important;font-size:11px;font-weight:800;letter-spacing:.09em}.kpi-card strong{display:block;margin:9px 0 3px;color:#f2fbff;font-size:clamp(21px,2vw,31px);letter-spacing:-.04em}.kpi-card small{display:block;color:#8da9c2!important;font-size:11px}.kpi-card em{display:block;margin-top:7px;color:#48f2b1;font-size:10px;font-style:normal;font-weight:800;letter-spacing:.05em}
+    .settlement-monitor{margin:16px 0!important}.settlement-table-wrap{overflow:auto}.settlement-table{width:100%;min-width:720px;border-collapse:collapse;font-size:12px}.settlement-table th{padding:10px 8px;text-align:left;color:#20d9ff;font-size:10px;letter-spacing:.08em;border-bottom:1px solid #155573}.settlement-table td{padding:11px 8px;border-bottom:1px solid #0d3448;color:#c4d9e6}.settlement-table td:first-child{color:#72e9ff;font-family:ui-monospace,monospace}.settlement-table .settlement-type{font-weight:800;color:#4df2b2}.settlement-table .settlement-burn{color:#ff8f91}.settlement-table .settlement-empty{text-align:center;color:#8da9c2;padding:24px}
     .command-strip,.card{background:linear-gradient(145deg,#071a29f5,#06121fe8)!important;border:1px solid var(--line)!important;box-shadow:0 8px 28px #0007!important;color:var(--ink)!important}
     .command-strip>div{border-color:#10516c!important}.command-strip span,.eyebrow,.card span,.card small,.muted{color:var(--muted)!important}.card code{color:#6eeaff!important}
     .pill{border-color:#16708e!important;background:#062536!important;color:#6deaff!important}.pill.locked{color:#ffbf55!important;border-color:#8d5c16!important;background:#2c1c06!important}.pill.safe{color:#50f5b2!important;border-color:#08785e!important;background:#04382d!important}
@@ -85,6 +86,11 @@
       <div><span>OPERATIONS</span><strong class="amber">PRE-LAUNCH</strong><small>All issuance gates locked</small></div>
       <div><span>RESERVE STATUS</span><strong class="amber">AWAITING ATTESTATION</strong><small>Bank confirmation pending</small></div>
       <div><span>RISK POSTURE</span><strong class="green">SAFE MODE</strong><small>Mint and redemption disabled</small></div>
+    </section>
+
+    <section class="settlement-monitor card" aria-label="Settlement monitor">
+      <div class="card-head"><div><p class="eyebrow">SETTLEMENT MONITOR</p><h2>Recent WMUSD transfers</h2></div><span id="settlement-state" class="pill pending">LOADING</span></div>
+      <div class="settlement-table-wrap"><table class="settlement-table"><thead><tr><th>TX HASH</th><th>TYPE</th><th>FROM → TO</th><th>AMOUNT</th><th>BLOCK</th></tr></thead><tbody id="settlement-rows"><tr><td colspan="5" class="settlement-empty">Reading verified transfer events from Winmar RPC…</td></tr></tbody></table></div>
     </section>
 
     <section class="grid">
@@ -434,6 +440,21 @@
     };
     loadKpis();
     setInterval(loadKpis, 60000);
+    const topicAddress = (topic) => topic ? `0x${topic.slice(-40)}` : '—';
+    const shortHash = (value) => value ? `${value.slice(0, 10)}…${value.slice(-8)}` : '—';
+    const loadSettlement = async () => {
+      const rows = document.querySelector('#settlement-rows'); const state = document.querySelector('#settlement-state');
+      try {
+        const latest = BigInt(await rpcRead('eth_blockNumber', [])); const from = latest > 7200n ? latest - 7200n : 0n;
+        const logs = await rpcRead('eth_getLogs', [{ address: WMUSD_KPI_CONTRACT, fromBlock: `0x${from.toString(16)}`, toBlock: 'latest', topics: [TRANSFER_TOPIC] }]);
+        const recent = logs.slice(-8).reverse();
+        if (!recent.length) { rows.innerHTML = '<tr><td colspan="5" class="settlement-empty">No indexed WMUSD settlement events found.</td></tr>'; state.textContent = 'NO EVENTS'; state.className = 'pill pending'; return; }
+        rows.innerHTML = recent.map((log) => { const fromAddress = topicAddress(log.topics?.[1]), toAddress = topicAddress(log.topics?.[2]); const isMint = fromAddress.toLowerCase() === ZERO_TOPIC.slice(0, 42); const isBurn = toAddress.toLowerCase() === ZERO_TOPIC.slice(0, 42); const type = isMint ? 'MINT' : isBurn ? 'BURN' : 'TRANSFER'; return `<tr><td title="${escapeHtml(log.transactionHash)}">${escapeHtml(shortHash(log.transactionHash))}</td><td class="${isBurn ? 'settlement-burn' : 'settlement-type'}">${type}</td><td>${escapeHtml(shortHash(fromAddress))} → ${escapeHtml(shortHash(toAddress))}</td><td>${escapeHtml(formatWmusd(BigInt(log.data || '0x0')))} WMUSD</td><td>${escapeHtml(BigInt(log.blockNumber).toString())}</td></tr>`; }).join('');
+        state.textContent = `${recent.length} EVENTS`; state.className = 'pill safe';
+      } catch (error) { rows.innerHTML = '<tr><td colspan="5" class="settlement-empty">Settlement feed unavailable. Check RPC/indexer health.</td></tr>'; state.textContent = 'UNAVAILABLE'; state.className = 'pill locked'; console.warn('Settlement monitor read failed', error); }
+    };
+    loadSettlement();
+    setInterval(loadSettlement, 60000);
   </script>
 </body>
 </html>
