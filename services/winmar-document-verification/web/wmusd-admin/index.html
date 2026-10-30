@@ -97,11 +97,11 @@
     <section class="hero" id="overview">
         <div class="hero-coin"><img src="/assets/wmusd.png" alt="WMUSD stablecoin logo"></div>
       <div>
-        <p class="eyebrow">ADMIN CONSOLE · CHAIN ID 12142818 STAGING</p>
+        <p class="eyebrow">ADMIN CONSOLE · CHAIN ID 12142816 MAINNET</p>
         <h1>WMUSD<br><span>Treasury Room</span></h1>
         <p class="lede">A private operations surface for reserve-backed issuance controls. No public minting or sale is available from this draft.</p>
       </div>
-      <div class="hero-status"><span class="dot"></span> STAGING ONLY</div>
+      <div class="hero-status"><span class="dot"></span> MAINNET LIVE</div>
     </section>
 
     <section class="kpi-strip" id="wmusd-treasury" aria-label="Treasury key metrics">
@@ -171,7 +171,7 @@
 
       <article class="card">
         <div class="card-head"><div><p class="eyebrow">CROSS-CHAIN MONITOR</p><h2>Supported routes</h2></div><span class="pill pending">NOT CONFIGURED</span></div>
-        <div class="route"><b>Origin chain</b><span>—</span><small>Bridge event source pending</small></div><div class="route"><b>Winmar Chain</b><span>Chain ID 12142818 staging</span><small>WMUSD contract monitor ready</small></div><div class="route"><b>Settlement</b><span>—</span><small>Redemption release endpoint pending</small></div>
+        <div class="route"><b>Origin chain</b><span>—</span><small>Bridge event source pending</small></div><div class="route"><b>Winmar Chain</b><span>Chain ID 12142816 mainnet</span><small>WMUSD contract monitor ready</small></div><div class="route"><b>Settlement</b><span>—</span><small>Redemption release endpoint pending</small></div>
       </article>
 
       <article class="card">
@@ -444,10 +444,10 @@
       const status = txHash ? 'CONFIRMED HASH PROVIDED — VERIFY RECEIPT BEFORE FILING' : 'DRAFT — NOT CONFIRMED ON-CHAIN';
       const timestamp = new Date().toISOString();
       const docId = `WMC-${timestamp.replace(/[-:.TZ]/g, '').slice(0, 14)}-${crypto.randomUUID().slice(0, 8).toUpperCase()}`;
-      const payload = { docId, operation, amount, reference, txHash: txHash || 'Not provided', timestamp, chain: 'Winmar Chain', chainId: '12142818', token: 'WMUSD', decimals: '6', status };
+      const payload = { docId, operation, amount, reference, txHash: txHash || 'Not provided', timestamp, chain: 'Winmar Chain', chainId: '12142816', token: 'WMUSD', decimals: '6', status };
       const canonical = JSON.stringify(payload);
       const hash = await sha256Hex(canonical);
-      const report = `WINMAR CHAIN — WMUSD OPERATIONS DOCUMENT\n${'='.repeat(54)}\nDocument ID: ${docId}\nStatus: ${status}\nIssued UTC: ${timestamp}\n\nOperation: ${operation}\nAmount: ${amount} WMUSD\nReserve reference: ${reference}\nTransaction hash: ${txHash || 'Not provided'}\n\nNetwork: Winmar Chain\nChain ID: 12142818\nToken: WMUSD (6 decimals)\n\nCanonical payload SHA-256:\n${hash}\n\nThis document is an operational record. Confirm the transaction receipt and explorer data before treating the operation as final.\n`;
+      const report = `WINMAR CHAIN — WMUSD OPERATIONS DOCUMENT\n${'='.repeat(54)}\nDocument ID: ${docId}\nStatus: ${status}\nIssued UTC: ${timestamp}\n\nOperation: ${operation}\nAmount: ${amount} WMUSD\nReserve reference: ${reference}\nTransaction hash: ${txHash || 'Not provided'}\n\nNetwork: Winmar Chain\nChain ID: 12142816\nToken: WMUSD (6 decimals)\n\nCanonical payload SHA-256:\n${hash}\n\nThis document is an operational record. Confirm the transaction receipt and explorer data before treating the operation as final.\n`;
       const preview = document.querySelector('#document-preview');
       preview.hidden = false; preview.textContent = report;
       document.querySelector('#document-status').textContent = `Generated ${docId} · SHA-256 ${hash.slice(0, 16)}…`;
