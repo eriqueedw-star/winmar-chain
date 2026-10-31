@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Winmar Asset Registry</title>
+  <style>
+    :root{font-family:Inter,system-ui,sans-serif;color:#102653;background:#f5f7fc}*{box-sizing:border-box}body{margin:0}.shell{max-width:1120px;margin:auto;padding:28px 20px 56px}.brand{display:flex;align-items:center;gap:12px;margin-bottom:28px}.brand img{width:42px;height:42px;object-fit:contain}.brand b{display:block;letter-spacing:.12em}.brand small{color:#687693}.hero,.card{background:#fff;border:1px solid #dfe5f1;border-radius:20px;box-shadow:0 12px 30px #203b7110}.hero{padding:28px;margin-bottom:18px}.eyebrow{font-size:12px;letter-spacing:.18em;font-weight:800;color:#3155ff}.hero h1{margin:8px 0;font-size:clamp(28px,4vw,44px)}.hero p{color:#687693;max-width:700px}.grid{display:grid;grid-template-columns:1fr 1.2fr;gap:18px}.card{padding:22px}.card h2{margin:0 0 16px}.fields{display:grid;gap:12px}label{display:grid;gap:6px;font-weight:700;font-size:13px;color:#52627f}input,select{width:100%;border:1px solid #ccd6e8;border-radius:10px;padding:12px;font:inherit;background:#fbfcff}button{border:0;border-radius:10px;padding:12px 16px;font:inherit;font-weight:800;cursor:pointer}.primary{background:#237fe1;color:#fff}.secondary{background:#e9effb;color:#264271}.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}.asset{display:grid;grid-template-columns:48px 1fr auto;align-items:center;gap:12px;padding:13px 0;border-bottom:1px solid #e7ebf4}.asset:last-child{border-bottom:0}.asset img{width:42px;height:42px;border-radius:50%;object-fit:contain;background:#eef3ff}.asset b{display:block}.asset small{color:#687693;word-break:break-all}.pill{border-radius:999px;padding:6px 9px;font-size:11px;font-weight:800;background:#e6f8ee;color:#16804d}.status{margin-top:12px;color:#52627f;min-height:20px}.empty{color:#687693;padding:18px 0}@media(max-width:760px){.grid{grid-template-columns:1fr}.asset{grid-template-columns:40px 1fr}.asset .pill{grid-column:2;justify-self:start}}
+  </style>
+</head>
+<body>
+<main class="shell">
+  <header class="brand"><img src="../../assets/winmar-chain-logo-framed-v2.png" alt="Winmar Chain"><span><b>WINMAR CHAIN</b><small>Public asset metadata registry</small></span></header>
+  <section class="hero"><div class="eyebrow">ASSET REGISTRY · CHAIN 12142816</div><h1>Register any Winmar asset</h1><p>One generic metadata workflow for WMUSD, future WMC-20 tokens and other approved assets. Live balances, supply and prices remain sourced from RPC/oracles—not entered here.</p></section>
+  <div class="grid">
+    <section class="card"><h2>Add asset metadata</h2><div class="fields">
+      <label>Contract address<input id="address" placeholder="0x..." spellcheck="false"></label>
+      <label>Asset name<input id="name" placeholder="Winmar USD"></label>
+      <label>Symbol<input id="symbol" placeholder="WMUSD"></label>
+      <label>Decimals<input id="decimals" type="number" min="0" max="255" value="6"></label>
+      <label>Logo URL<input id="logoUrl" placeholder="https://..."></label>
+      <label>Website<input id="website" placeholder="https://..."></label>
+      <label>Status<select id="status"><option value="active">Active</option><option value="inactive">Inactive</option></select></label>
+    </div><div class="actions"><button class="primary" id="add">Add to registry</button><button class="secondary" id="export">Export JSON</button></div><div class="status" id="statusText" role="status"></div></section>
+    <section class="card"><h2>Registered assets <span id="count" class="pill">0</span></h2><div id="list" class="empty">No assets loaded.</div></section>
+  </div>
+</main>
+<script>
+const $=id=>document.getElementById(id), key='winmar_asset_registry_draft';
+let registry={version:1,chainId:12142816,network:'Winmar Mainnet',tokens:[]};
+const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+function render(){ $('count').textContent=registry.tokens.length; $('list').className=registry.tokens.length?'':'empty'; $('list').innerHTML=registry.tokens.length?registry.tokens.map(t=>`<div class="asset"><img src="${esc(t.logoUrl)}" alt=""><div><b>${esc(t.name)} (${esc(t.symbol)})</b><small>${esc(t.address)} · ${t.decimals} decimals</small></div><span class="pill">${esc(t.status)}</span></div>`).join(''):'No assets loaded.'; }
+function setStatus(v){$('statusText').textContent=v}
+async function loadRegistry(){try{const response=await fetch('./token-registry.json',{cache:'no-store'});if(response.ok){const live=await response.json();if(Array.isArray(live.tokens))registry=live}}catch{}try{const saved=JSON.parse(localStorage.getItem(key)||'null');if(saved?.tokens)registry={...registry,tokens:[...registry.tokens,...saved.tokens.filter(x=>!registry.tokens.some(y=>y.address.toLowerCase()===x.address.toLowerCase()))]}}catch{}render()}
+loadRegistry();
+$('add').onclick=()=>{const t={address:$('address').value.trim(),name:$('name').value.trim(),symbol:$('symbol').value.trim().toUpperCase(),decimals:Number($('decimals').value),logoUrl:$('logoUrl').value.trim(),website:$('website').value.trim(),verified:false,status:$('status').value};if(!/^0x[0-9a-fA-F]{40}$/.test(t.address)||!t.name||!/^[A-Z0-9]{2,12}$/.test(t.symbol)||!Number.isInteger(t.decimals)||t.decimals<0||t.decimals>255||!/^https:\/\//.test(t.logoUrl))return setStatus('Check address, identity, decimals and HTTPS logo URL.');if(registry.tokens.some(x=>x.address.toLowerCase()===t.address.toLowerCase()))return setStatus('This asset is already registered.');registry.tokens.push(t);localStorage.setItem(key,JSON.stringify(registry));render();setStatus('Saved locally. Export and apply through the authenticated indexer admin path.');};
+$('export').onclick=()=>{const blob=new Blob([JSON.stringify(registry,null,2)],{type:'application/json'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='winmar-asset-registry.json';a.click();URL.revokeObjectURL(a.href)};
+</script></body></html>

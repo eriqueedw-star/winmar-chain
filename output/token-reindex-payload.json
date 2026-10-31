@@ -1,0 +1,18 @@
+{
+  "chainId": 12142816,
+  "generatedAt": "2026-10-31T13:55:07.531Z",
+  "mode": "metadata-only",
+  "note": "Apply through the authenticated explorer/indexer admin path. This payload does not submit transactions.",
+  "tokens": [
+    {
+      "address": "0x2e2c29d4b2ccf15f74f2d22796dcaa6f5446d2c3",
+      "name": "Winmar USD",
+      "symbol": "WMUSD",
+      "decimals": 6,
+      "logoUrl": "https://winmarchain.io/assets/wmusd.png",
+      "website": "https://winmarchain.io/",
+      "verified": true,
+      "status": "active"
+    }
+  ]
+}

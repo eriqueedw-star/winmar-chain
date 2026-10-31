@@ -1,0 +1,18 @@
+{
+  "version": 1,
+  "chainId": 12142816,
+  "network": "Winmar Mainnet",
+  "tokens": [
+    {
+      "address": "0x2E2c29D4B2CcF15F74f2D22796DcAa6f5446D2C3",
+      "name": "Winmar USD",
+      "symbol": "WMUSD",
+      "decimals": 6,
+      "logoUrl": "https://winmarchain.io/assets/wmusd.png",
+      "website": "https://winmarchain.io/",
+      "verified": true,
+      "metadataSource": "operator-confirmed-contract-and-RPC",
+      "status": "active"
+    }
+  ]
+}
