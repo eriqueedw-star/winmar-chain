@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>WMUSD Governance Payloads</title>
+  <style>
+    body{font:16px system-ui;max-width:900px;margin:32px auto;padding:0 18px;color:#102044;background:#f6f8fc}
+    .card{background:#fff;border:1px solid #dbe4f2;border-radius:18px;padding:24px;margin:16px 0}
+    h1{margin-top:0}.grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+    .item{background:#f1f5fb;border-radius:10px;padding:12px;word-break:break-all}.label{font-size:12px;color:#64748b;font-weight:700;text-transform:uppercase}.value{margin-top:5px;font-family:ui-monospace,monospace}
+    textarea{width:100%;min-height:180px;box-sizing:border-box;border:1px solid #cbd7eb;border-radius:10px;padding:12px;font:12px ui-monospace,monospace}
+    button{padding:12px 16px;border:0;border-radius:9px;background:#146ef5;color:#fff;font-weight:700;cursor:pointer;margin:8px 8px 0 0}.secondary{background:#e7eef9;color:#145ab6}.warn{color:#a15c00;font-weight:700}.ok{color:#087f5b;font-weight:700}
+    @media(max-width:700px){.grid{grid-template-columns:1fr}}
+  </style>
+</head>
+<body>
+  <main>
+    <h1>WMUSD Governance Payloads</h1>
+    <p class="warn">Review-only mode. No transaction is sent and no private key is requested.</p>
+    <section class="card"><div class="grid" id="summary"></div></section>
+    <section class="card">
+      <h2>1. Grant MINTER_ROLE to multisig</h2>
+      <p>Must be executed by the WMUSD admin multisig with both approved signer signatures.</p>
+      <textarea id="grant" readonly></textarea><br>
+      <button class="secondary" data-copy="grant">Copy grant payload</button><button data-download="grant" data-name="wmusd-grant-minter-role.json">Download JSON</button>
+    </section>
+    <section class="card">
+      <h2>2. Unpause WMUSD</h2>
+      <p>Must be signed by the configured pauser wallet. Verify the destination and calldata on the hardware wallet.</p>
+      <textarea id="unpause" readonly></textarea><br>
+      <button class="secondary" data-copy="unpause">Copy unpause payload</button><button data-download="unpause" data-name="wmusd-unpause.json">Download JSON</button>
+    </section>
+    <section class="card"><b>Verification checklist</b><ul><li>Chain ID: 12142816</li><li>WMUSD contract and recipient addresses match your deployment record.</li><li>Grant role receipt is confirmed before unpause.</li><li>Unpause receipt is confirmed before any mint test.</li></ul><p id="status" class="ok">Payloads generated locally.</p></section>
+  </main>
+  <script src="https://cdn.jsdelivr.net/npm/ethers@6.15.0/dist/ethers.umd.min.js"></script>
+  <script>
+    const CHAIN_ID=12142816, TOKEN='0x2E2c29D4B2CcF15F74f2D22796DcAa6f5446D2C3', MULTISIG='0x6f6c6a209dc3297021aa3b2b9a63fc6c59577f6f', PAUSER='0x424a1311f90c1D58AC222088c11f15955290A088';
+    const MINTER_ROLE=ethers.id('MINTER_ROLE');
+    const token=new ethers.Interface(['function grantRole(bytes32 role,address account)','function unpause()']);
+    const grant={type:'WMUSD_GOVERNANCE',action:'grantRole',chainId:CHAIN_ID,rpcUrl:'https://rpc.winmarchain.io',to:TOKEN,value:'0x0',data:token.encodeFunctionData('grantRole',[MINTER_ROLE,MULTISIG]),executor:MULTISIG,requires:'2-of-2 multisig signatures',role:MINTER_ROLE,account:MULTISIG};
+    const unpause={type:'WMUSD_GOVERNANCE',action:'unpause',chainId:CHAIN_ID,rpcUrl:'https://rpc.winmarchain.io',to:TOKEN,value:'0x0',data:token.encodeFunctionData('unpause'),executor:PAUSER,requires:'Pauser hardware-wallet signature'};
+    const json=v=>JSON.stringify(v,null,2); document.querySelector('#grant').value=json(grant); document.querySelector('#unpause').value=json(unpause);
+    document.querySelector('#summary').innerHTML=[['Chain','Winmar Chain · 12142816'],['WMUSD',TOKEN],['Multisig',MULTISIG],['Pauser',PAUSER],['Minter role',MINTER_ROLE],['Mode','Review only']].map(([a,b])=>`<div class="item"><div class="label">${a}</div><div class="value">${b}</div></div>`).join('');
+    document.querySelectorAll('[data-copy]').forEach(b=>b.onclick=async()=>{await navigator.clipboard.writeText(document.querySelector('#'+b.dataset.copy).value);document.querySelector('#status').textContent='Payload copied.'});
+    document.querySelectorAll('[data-download]').forEach(b=>b.onclick=()=>{const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([document.querySelector('#'+b.dataset.download).value],{type:'application/json'}));a.download=b.dataset.name;a.click();URL.revokeObjectURL(a.href)});
+  </script>
+</body>
+</html>

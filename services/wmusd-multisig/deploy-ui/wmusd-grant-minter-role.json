@@ -1,0 +1,13 @@
+{
+  "type": "WMUSD_GOVERNANCE",
+  "action": "grantRole",
+  "chainId": 12142816,
+  "rpcUrl": "https://rpc.winmarchain.io",
+  "to": "0x2E2c29D4B2CcF15F74f2D22796DcAa6f5446D2C3",
+  "value": "0x0",
+  "data": "0x2f2ff15d9f2df0fed2c77648de5860a4cc508cd0818c85b8b8a1ab4ceeef8d981c8956a60000000000000000000000006f6c6a209dc3297021aa3b2b9a63fc6c59577f6f",
+  "executor": "0x6f6c6a209dc3297021aa3b2b9a63fc6c59577f6f",
+  "requires": "2-of-2 multisig signatures",
+  "role": "0x9f2df0fed2c77648de5860a4cc508cd0818c85b8b8a1ab4ceeef8d981c8956a6",
+  "account": "0x6f6c6a209dc3297021aa3b2b9a63fc6c59577f6f"
+}

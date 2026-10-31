@@ -1,0 +1,11 @@
+{
+  "type": "WMUSD_GOVERNANCE",
+  "action": "unpause",
+  "chainId": 12142816,
+  "rpcUrl": "https://rpc.winmarchain.io",
+  "to": "0x2E2c29D4B2CcF15F74f2D22796DcAa6f5446D2C3",
+  "value": "0x0",
+  "data": "0x3f4ba83a",
+  "executor": "0x424a1311f90c1D58AC222088c11f15955290A088",
+  "requires": "Pauser hardware-wallet signature"
+}
