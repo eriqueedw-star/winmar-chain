@@ -19,12 +19,22 @@ contract WMUSD is ERC20, ERC20Pausable, AccessControl {
     error ReserveAlreadyUsed();
     error MintCapExceeded();
     error MintingDisabled();
+    error RedemptionDisabled();
+    error DistributionDisabled();
+    error EmptyRedemptionReference();
+    error RedemptionAlreadyUsed();
+    error ZeroAmount();
 
+    /// @notice Maximum outstanding supply in token base units, not lifetime issuance.
     uint256 public mintCap;
     bool public mintingEnabled;
     bool public redemptionEnabled;
+    bool public distributionEnabled;
+    /// @notice Cumulative issuance for audit reporting; redemption never reduces it.
     uint256 public totalMintedAgainstReserve;
     mapping(bytes32 reserveReference => bool used) public reserveReferences;
+
+    mapping(bytes32 redemptionReference => bool used) public redemptionReferences;
 
     event ReserveMinted(
         address indexed account,
@@ -36,6 +46,7 @@ contract WMUSD is ERC20, ERC20Pausable, AccessControl {
     event MintCapUpdated(uint256 previousCap, uint256 newCap);
     event MintingStatusUpdated(bool enabled);
     event RedemptionStatusUpdated(bool enabled);
+    event DistributionStatusUpdated(bool enabled);
 
     constructor(address admin, address minter, address burner, address pauser, uint256 initialMintCap)
         ERC20("Winmar USD Stablecoin", "WMUSD")
@@ -51,6 +62,7 @@ contract WMUSD is ERC20, ERC20Pausable, AccessControl {
         emit MintCapUpdated(0, initialMintCap);
         emit MintingStatusUpdated(false);
         emit RedemptionStatusUpdated(false);
+        emit DistributionStatusUpdated(false);
     }
 
     function decimals() public pure override returns (uint8) {
@@ -64,9 +76,10 @@ contract WMUSD is ERC20, ERC20Pausable, AccessControl {
     {
         if (!mintingEnabled) revert MintingDisabled();
         if (account == address(0)) revert ZeroAddress();
+        if (amount == 0) revert ZeroAmount();
         if (reserveReference == bytes32(0)) revert EmptyReserveReference();
         if (reserveReferences[reserveReference]) revert ReserveAlreadyUsed();
-        if (mintCap == 0 || totalMintedAgainstReserve + amount > mintCap) revert MintCapExceeded();
+        if (mintCap == 0 || totalSupply() + amount > mintCap) revert MintCapExceeded();
 
         reserveReferences[reserveReference] = true;
         totalMintedAgainstReserve += amount;
@@ -79,9 +92,13 @@ contract WMUSD is ERC20, ERC20Pausable, AccessControl {
         onlyRole(BURNER_ROLE)
         whenNotPaused
     {
-        if (!redemptionEnabled) revert MintingDisabled();
+        if (!redemptionEnabled) revert RedemptionDisabled();
         if (account == address(0)) revert ZeroAddress();
-        if (redemptionReference == bytes32(0)) revert EmptyReserveReference();
+        if (amount == 0) revert ZeroAmount();
+        if (redemptionReference == bytes32(0)) revert EmptyRedemptionReference();
+        if (redemptionReferences[redemptionReference]) revert RedemptionAlreadyUsed();
+        // Global across holders and burners. A reverted burn rolls this back too.
+        redemptionReferences[redemptionReference] = true;
         _spendAllowance(account, msg.sender, amount);
         _burn(account, amount);
         emit RedemptionBurned(account, amount, redemptionReference, msg.sender);
@@ -90,12 +107,18 @@ contract WMUSD is ERC20, ERC20Pausable, AccessControl {
     function setMintCap(uint256 newCap) external onlyRole(DEFAULT_ADMIN_ROLE) {
         uint256 previous = mintCap;
         mintCap = newCap;
+        // Restoring a positive cap must never silently reactivate issuance.
+        if (newCap == 0 && mintingEnabled) {
+            mintingEnabled = false;
+            emit MintingStatusUpdated(false);
+        }
         emit MintCapUpdated(previous, newCap);
     }
 
     /// @notice Enables or disables reserve-backed minting after legal, reserve,
     ///         attestation, and operational approvals are complete.
     function setMintingEnabled(bool enabled) external onlyRole(DEFAULT_ADMIN_ROLE) {
+        if (enabled && mintCap == 0) revert MintCapExceeded();
         mintingEnabled = enabled;
         emit MintingStatusUpdated(enabled);
     }
@@ -106,10 +129,18 @@ contract WMUSD is ERC20, ERC20Pausable, AccessControl {
         emit RedemptionStatusUpdated(enabled);
     }
 
+    /// @notice Separate launch approval, after all off-chain runbook gates.
+    function setDistributionEnabled(bool enabled) external onlyRole(DEFAULT_ADMIN_ROLE) {
+        if (enabled && !mintingEnabled) revert MintingDisabled();
+        distributionEnabled = enabled;
+        emit DistributionStatusUpdated(enabled);
+    }
+
     function pause() external onlyRole(PAUSER_ROLE) { _pause(); }
     function unpause() external onlyRole(DEFAULT_ADMIN_ROLE) { _unpause(); }
 
     function _update(address from, address to, uint256 value) internal override(ERC20, ERC20Pausable) {
+        if (from != address(0) && to != address(0) && !distributionEnabled) revert DistributionDisabled();
         super._update(from, to, value);
     }
 }

@@ -1,3 +1,6 @@
+// Pre-launch hard stop: remove only in a separately reviewed, approved release PR.
+throw new Error('WMUSD mainnet deployment is blocked pending all pre-launch approvals.');
+
 import fs from 'node:fs/promises';
 import crypto from 'node:crypto';
 import process from 'node:process';
@@ -14,8 +17,8 @@ const artifactHash = crypto.createHash('sha256').update(artifactBytes).digest('h
 if (process.env.WMUSD_ARTIFACT_SHA256 && process.env.WMUSD_ARTIFACT_SHA256 !== artifactHash) throw new Error('Artifact SHA-256 mismatch');
 const artifact = JSON.parse(artifactBytes);
 if (!artifact.abi?.length || !artifact.bytecode?.startsWith('0x')) throw new Error('Invalid WMUSD artifact');
-const provider = new JsonRpcProvider(rpcUrl, Number(expectedChainId), { staticNetwork: true });
-const network = await provider.getNetwork();
+const provider = new JsonRpcProvider(rpcUrl);
+const network = { chainId: BigInt(await provider.send('eth_chainId', [])) };
 if (network.chainId !== expectedChainId) throw new Error(`Chain ID mismatch: expected ${expectedChainId}, got ${network.chainId}`);
 const admin = getAddress(required('WMUSD_ADMIN'));
 const minter = getAddress(required('WMUSD_MINTER'));

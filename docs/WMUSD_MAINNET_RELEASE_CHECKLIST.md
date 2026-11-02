@@ -1,6 +1,6 @@
 # WMUSD Mainnet Release Checklist
 
-This checklist is for a dormant, pre-issuance deployment only. It does not authorize public minting, sale, or redemption.
+Mainnet deployment is currently hard-blocked. A separately reviewed release PR and completion of all pre-launch gates are required to remove the block. This checklist is for a future dormant, pre-issuance deployment only. It does not authorize public minting, sale, or redemption.
 
 ## Network preflight
 
@@ -23,6 +23,7 @@ This checklist is for a dormant, pre-issuance deployment only. It does not autho
 - [ ] `initialMintCap = 0`.
 - [ ] `mintingEnabled = false`.
 - [ ] `redemptionEnabled = false`.
+- [ ] `distributionEnabled = false`.
 - [ ] Public sale and swap are not connected.
 - [ ] No reserve is represented as circulating backing at deployment time.
 
@@ -37,4 +38,4 @@ This checklist is for a dormant, pre-issuance deployment only. It does not autho
 
 ## Explicit prohibition
 
-Do not enable minting, set a non-zero cap, enable redemption, open public sale, or describe WMUSD as circulating until contract audit, reserve verification, attestation, legal review, and multisig migration are complete.
+Do not deploy to mainnet, enable minting, set a non-zero cap, enable redemption or distribution, open public sale, or describe WMUSD as circulating until contract audit, reserve verification, attestation, legal review, and multisig migration are complete.
