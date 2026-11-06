@@ -36,9 +36,9 @@ Please review the technical feasibility of indexing Winmar Chain mainnet (121428
 
 Official contact: https://routescan.io/contactus
 
-## Sourcify — follow-up submission after dependencies
+## Sourcify — direct override submission
 
-Once Ethereum Lists PR #8740 is merged/synchronized, we intend to request source verification support for Winmar Chain per https://docs.sourcify.dev/docs/chain-support/. Please confirm our read-only RPC and Blockscout API interface can satisfy Sourcify's checks, and provide a publicly deployed test contract or permitted universal contract address, without exposing production wallet or validator credentials.
+The current Sourcify chain repository allows a direct `chain-overrides.json` entry without waiting for Ethereum Lists. The prepared fork branch `eriqueedw-star/sourcify-chains:add-chain-12142816` adds the minimal canonical RPC override. Upstream PR creation still requires an owner-authenticated GitHub action because the connected integration has read-only access to `sourcifyeth/sourcify-chains`.
 
 ## Current status
 
