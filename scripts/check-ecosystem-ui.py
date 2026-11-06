@@ -69,3 +69,16 @@ with tempfile.TemporaryDirectory() as folder:
     subprocess.run(["node", "--check", str(p)], check=True)
 
 print("PASS: four-module UI syntax and current feature configuration")
+
+
+integration_html = (ROOT / "apps/developer-tools/integrations.html").read_text(encoding="utf-8")
+assert "Winmar Chain — Integration Hub" in integration_html
+assert "12142816" in integration_html and "0xB948E0" in integration_html
+assert "https://rpc.winmarchain.io" in integration_html
+assert "https://scan.winmarchain.io" in integration_html
+assert "https://winmarchain.io/assets/winmar-logo.png" in integration_html
+assert "https://winmarchain.io/logo/wmc.png" in integration_html
+assert "wallet_addEthereumChain" in integration_html
+assert "0xB948E0" in integration_html
+assert "rpc.winmarchain.org" not in integration_html
+assert "scan.winmarchain.org" not in integration_html
