@@ -2,7 +2,11 @@
   "schemaVersion": 1,
   "updatedAt": "2026-11-07",
   "chainId": 12142816,
-  "integrationHub": "https://winmarchain.io/integrations",
+  "integrationHub": {
+    "repositoryPath": "apps/integration-hub/index.html",
+    "plannedPublicUrl": "https://winmarchain.io/integrations",
+    "deploymentStatus": "PREPARED_NOT_VERIFIED_LIVE"
+  },
   "canonicalRepo": "https://github.com/eriqueedw-star/winmar-chain",
   "networkMetadata": "https://github.com/eriqueedw-star/winmar-chain/blob/main/config/network.json",
   "networkLogo": "https://winmarchain.io/assets/winmar-logo.png",
