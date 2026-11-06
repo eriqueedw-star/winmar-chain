@@ -2,8 +2,8 @@
 
 **Reviewed:** 2026-11-07. This page distinguishes operator-reported outreach from actual provider acknowledgement and completed integration.
 
-Canonical integration hub: https://winmarchain.io/integrations.html
-Machine-readable status: https://winmarchain.io/integrations/status.json
+Canonical integration hub: https://eriqueedw-star.github.io/winmar-chain/integrations.html
+Machine-readable status: https://eriqueedw-star.github.io/winmar-chain/integrations/status.json
 
 ## Routescan
 
