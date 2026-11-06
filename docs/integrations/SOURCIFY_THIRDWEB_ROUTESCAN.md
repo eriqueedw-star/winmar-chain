@@ -1,6 +1,6 @@
 # Winmar Chain — Sourcify, thirdweb, and Routescan onboarding
 
-Last reviewed: 2026-10-23. All statuses are conservative; no listing or provider endorsement is claimed without confirmation.
+Last reviewed: 2026-11-07. All statuses are conservative; no listing or provider endorsement is claimed without confirmation.
 
 ## Canonical network identity
 
@@ -9,6 +9,8 @@ Last reviewed: 2026-10-23. All statuses are conservative; no listing or provider
 - RPC: https://rpc.winmarchain.io
 - Explorer (keep as canonical): https://scan.winmarchain.io
 - Website: https://winmarchain.io
+- Integration hub: https://winmarchain.io/integrations.html
+- Machine-readable integration status: https://winmarchain.io/integrations/status.json
 - **Native coin logo**: https://winmarchain.io/logo/wmc.png, 401 × 401 PNG, SHA-256 `dbbd58c8a18c730825a3931c0bf41f133abca76c140f27d8c4ba0b2f58deafee`
 - Network icon (separate): `winmar` registered through DefiLlama icons
 

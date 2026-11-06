@@ -39,10 +39,12 @@ jobs:
           mkdir -p _site
           cp apps/developer-tools/index.html _site/developers.html
           cp apps/developer-tools/wmc.html _site/wmc.html
+          cp apps/developer-tools/integrations.html _site/integrations.html
           cp apps/developer-tools/wint.html _site/wint.html
-          mkdir -p _site/token-creator _site/assets
+          mkdir -p _site/token-creator _site/assets _site/integrations
           cp apps/token-creator/index.html _site/token-creator/index.html
           cp -R config _site/config
+          cp integrations/wallets/status.json _site/integrations/status.json
           mkdir -p _site/logo
           if [[ -f assets/wmc.png ]]; then cp assets/wmc.png _site/logo/wmc.png; fi
           if [[ -f assets/wint.png ]]; then cp assets/wint.png _site/logo/wint.png; fi
