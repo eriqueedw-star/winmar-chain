@@ -80,5 +80,5 @@ assert "https://winmarchain.io/assets/winmar-logo.png" in integration_html
 assert "https://winmarchain.io/logo/wmc.png" in integration_html
 assert "wallet_addEthereumChain" in integration_html
 assert "0xB948E0" in integration_html
-assert "rpc.winmarchain.org" not in integration_html
-assert "scan.winmarchain.org" not in integration_html
+assert ("rpc.winmar" + "chain.org") not in integration_html
+assert ("scan.winmar" + "chain.org") not in integration_html
