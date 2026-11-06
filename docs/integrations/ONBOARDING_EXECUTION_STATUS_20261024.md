@@ -1,6 +1,11 @@
 # Winmar Chain onboarding execution — 2026-10-24
 
+**Status refreshed:** 2026-11-07.
+
 **Scope:** priorities 1–5: ethereum-lists, Sourcify, wallet recognition, Routescan/thirdweb, RPC privacy. **No transaction or production changes.** Source links below, no unsourced claims of external acceptance.
+
+Public integration hub: https://winmarchain.io/integrations.html
+Machine-readable status: https://winmarchain.io/integrations/status.json
 
 ## (1) Ethereum Lists / DefiLlama ChainList
 
