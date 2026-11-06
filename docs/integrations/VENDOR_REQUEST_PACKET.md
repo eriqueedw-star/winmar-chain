@@ -18,9 +18,9 @@
 
 **Chainlist profile:** https://chainlist.org/chain/12142816
 
-**Canonical integration hub:** https://winmarchain.io/integrations.html
+**Canonical integration hub:** https://eriqueedw-star.github.io/winmar-chain/integrations.html
 
-**Machine-readable wallet/integration status:** https://winmarchain.io/integrations/status.json
+**Machine-readable wallet/integration status:** https://eriqueedw-star.github.io/winmar-chain/integrations/status.json
 
 **Canonical technical repository:** https://github.com/eriqueedw-star/winmar-chain
 
