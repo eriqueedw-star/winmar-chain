@@ -1,8 +1,8 @@
 # Sourcify mainnet onboarding — Winmar Chain (12142816)
 
-**Prepared:** 2026-10-24. **Official upstream registration:** NOT SUBMITTED / NOT APPROVED.
+**Prepared:** 2026-10-24. **Refreshed:** 2026-11-07. **Official upstream registration:** NOT SUBMITTED / NOT APPROVED.
 
-The current canonical chain list is maintained in [sourcifyeth/sourcify-chains](https://github.com/sourcifyeth/sourcify-chains), **main** branch. Its README states that an entry in `chain-overrides.json` alone is sufficient to include a chain not auto-discovered. **Do not edit `sourcify-chains-default.json`: it is generated.**
+The current canonical chain list is maintained in [sourcifyeth/sourcify-chains](https://github.com/sourcifyeth/sourcify-chains), **main** branch. Its README states that an entry in `chain-overrides.json` alone is sufficient to include a chain not auto-discovered; Ethereum Lists merge is therefore not a prerequisite for this direct override. **Do not edit `sourcify-chains-default.json`: it is generated.**
 
 ## Precise upstream change
 
@@ -34,7 +34,7 @@ Copy the contents of [winmar-chain-override.json](../../integrations/sourcify/wi
 3. Upstream CI `Test New Chain` may require an existing public test contract or deployment; provide a verified, non-sensitive contract address only after approval. No contract is deployed by this PR packet.
 4. After upstream approval, check official Sourcify supported chains and a verifiable contract response; **do not equate merging the configuration with verified contracts**.
 
-**Access boundary:** The connected GitHub account cannot create a fork of `sourcifyeth/sourcify-chains` using available connector actions and has no upstream write access. The exact first owner action is the fork link above. No upstream PR can be claimed submitted until a PR URL exists.
+**Current fork evidence:** `eriqueedw-star/sourcify-chains` exists and branch `add-chain-12142816` has been refreshed against the current upstream `chain-overrides.json`, with Winmar Chain added as a minimal override using `https://rpc.winmarchain.io`. The connected GitHub integration has no upstream write permission and returned HTTP 403 when attempting to create the upstream PR. No upstream PR is claimed submitted until a PR URL exists.
 
 ## Sourcify original references
 

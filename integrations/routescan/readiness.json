@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 1,
+  "checkedAt": "2026-11-07",
+  "chain": {
+    "name": "Winmar Chain",
+    "chainId": 12142816,
+    "rpc": "https://rpc.winmarchain.io",
+    "explorer": "https://scan.winmarchain.io"
+  },
+  "publicDirectoryObserved": false,
+  "onboardingType": "PROVIDER_INDEXING",
+  "requirementsToConfirm": [
+    "Reliable block, receipt and log access from genesis/start block",
+    "Archive historical state availability",
+    "debug/trace method availability required by agreed indexing scope",
+    "Indexing bootstrap/start block and chain history agreement",
+    "Provider SLA, rate limits and commercial terms"
+  ],
+  "currentEvidence": {
+    "canonicalRpcChainIdVerified": true,
+    "currentBlockscoutExplorer": true,
+    "archiveRpcVerified": false,
+    "debugTraceVerified": false,
+    "traceTransactionVerified": false
+  },
+  "status": "PENDING_PROVIDER_ONBOARDING",
+  "note": "Do not mark Routescan indexed until chain 12142816 appears in the provider directory or Routescan supplies written onboarding confirmation."
+}

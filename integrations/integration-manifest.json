@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "updatedAt": "2026-11-07",
+  "chainId": 12142816,
+  "integrationHub": {
+    "repositoryPath": "apps/integration-hub/index.html",
+    "plannedPublicUrl": "https://winmarchain.io/integrations",
+    "deploymentStatus": "PREPARED_NOT_VERIFIED_LIVE"
+  },
+  "canonicalRepo": "https://github.com/eriqueedw-star/winmar-chain",
+  "networkMetadata": "https://github.com/eriqueedw-star/winmar-chain/blob/main/config/network.json",
+  "networkLogo": "https://winmarchain.io/assets/winmar-logo.png",
+  "nativeCoinLogo": "https://winmarchain.io/logo/wmc.png",
+  "eip3085": "https://github.com/eriqueedw-star/winmar-chain/blob/main/integrations/wallets/eip3085-mainnet.json",
+  "registries": {
+    "chainlist": "https://chainlist.org/chain/12142816",
+    "ethereumLists": "https://github.com/ethereum-lists/chains/pull/8740",
+    "sourcify": "pending-upstream-submission",
+    "routescan": "pending-provider-onboarding",
+    "thirdweb": "pending-official-profile"
+  }
+}
