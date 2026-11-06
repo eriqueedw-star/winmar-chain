@@ -46,4 +46,3 @@ Do not put user email correspondence, private email addresses of vendor staff, p
 - RPC: https://rpc.winmarchain.io
 - Status: **submitted / pending provider review**
 - This issue is a discovery request only and does not imply wallet, SDK, or dapp native support until Reown/WalletConnect confirms or publishes the chain.
-
