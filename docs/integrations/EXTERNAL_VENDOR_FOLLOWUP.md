@@ -38,7 +38,6 @@ Machine-readable status: https://eriqueedw-star.github.io/winmar-chain/integrati
 
 Do not put user email correspondence, private email addresses of vendor staff, proprietary quotes, client data or access credentials into this public repo. Record redacted provider facts only.
 
-
 ## WalletConnect / Reown
 
 - Official chain-discovery request submitted: https://github.com/WalletConnect/walletconnect-monorepo/issues/7390
