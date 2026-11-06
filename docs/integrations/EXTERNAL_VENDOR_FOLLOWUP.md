@@ -1,6 +1,9 @@
 # Winmar Chain — external partner follow-up and evidence record
 
-**Reviewed:** 2026-10-24. This page distinguishes operator-reported outreach from actual provider acknowledgement and completed integration.
+**Reviewed:** 2026-11-07. This page distinguishes operator-reported outreach from actual provider acknowledgement and completed integration.
+
+Canonical integration hub: https://winmarchain.io/integrations.html
+Machine-readable status: https://winmarchain.io/integrations/status.json
 
 ## Routescan
 
