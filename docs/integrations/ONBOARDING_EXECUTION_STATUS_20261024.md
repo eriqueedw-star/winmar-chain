@@ -4,8 +4,8 @@
 
 **Scope:** priorities 1–5: ethereum-lists, Sourcify, wallet recognition, Routescan/thirdweb, RPC privacy. **No transaction or production changes.** Source links below, no unsourced claims of external acceptance.
 
-Public integration hub: https://winmarchain.io/integrations.html
-Machine-readable status: https://winmarchain.io/integrations/status.json
+Public integration hub: https://eriqueedw-star.github.io/winmar-chain/integrations.html
+Machine-readable status: https://eriqueedw-star.github.io/winmar-chain/integrations/status.json
 
 ## (1) Ethereum Lists / DefiLlama ChainList
 
