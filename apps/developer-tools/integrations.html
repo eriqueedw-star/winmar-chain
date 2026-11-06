@@ -5,6 +5,32 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="description" content="Winmar Chain Integration Hub — canonical network metadata, wallet status, upstream registry evidence, official network logo and native WMC artwork.">
 <title>Winmar Chain — Integration Hub</title>
+<script type="application/ld+json">
+{
+  "@context":"https://schema.org",
+  "@graph":[
+    {
+      "@type":"WebSite",
+      "name":"Winmar Chain",
+      "url":"https://winmarchain.io",
+      "description":"Winmar Chain is an EVM-compatible Layer 1 network using QBFT Proof of Authority."
+    },
+    {
+      "@type":"Dataset",
+      "name":"Winmar Chain Integration Metadata",
+      "description":"Canonical wallet, registry and infrastructure metadata for Winmar Chain mainnet.",
+      "identifier":["eip155:12142816","Chain ID 12142816"],
+      "url":"https://eriqueedw-star.github.io/winmar-chain/integrations.html",
+      "distribution":[
+        {"@type":"DataDownload","encodingFormat":"application/json","contentUrl":"https://eriqueedw-star.github.io/winmar-chain/.well-known/chain.json"},
+        {"@type":"DataDownload","encodingFormat":"application/json","contentUrl":"https://eriqueedw-star.github.io/winmar-chain/.well-known/wallet-metadata.json"},
+        {"@type":"DataDownload","encodingFormat":"application/json","contentUrl":"https://eriqueedw-star.github.io/winmar-chain/discovery/eip3085.json"}
+      ],
+      "keywords":["Winmar Chain","WMC","EVM","Chain ID 12142816","blockchain","wallet integration"]
+    }
+  ]
+}
+</script>
 <style>
 :root{font-family:Inter,system-ui,-apple-system,sans-serif;color:#111827;background:#f7f8fc}
 *{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at 85% 0,#e8eeff 0,transparent 38%),#f7f8fc;color:#111827}
@@ -31,8 +57,8 @@ footer{margin-top:48px;padding:28px 0 42px;border-top:1px solid #e3e6ee;color:#7
 <body>
 <header>
   <div class="wrap head">
-    <a class="brand" href="/"><img src="https://winmarchain.io/assets/winmar-logo.png" alt="Winmar Chain network logo"><span><strong>WINMAR CHAIN</strong><small>Where the world settles value.</small></span></a>
-    <nav class="nav"><a href="/network.html">Network</a><a href="/developers.html">Developers</a><a href="/integrations.html" aria-current="page">Integrations</a><a href="https://scan.winmarchain.io/" target="_blank" rel="noopener">Explorer ↗</a></nav>
+    <a class="brand" href="https://winmarchain.io/"><img src="https://winmarchain.io/assets/winmar-logo.png" alt="Winmar Chain network logo"><span><strong>WINMAR CHAIN</strong><small>Where the world settles value.</small></span></a>
+    <nav class="nav"><a href="https://winmarchain.io/network.html">Network</a><a href="./developers.html">Developers</a><a href="./integrations.html" aria-current="page">Integrations</a><a href="https://scan.winmarchain.io/" target="_blank" rel="noopener">Explorer ↗</a></nav>
   </div>
 </header>
 
@@ -64,7 +90,7 @@ footer{margin-top:48px;padding:28px 0 42px;border-top:1px solid #e3e6ee;color:#7
     <div class="actions">
       <button id="add-network" type="button">Add Winmar Chain</button>
       <button class="secondary" id="copy-rpc" type="button">Copy RPC</button>
-      <a class="button secondary" href="/config/network.json">Network JSON</a>
+      <a class="button secondary" href="./config/network.json">Network JSON</a>
     </div>
     <div id="wallet-result" class="note" role="status">Wallet action has not been requested.</div>
   </article>
@@ -77,7 +103,7 @@ footer{margin-top:48px;padding:28px 0 42px;border-top:1px solid #e3e6ee;color:#7
       <div><b>Winmar Chain network logo</b><div class="mono">https://winmarchain.io/assets/winmar-logo.png</div></div>
     </div>
     <div class="asset">
-      <img src="/logo/wmc.png" alt="WMC native coin logo">
+      <img src="https://winmarchain.io/logo/wmc.png" alt="WMC native coin logo">
       <div><b>WMC native coin logo</b><div class="mono">https://winmarchain.io/logo/wmc.png</div><small>Canonical SHA-256: dbbd58c8a18c730825a3931c0bf41f133abca76c140f27d8c4ba0b2f58deafee</small></div>
     </div>
     <div class="note"><b>WMC is the native gas coin.</b> It has no ERC-20/BEP-20/WMC-20 contract address.</div>
@@ -125,10 +151,26 @@ footer{margin-top:48px;padding:28px 0 42px;border-top:1px solid #e3e6ee;color:#7
       </tbody>
     </table>
     <div class="actions">
-      <a class="button" href="/integrations/status.json">Machine-readable status</a>
+      <a class="button" href="./integrations/status.json">Machine-readable status</a>
       <a class="button secondary" href="https://github.com/eriqueedw-star/winmar-chain" target="_blank" rel="noopener">GitHub evidence ↗</a>
       <a class="button secondary" href="https://gitlab.com/winmar-chain/winmar-chain-registry" target="_blank" rel="noopener">GitLab mirror ↗</a>
     </div>
+  </article>
+
+  <article class="card full">
+    <h2>Discovery Pack v1</h2>
+    <p>Stable machine-readable endpoints for wallet vendors, indexers, search engines and technical reviewers.</p>
+    <table>
+      <thead><tr><th>Artifact</th><th>Purpose</th><th>Endpoint</th></tr></thead>
+      <tbody>
+        <tr><td>Chain metadata</td><td>Canonical EVM network identity</td><td><a href="./.well-known/chain.json">.well-known/chain.json</a></td></tr>
+        <tr><td>Wallet metadata</td><td>Wallet-oriented identity and logo separation</td><td><a href="./.well-known/wallet-metadata.json">.well-known/wallet-metadata.json</a></td></tr>
+        <tr><td>EIP-3085</td><td>Standard add-network payload</td><td><a href="./discovery/eip3085.json">discovery/eip3085.json</a></td></tr>
+        <tr><td>Logo manifest</td><td>SHA-256 artwork provenance</td><td><a href="./discovery/logo-manifest.json">discovery/logo-manifest.json</a></td></tr>
+        <tr><td>Live health evidence</td><td>RPC, block, explorer and artwork checks generated during publish</td><td><a href="./discovery/health.json">discovery/health.json</a></td></tr>
+        <tr><td>Security contact</td><td>Responsible disclosure contact</td><td><a href="./.well-known/security.txt">.well-known/security.txt</a></td></tr>
+      </tbody>
+    </table>
   </article>
 </section>
 </main>
