@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 1,
+  "algorithm": "SHA-256",
+  "assets": {
+    "networkLogo": {
+      "role": "Winmar Chain network artwork",
+      "url": "https://winmarchain.io/assets/winmar-logo.png",
+      "width": 512,
+      "height": 512,
+      "format": "png",
+      "sha256": "749366b21175ddafa7cac5774c2e1ec8973883728c2717e49674ff1f893f4b23",
+      "provenance": "ethereum-lists icon IPFS CID bafkreidusntleelv3wx2pswfo5gc4hwis44ig4ume4l6jftu74pysp2lem"
+    },
+    "nativeCoinLogo": {
+      "role": "Winmar Coin (WMC) native coin artwork",
+      "url": "https://winmarchain.io/logo/wmc.png",
+      "width": 401,
+      "height": 401,
+      "format": "png",
+      "sha256": "dbbd58c8a18c730825a3931c0bf41f133abca76c140f27d8c4ba0b2f58deafee"
+    }
+  },
+  "rules": [
+    "The Winmar Chain network logo and WMC native coin logo are separate assets.",
+    "WMC is a native gas coin and has no token contract address."
+  ],
+  "lastReviewed": "2026-11-07"
+}

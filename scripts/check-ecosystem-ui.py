@@ -82,3 +82,27 @@ assert "wallet_addEthereumChain" in integration_html
 assert "0xB948E0" in integration_html
 assert ("rpc.winmar" + "chain.org") not in integration_html
 assert ("scan.winmar" + "chain.org") not in integration_html
+
+
+# Discovery Pack v1 guards
+chain_meta = json.loads((ROOT / "discovery/chain.json").read_text(encoding="utf-8"))
+wallet_meta = json.loads((ROOT / "discovery/wallet-metadata.json").read_text(encoding="utf-8"))
+eip3085 = json.loads((ROOT / "discovery/eip3085.json").read_text(encoding="utf-8"))
+logo_manifest = json.loads((ROOT / "discovery/logo-manifest.json").read_text(encoding="utf-8"))
+security_txt = (ROOT / "discovery/security.txt").read_text(encoding="utf-8")
+assert chain_meta["chainId"] == 12142816 and chain_meta["chainIdHex"] == "0xB948E0"
+assert chain_meta["rpc"] == ["https://rpc.winmarchain.io"]
+assert chain_meta["explorers"][0]["url"] == "https://scan.winmarchain.io"
+assert chain_meta["networkLogo"] == "https://winmarchain.io/assets/winmar-logo.png"
+assert chain_meta["nativeCoinLogo"] == "https://winmarchain.io/logo/wmc.png"
+assert chain_meta["nativeCurrency"]["contractAddress"] is None
+assert wallet_meta["eip155"] == "eip155:12142816"
+assert wallet_meta["rules"]["nativeCoinHasTokenContract"] is False
+assert eip3085["chainId"] == "0xB948E0"
+assert eip3085["rpcUrls"] == ["https://rpc.winmarchain.io"]
+assert eip3085["blockExplorerUrls"] == ["https://scan.winmarchain.io"]
+assert logo_manifest["assets"]["networkLogo"]["sha256"] == "749366b21175ddafa7cac5774c2e1ec8973883728c2717e49674ff1f893f4b23"
+assert logo_manifest["assets"]["nativeCoinLogo"]["sha256"] == "dbbd58c8a18c730825a3931c0bf41f133abca76c140f27d8c4ba0b2f58deafee"
+assert "Contact: mailto:admin@winmarchain.io" in security_txt
+assert ("winmar" + "chain.org") not in json.dumps(chain_meta).lower()
+assert ("winmar" + "chain.org") not in json.dumps(wallet_meta).lower()
