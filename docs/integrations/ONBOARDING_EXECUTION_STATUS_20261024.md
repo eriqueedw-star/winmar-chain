@@ -20,13 +20,15 @@ Machine-readable status: https://eriqueedw-star.github.io/winmar-chain/integrati
 - Canonical new upstream repository: https://github.com/sourcifyeth/sourcify-chains (not auto-generated `sourcify-chains-default.json`).
 - On inspection, chain `12142816` absent from upstream `chain-overrides.json` and `sourcify-chains-default.json`; this is **not** official support.
 - Entry staged locally at [winmar-chain-override.json](../../integrations/sourcify/winmar-chain-override.json) with minimal custom RPC, and [upstream instructions](SOURCIFY_UPSTREAM_SUBMISSION.md).
-- **Blocked for official submission** until GitHub account forks `sourcifyeth/sourcify-chains` and opens PR `add-chain-12142816`; access currently lacks fork creation and upstream write permission. Upstream CI and public test-contract evidence still required.
+- User fork `eriqueedw-star/sourcify-chains` is synchronized with upstream, and branch `add-chain-12142816` contains the clean minimal Winmar override at commit `35dc991329bd10638e80fb439ed2b9fb32e4da25`.
+- Official upstream PR creation remains blocked by GitHub App permission (HTTP 403 `Resource not accessible by integration`). Upstream CI and public test-contract evidence remain required after the PR is opened.
 
 ## (3) Wallets
 
 - MetaMask permits custom network addition; automatic default network and native coin artwork not verified.
 - Trust Wallet new-native-EVM acceptance requires BD screening; [wallet request and logo requirements](WALLET_NATIVE_CHAIN_ONBOARDING.md). No Trust Wallet approval/official listing can be asserted.
-- WalletConnect/Reown, Rabby, SafePal: custom-chain support is not proof of native featured listing. Request proof before marking integrated.
+- WalletConnect/Reown chain discovery request **submitted** as issue #7390: https://github.com/WalletConnect/walletconnect-monorepo/issues/7390 for `eip155:12142816`. Submission is evidence of an active review request only; it is **not** proof of WalletConnect/Reown acceptance or wallet-native support.
+- Rabby and SafePal: custom-chain support is not proof of native featured listing. Request proof before marking integrated.
 
 ## (4) Routescan / thirdweb
 
