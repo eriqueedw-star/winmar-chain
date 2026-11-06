@@ -17,7 +17,7 @@ The pending PR sets these canonical production endpoints (`.io` primary, `.com` 
 - Explorer: `https://scan.winmarchain.io`
 - Website: `https://winmarchain.io`
 
-The Ethereum Lists PR remains open as of 2026-10-10. Merge and publication are controlled by upstream maintainers.
+As of 2026-11-07, Ethereum Lists PR #8740 remains OPEN, mergeable and clean. Merge and publication are controlled by upstream maintainers.
 
 ## Chainlist / DefiLlama layer
 
@@ -29,4 +29,10 @@ Prepared integration artifacts:
 - `defillama-chainlist-12142816.patch` — ready-to-apply Winmar Chain override with `chainSlug: "winmar"`.
 - `defillama-icons-winmar.md` — canonical logo source and expected icon endpoint.
 
-Submission status checked on 2026-10-10:\n\n- [DefiLlama Chainlist PR #3209](https://github.com/DefiLlama/chainlist/pull/3209): open, proposes canonical .io endpoints.\n- [DefiLlama Icons PR #2523](https://github.com/DefiLlama/icons/pull/2523): open.\n\nThe connected GitHub integration has read-only access to the two DefiLlama repositories. The existing submitted PRs require upstream maintainer review and merge before publication.
+Submission status checked on 2026-11-07:
+
+- [DefiLlama Chainlist PR #3209](https://github.com/DefiLlama/chainlist/pull/3209): **MERGED** on 2026-10-21. Canonical `.io` metadata is published in the DefiLlama Chainlist repository.
+- [DefiLlama Icons PR #2523](https://github.com/DefiLlama/icons/pull/2523): **MERGED** on 2026-10-21. The `winmar` chain icon is published in the DefiLlama icon layer.
+- [Ethereum Lists PR #8740](https://github.com/ethereum-lists/chains/pull/8740): **OPEN**, mergeable/clean. This is the remaining upstream Ethereum Lists metadata/icon update.
+
+Chainlist publication does not by itself imply native logo support in MetaMask, Trust Wallet, SafePal or other wallets. Those are separate vendor-controlled integrations.

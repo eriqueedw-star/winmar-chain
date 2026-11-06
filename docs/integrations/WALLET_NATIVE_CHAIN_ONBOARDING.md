@@ -1,6 +1,6 @@
 # Native wallet integrations — Winmar Chain (12142816)
 
-**Prepared:** 2026-10-24. **Third-party native listings:** unverified / pending vendor approval.
+**Prepared:** 2026-10-24. **Status refreshed:** 2026-11-07. **Third-party native listings:** unverified / pending vendor approval.
 
 ## Canonical chain and icon separation
 
@@ -15,6 +15,15 @@
 - Canonical SHA-256 of native WMC 401x401 PNG: `dbbd58c8a18c730825a3931c0bf41f133abca76c140f27d8c4ba0b2f58deafee`.
 
 Do not use a WMC-20 token address to register native WMC; never replace the native coin artwork with the network logo or vice versa.
+
+## Registry status
+
+- DefiLlama Chainlist PR #3209: **MERGED** on 2026-10-21.
+- DefiLlama Icons PR #2523: **MERGED** on 2026-10-21.
+- Ethereum Lists PR #8740: **OPEN**, mergeable and clean as of 2026-11-07.
+- Canonical machine-readable status: `integrations/wallets/status.json`.
+
+A merged Chainlist/icon entry proves registry publication only. It does not prove wallet-native network artwork or native WMC artwork support.
 
 ## MetaMask
 
