@@ -37,3 +37,12 @@ Machine-readable status: https://eriqueedw-star.github.io/winmar-chain/integrati
 - Approved commercial terms: **none**
 
 Do not put user email correspondence, private email addresses of vendor staff, proprietary quotes, client data or access credentials into this public repo. Record redacted provider facts only.
+
+## WalletConnect / Reown
+
+- Official chain-discovery request submitted: https://github.com/WalletConnect/walletconnect-monorepo/issues/7390
+- CAIP-2 identifier: `eip155:12142816`
+- Namespace: `eip155`
+- RPC: https://rpc.winmarchain.io
+- Status: **submitted / pending provider review**
+- This issue is a discovery request only and does not imply wallet, SDK, or dapp native support until Reown/WalletConnect confirms or publishes the chain.
