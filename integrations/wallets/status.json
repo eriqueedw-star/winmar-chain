@@ -56,7 +56,7 @@
       "issue": "https://github.com/WalletConnect/walletconnect-monorepo/issues/7390",
       "namespace": "eip155",
       "caip2": "eip155:12142816",
-      "vendorNativeSupport": "PENDING_REVIEW"
+      "vendorNativeSupport": "NOT_VERIFIED"
     }
   },
   "rules": [
