@@ -10,11 +10,19 @@ const require = createRequire(import.meta.url);
 const here = path.dirname(fileURLToPath(import.meta.url));
 const repo = path.resolve(here, '../../..');
 const outputDir = path.join(repo, 'artifacts');
-const sources = {
-  'contracts/DocumentFeePayment.sol': await fs.readFile(path.join(repo, 'contracts/DocumentFeePayment.sol'), 'utf8'),
-  'contracts/DocumentVerification.sol': await fs.readFile(path.join(repo, 'contracts/DocumentVerification.sol'), 'utf8'),
-  'contracts/WUSD.sol': await fs.readFile(path.join(repo, 'contracts/WUSD.sol'), 'utf8')
-};
+const sourceNames = [
+  'contracts/DocumentFeePayment.sol',
+  'contracts/DocumentVerification.sol',
+  'contracts/WUSD.sol'
+];
+const sources = {};
+for (const sourceName of sourceNames) {
+  try {
+    sources[sourceName] = await fs.readFile(path.join(repo, sourceName), 'utf8');
+  } catch (error) {
+    if (error.code !== 'ENOENT') throw error;
+  }
+}
 
 function findImports(importPath) {
   if (!importPath.startsWith('@openzeppelin/')) return { error: `Unsupported import: ${importPath}` };
