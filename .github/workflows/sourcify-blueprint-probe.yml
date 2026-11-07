@@ -1,0 +1,22 @@
+name: Sourcify blueprint probe
+
+on:
+  pull_request:
+    paths:
+      - "scripts/probe-sourcify-blueprints.mjs"
+      - ".github/workflows/sourcify-blueprint-probe.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: "22"
+      - name: Probe canonical Sourcify test contracts
+        run: node scripts/probe-sourcify-blueprints.mjs
