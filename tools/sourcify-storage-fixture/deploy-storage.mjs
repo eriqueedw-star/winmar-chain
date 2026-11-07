@@ -1,3 +1,4 @@
+import fs from "node:fs";
 import { ContractFactory, JsonRpcProvider, Wallet, keccak256 } from "ethers";
 
 const RPC = "https://rpc.winmarchain.io";
@@ -82,7 +83,7 @@ await contract.waitForDeployment();
 const address = await contract.getAddress();
 const receipt = await tx.wait();
 
-console.log(JSON.stringify({
+const result = {
   status: "DEPLOYED",
   chainId: Number(network.chainId),
   contractAddress: address,
@@ -92,4 +93,10 @@ console.log(JSON.stringify({
     file: "tests/fixtures/storage-contract-chain-addresses.json",
     entry: { "12142816": address }
   }
-}, null, 2));
+};
+console.log(JSON.stringify(result, null, 2));
+
+const resultPath = process.env.SOURCIFY_DEPLOY_RESULT_PATH;
+if (resultPath) {
+  fs.writeFileSync(resultPath, JSON.stringify(result, null, 2) + "\n", { mode: 0o600 });
+}
