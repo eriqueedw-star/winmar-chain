@@ -61,7 +61,6 @@ The bytecode is copied from Sourcify's:
 
 and corresponds to compiler `0.8.7+commit.e28d00a7`, EVM `london`, optimizer disabled.
 
-
 ## GitHub Actions one-shot deployment
 
 Repository workflow: `.github/workflows/deploy-sourcify-storage.yml`.
