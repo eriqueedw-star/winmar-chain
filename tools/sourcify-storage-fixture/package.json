@@ -1,0 +1,14 @@
+{
+  "name": "@winmar/sourcify-storage-fixture",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "engines": { "node": ">=22" },
+  "scripts": {
+    "inspect": "node deploy-storage.mjs",
+    "deploy": "node deploy-storage.mjs --broadcast"
+  },
+  "dependencies": {
+    "ethers": "^6.15.0"
+  }
+}
