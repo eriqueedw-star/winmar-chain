@@ -60,3 +60,21 @@ The bytecode is copied from Sourcify's:
 `scripts/fixtures/storage.artifact.json`
 
 and corresponds to compiler `0.8.7+commit.e28d00a7`, EVM `london`, optimizer disabled.
+
+## GitHub Actions one-shot deployment
+
+Repository workflow: `.github/workflows/deploy-sourcify-storage.yml`.
+
+Required repository/environment secret:
+
+`SOURCIFY_DEPLOYER_PRIVATE_KEY`
+
+Recommended environment protection:
+
+`sourcify-storage-deploy`
+
+The workflow only broadcasts when manually dispatched with the exact confirmation value:
+
+`DEPLOY_SOURCIFY_STORAGE`
+
+It runs the dry-run first, broadcasts exactly one Storage deployment, and uploads `deploy-result.json` containing only the contract address, transaction hash, block number and Sourcify fixture patch. The private key is never written to the artifact.

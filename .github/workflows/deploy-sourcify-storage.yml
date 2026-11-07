@@ -1,0 +1,46 @@
+name: Deploy Sourcify Storage fixture
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirmation:
+        description: "Type DEPLOY_SOURCIFY_STORAGE to broadcast exactly one Storage fixture deployment"
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    if: ${{ github.event.inputs.confirmation == 'DEPLOY_SOURCIFY_STORAGE' }}
+    runs-on: ubuntu-latest
+    environment: sourcify-storage-deploy
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: "22"
+
+      - name: Install deployment package
+        working-directory: tools/sourcify-storage-fixture
+        run: npm install --ignore-scripts --no-audit --no-fund
+
+      - name: Dry-run validation
+        working-directory: tools/sourcify-storage-fixture
+        run: npm run inspect
+
+      - name: Broadcast exactly one Storage fixture
+        working-directory: tools/sourcify-storage-fixture
+        env:
+          SOURCIFY_DEPLOYER_PRIVATE_KEY: ${{ secrets.SOURCIFY_DEPLOYER_PRIVATE_KEY }}
+          SOURCIFY_DEPLOY_RESULT_PATH: deploy-result.json
+        run: npm run deploy
+
+      - name: Upload deployment evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: sourcify-storage-deployment
+          path: tools/sourcify-storage-fixture/deploy-result.json
+          if-no-files-found: warn
