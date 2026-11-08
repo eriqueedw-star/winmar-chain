@@ -5,7 +5,7 @@ on:
     branches:
       - design/winmarchain-letterhead
     paths:
-      - 'brand/Winmar_Chain_Letterhead_COREL_Embedded.svg'
+      - 'brand/Winmar_Chain_Letterhead_FINAL.svg'
       - '.github/workflows/render-winmarchain-letterhead.yml'
   workflow_dispatch:
 
@@ -21,14 +21,12 @@ jobs:
           python3 - <<'PY'
           import cairosvg
           cairosvg.svg2pdf(
-              url='brand/Winmar_Chain_Letterhead_COREL_Embedded.svg',
+              url='brand/Winmar_Chain_Letterhead_FINAL.svg',
               write_to='Winmar_Chain_Letterhead_FINAL.pdf'
           )
           PY
       - name: Upload PDF artifact
         uses: actions/upload-artifact@v4
         with:
-          name: Winmar_Chain_Letterhead_FINAL
+          name: Winmar_Chain_Letterhead_FINAL_CLEAN
           path: Winmar_Chain_Letterhead_FINAL.pdf
-
-# trigger render
