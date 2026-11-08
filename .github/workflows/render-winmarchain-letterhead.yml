@@ -1,0 +1,32 @@
+name: Render Winmar Chain Letterhead PDF
+
+on:
+  push:
+    branches:
+      - design/winmarchain-letterhead
+    paths:
+      - 'brand/Winmar_Chain_Letterhead_COREL_Embedded.svg'
+      - '.github/workflows/render-winmarchain-letterhead.yml'
+  workflow_dispatch:
+
+jobs:
+  render:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install CairoSVG
+        run: python3 -m pip install --upgrade cairosvg
+      - name: Render PDF
+        run: |
+          python3 - <<'PY'
+          import cairosvg
+          cairosvg.svg2pdf(
+              url='brand/Winmar_Chain_Letterhead_COREL_Embedded.svg',
+              write_to='Winmar_Chain_Letterhead_FINAL.pdf'
+          )
+          PY
+      - name: Upload PDF artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Winmar_Chain_Letterhead_FINAL
+          path: Winmar_Chain_Letterhead_FINAL.pdf
