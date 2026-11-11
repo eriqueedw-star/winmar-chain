@@ -1,0 +1,15 @@
+{
+  "chainId": "0xB948E0",
+  "chainName": "Winmar Chain",
+  "nativeCurrency": {
+    "name": "Winmar Coin",
+    "symbol": "WMC",
+    "decimals": 18
+  },
+  "rpcUrls": [
+    "https://rpc.winmarchain.io"
+  ],
+  "blockExplorerUrls": [
+    "https://scan.winmarchain.io"
+  ]
+}

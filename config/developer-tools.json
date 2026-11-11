@@ -40,10 +40,12 @@
     "environment": "mainnet",
     "configured": true,
     "deploymentStatus": "deployed",
-    "factoryAddress": "0xedC44c5b50241302Fb546364b7530fA723fC0144",
-    "deploymentTransaction": "0x1b396ae417e99a51c5b7d7c05fe030d60efa5fc06ddd6b0301107b2ea6014e2f",
+    "factoryAddress": "0xd6fA32d2A95073b5AC77F6Fe82F3EfA813c68810",
+    "deploymentTransaction": "0xed5a613a64b4a33bed55aef1cf14c1a7fa414d9449bebf114cbd056249dda2a6",
     "tokenStandard": "WMC-20",
     "technicalCompatibility": "ERC-20",
+    "protocolFee": "0.01 WMC",
+    "feeRecipient": "0x8EcFc4f3f16e1d19a10561D2A075b2dAe0706Be4",
     "standardSpecification": "docs/standards/WMC-20.md"
   },
   "documentVerifier": {
