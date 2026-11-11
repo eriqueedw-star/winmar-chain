@@ -54,6 +54,33 @@ class ExplorerReleaseTests(unittest.TestCase):
             self.assertFalse(any(".env" in x or x.endswith(".pdf") or
                                  "private" in x.lower() for x in packaged))
 
+
+    def test_asset_paths_allow_cache_busting_versions(self):
+        html = (module.WEB / "verify.html").read_text(encoding="utf-8")
+        module.validate_asset_paths(html)
+        module.validate_asset_paths(
+            html.replace('href="./verify.css"', 'href="./verify.css?v=release-2')
+        )
+
+    def test_asset_paths_reject_missing_remote_and_wrong_assets(self):
+        html = (module.WEB / "verify.html").read_text(encoding="utf-8")
+        import re
+        for replacement in (
+            "",
+            '<script src="https://example.com/verify.js"></script>',
+            '<script src="//example.com/verify.js"></script>',
+            '<script src="./wrong.js?v=verify.js"></script>',
+        ):
+            with self.subTest(replacement=replacement):
+                changed = re.sub(
+                    r'<script src="./verify\.js[^"]*"></script>',
+                    lambda _: replacement,
+                    html,
+                )
+                self.assertNotEqual(changed, html)
+                with self.assertRaisesRegex(ValueError, "Verifier asset path"):
+                    module.validate_asset_paths(changed)
+
     def test_refuses_existing_release_directory_without_overwriting(self):
         with tempfile.TemporaryDirectory() as td:
             out = Path(td) / "dist"

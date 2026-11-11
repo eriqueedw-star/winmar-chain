@@ -11,7 +11,9 @@ import argparse
 import hashlib
 import json
 import shutil
+from html.parser import HTMLParser
 from pathlib import Path
+from urllib.parse import urlsplit
 
 ROOT = Path(__file__).resolve().parents[1]
 WEB = ROOT / "services" / "winmar-document-verification" / "web"
@@ -29,6 +31,36 @@ ALLOWLIST = (
 SAMPLE_DOC_ID = (
     "0x477a80f1f39d85e3b746f621a5271a17c3aa1b6adc9d88401cc7bbf58ae209fc"
 )
+
+
+def validate_asset_paths(html: str) -> None:
+    """Require approved local assets while allowing cache-busting queries."""
+    class AssetReferences(HTMLParser):
+        def __init__(self):
+            super().__init__()
+            self.references = set()
+
+        def handle_starttag(self, tag, attrs):
+            for name, value in attrs:
+                if name in ("src", "href") and value is not None:
+                    parsed = urlsplit(value)
+                    if not parsed.scheme and not parsed.netloc and not parsed.fragment:
+                        self.references.add((tag, name, parsed.path))
+
+    parser = AssetReferences()
+    parser.feed(html)
+    required = (
+        ("base", "href", "/document-verification/"),
+        ("script", "src", "./certificate-renderer.js"),
+        ("script", "src", "./verification-proof.js"),
+        ("script", "src", "./verify.js"),
+        ("link", "href", "./verify.css"),
+        ("script", "src", "./vendor/qrcode.min.js"),
+        ("script", "src", "./vendor/pdf-lib-1.17.1.min.js"),
+    )
+    for reference in required:
+        if reference not in parser.references:
+            raise ValueError(f"Verifier asset path is inconsistent: {reference}")
 
 
 def assemble(destination: Path) -> dict[str, object]:
@@ -57,15 +89,7 @@ def assemble(destination: Path) -> dict[str, object]:
     # <base> directs JS/CSS/logo to /document-verification/, a separate static
     # alias that does not replace Blockscout's main / route.
     html = (assets / "verify.html").read_text(encoding="utf-8")
-    for phrase in ('<base href="/document-verification/">',
-                   'src="./certificate-renderer.js"',
-                   'src="./verification-proof.js"',
-                   'src="./verify.js"',
-                   'href="./verify.css"',
-                   'src="./vendor/qrcode.min.js"',
-                   'src="./vendor/pdf-lib-1.17.1.min.js"'):
-        if phrase not in html:
-            raise ValueError(f"Verifier asset path is inconsistent: {phrase}")
+    validate_asset_paths(html)
 
     js = (assets / "verify.js").read_text(encoding="utf-8")
     proof = (assets / "verification-proof.js").read_text(encoding="utf-8")
