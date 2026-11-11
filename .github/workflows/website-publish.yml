@@ -8,6 +8,9 @@ on:
       - 'apps/token-creator/**'
       - 'config/**'
       - 'assets/**'
+      - 'discovery/**'
+      - 'integrations/wallets/status.json'
+      - 'scripts/build-discovery-health.mjs'
       - '.github/workflows/website-publish.yml'
   workflow_dispatch:
 
@@ -39,11 +42,24 @@ jobs:
           mkdir -p _site
           cp apps/developer-tools/index.html _site/developers.html
           cp apps/developer-tools/wmc.html _site/wmc.html
-          cp apps/developer-tools/wint.html _site/wint.html`n          mkdir -p _site/token-creator`n          cp apps/token-creator/index.html _site/token-creator/index.html
+          cp apps/developer-tools/integrations.html _site/integrations.html
+          cp apps/developer-tools/wint.html _site/wint.html
+          mkdir -p _site/token-creator _site/assets _site/integrations _site/discovery _site/.well-known
+          cp apps/token-creator/index.html _site/token-creator/index.html
           cp -R config _site/config
+          cp integrations/wallets/status.json _site/integrations/status.json
+          cp discovery/chain.json _site/discovery/chain.json
+          cp discovery/wallet-metadata.json _site/discovery/wallet-metadata.json
+          cp discovery/eip3085.json _site/discovery/eip3085.json
+          cp discovery/logo-manifest.json _site/discovery/logo-manifest.json
+          cp discovery/security.txt _site/.well-known/security.txt
+          cp discovery/chain.json _site/.well-known/chain.json
+          cp discovery/wallet-metadata.json _site/.well-known/wallet-metadata.json
           mkdir -p _site/logo
           if [[ -f assets/wmc.png ]]; then cp assets/wmc.png _site/logo/wmc.png; fi
-          if [[ -f assets/wint.png ]]; then cp assets/wint.png _site/logo/wint.png; fi`n          if [[ -f winmar-chain-logo-framed-v2.png ]]; then cp winmar-chain-logo-framed-v2.png _site/assets/winmar-chain-logo-framed-v2.png; fi
+          if [[ -f assets/wint.png ]]; then cp assets/wint.png _site/logo/wint.png; fi
+          if [[ -f winmar-chain-logo-framed-v2.png ]]; then cp winmar-chain-logo-framed-v2.png _site/assets/winmar-chain-logo-framed-v2.png; fi
+          node scripts/build-discovery-health.mjs
           touch _site/.nojekyll
 
       - name: Upload Pages artifact

@@ -1,0 +1,24 @@
+{
+  "schemaVersion": 1,
+  "chainId": 12142816,
+  "eip155": "eip155:12142816",
+  "name": "Winmar Chain",
+  "nativeCurrency": {
+    "name": "Winmar Coin",
+    "symbol": "WMC",
+    "decimals": 18
+  },
+  "rpcUrl": "https://rpc.winmarchain.io",
+  "explorerUrl": "https://scan.winmarchain.io",
+  "websiteUrl": "https://winmarchain.io",
+  "networkLogoUrl": "https://winmarchain.io/assets/winmar-logo.png",
+  "nativeCoinLogoUrl": "https://winmarchain.io/logo/wmc.png",
+  "eip3085": "../discovery/eip3085.json",
+  "rules": {
+    "nativeCoinHasTokenContract": false,
+    "networkLogoIsNativeCoinLogo": false,
+    "customNetworkImportImpliesVendorNativeListing": false
+  },
+  "walletStatusSource": "../integrations/status.json",
+  "lastReviewed": "2026-11-07"
+}

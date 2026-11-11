@@ -1,6 +1,6 @@
 # Winmar Chain — Sourcify, thirdweb, and Routescan onboarding
 
-Last reviewed: 2026-10-23. All statuses are conservative; no listing or provider endorsement is claimed without confirmation.
+Last reviewed: 2026-11-07. All statuses are conservative; no listing or provider endorsement is claimed without confirmation.
 
 ## Canonical network identity
 
@@ -9,6 +9,8 @@ Last reviewed: 2026-10-23. All statuses are conservative; no listing or provider
 - RPC: https://rpc.winmarchain.io
 - Explorer (keep as canonical): https://scan.winmarchain.io
 - Website: https://winmarchain.io
+- Integration hub: https://eriqueedw-star.github.io/winmar-chain/integrations.html
+- Machine-readable integration status: https://eriqueedw-star.github.io/winmar-chain/integrations/status.json
 - **Native coin logo**: https://winmarchain.io/logo/wmc.png, 401 × 401 PNG, SHA-256 `dbbd58c8a18c730825a3931c0bf41f133abca76c140f27d8c4ba0b2f58deafee`
 - Network icon (separate): `winmar` registered through DefiLlama icons
 
@@ -22,9 +24,9 @@ Developer config: [`integrations/thirdweb/winmar-chain.ts`](../../integrations/t
 
 **Action:** Owner-authorized operator submits chain-claim request or uses an authorized thirdweb account/API for formal registration. Capture submission acknowledgement/chain profile URL; verify directory listing and exact fields before changing status.
 
-## 2. Sourcify — blocked pending ethereum-lists registration + test contract evidence
+## 2. Sourcify — direct chain override ready; upstream PR pending
 
-Sourcify says its `chains.json` is synchronized with `ethereum-lists/chains` and must not be hand-edited. Winmar Chain's upstream metadata correction is tracked in https://github.com/ethereum-lists/chains/pull/8740 (still open when checked).
+Sourcify's current `sourcify-chains` repository explicitly allows a chain to be included through `chain-overrides.json` even when it is not auto-discovered. Therefore Ethereum Lists PR #8740 is useful ecosystem metadata but is **not a blocker** for the direct Sourcify override.
 
 - Official process: https://docs.sourcify.dev/docs/chain-support/
 - Upstream repo: https://github.com/argotorg/sourcify, branch `staging`
@@ -43,7 +45,7 @@ Sourcify says its `chains.json` is synchronized with `ethereum-lists/chains` and
 }
 ```
 
-**Not submitted**: Must validate that the installed explorer actually supports required Blockscout API routes and supply a deployed public test contract (or a pre-existing permitted CreateX/Multicall deployment). **Do not deploy any smart contract or use validator keys without explicit operational approval.** After upstream metadata merge, prepare branch `add-chain-12142816` from Sourcify `staging`, add chain details and test contract evidence, run prescribed tests, then open upstream PR.
+**Fork branch prepared:** `eriqueedw-star/sourcify-chains:add-chain-12142816`, refreshed from the current upstream `chain-overrides.json`, adds only `sourcifyName` and the canonical RPC. The connected GitHub integration cannot create a PR in the upstream repository because it has read-only upstream permissions. An owner-authenticated GitHub UI action is still required to open the upstream PR. No Blockscout API or trace-support claim is included until independently verified.
 
 ## 3. Routescan — indexing / directory inclusion requires provider agreement
 

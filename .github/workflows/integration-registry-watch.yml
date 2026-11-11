@@ -1,0 +1,102 @@
+name: Integration registry watch
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "41 4 * * *"
+
+permissions:
+  contents: read
+
+jobs:
+  watch:
+    name: Check Winmar Chain registries
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check canonical RPC
+        id: rpc
+        shell: bash
+        run: |
+          set -euo pipefail
+          body='{"jsonrpc":"2.0","id":1,"method":"eth_chainId","params":[]}'
+          result="$(curl -fsS --max-time 20 -H 'content-type: application/json' --data "$body" https://rpc.winmarchain.io)"
+          chain_id="$(jq -r '.result // empty' <<<"$result")"
+          test "$chain_id" = "0xb948e0"
+          echo "chain_id=$chain_id" >> "$GITHUB_OUTPUT"
+
+      - name: Check DefiLlama Chainlist metadata
+        id: chainlist
+        shell: bash
+        run: |
+          set -euo pipefail
+          file="$(curl -fsS --max-time 20 https://raw.githubusercontent.com/DefiLlama/chainlist/main/constants/additionalChainRegistry/chainid-12142816.js)"
+          grep -q 'chainId: 12142816' <<<"$file"
+          grep -q 'chainSlug: "winmar"' <<<"$file"
+          grep -q 'icon: "winmar"' <<<"$file"
+          grep -q 'https://rpc.winmarchain.io' <<<"$file"
+          echo "published=true" >> "$GITHUB_OUTPUT"
+
+      - name: Check DefiLlama icon
+        id: icon
+        shell: bash
+        run: |
+          set -euo pipefail
+          code="$(curl -L -sS -o /tmp/winmar-icon -w '%{http_code}' --max-time 20 https://icons.llamao.fi/icons/chains/rsz_winmar)"
+          test "$code" = "200"
+          test -s /tmp/winmar-icon
+          echo "published=true" >> "$GITHUB_OUTPUT"
+
+      - name: Observe Ethereum Lists status
+        id: ethereum_lists
+        shell: bash
+        run: |
+          set -euo pipefail
+          url="https://raw.githubusercontent.com/ethereum-lists/chains/master/_data/chains/eip155-12142816.json"
+          if file="$(curl -fsS --max-time 20 "$url" 2>/dev/null)"; then
+            if grep -q 'https://rpc.winmarchain.io' <<<"$file" && grep -q '"icon": "winmar"' <<<"$file"; then
+              echo "status=canonical_io_published" >> "$GITHUB_OUTPUT"
+            else
+              echo "status=published_but_update_pending" >> "$GITHUB_OUTPUT"
+            fi
+          else
+            echo "status=not_observed" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Observe Sourcify status
+        id: sourcify
+        shell: bash
+        run: |
+          set -euo pipefail
+          url="https://raw.githubusercontent.com/sourcifyeth/sourcify-chains/main/chain-overrides.json"
+          if file="$(curl -fsS --max-time 20 "$url" 2>/dev/null)" && jq -e 'has("12142816")' <<<"$file" >/dev/null; then
+            echo "status=published" >> "$GITHUB_OUTPUT"
+          else
+            echo "status=pending" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Observe Routescan directory
+        id: routescan
+        shell: bash
+        run: |
+          set -euo pipefail
+          if page="$(curl -L -fsS --max-time 20 https://routescan.io/chains 2>/dev/null)" && grep -q '12142816' <<<"$page"; then
+            echo "status=observed" >> "$GITHUB_OUTPUT"
+          else
+            echo "status=pending" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Publish summary
+        shell: bash
+        run: |
+          {
+            echo "## Winmar Chain integration registry watch"
+            echo
+            echo "| Check | Status |"
+            echo "| --- | --- |"
+            echo "| Public RPC chain ID | \`${{ steps.rpc.outputs.chain_id }}\` |"
+            echo "| DefiLlama Chainlist | ${{ steps.chainlist.outputs.published }} |"
+            echo "| DefiLlama icon | ${{ steps.icon.outputs.published }} |"
+            echo "| Ethereum Lists | ${{ steps.ethereum_lists.outputs.status }} |"
+            echo "| Sourcify | ${{ steps.sourcify.outputs.status }} |"
+            echo "| Routescan directory | ${{ steps.routescan.outputs.status }} |"
+          } >> "$GITHUB_STEP_SUMMARY"

@@ -56,4 +56,4 @@ Legacy IPFS CID `bafybeieqw6y7ha7ciykcxqz7ttuywix2yaxyffhk5uajxgy7357xdn7liu` re
 - https://gitlab.com/winmar-chain/winmar-chain-registry/-/merge_requests/2
 - https://gitlab.com/winmar-chain/winmar-chain-registry/-/blob/main/networks/winmar-mainnet.json
 
-**Status on 2026-10-23:** Canonical published 401px logo approved and validated; documentation-only repo change, not a wallet-vendor submission or production infrastructure change.
+**Status refreshed 2026-11-07:** Canonical 401px WMC logo remains approved and validated. DefiLlama Chainlist PR #3209 and DefiLlama Icons PR #2523 are merged. Ethereum Lists PR #8740 remains open/mergeable/clean. Native WMC artwork in MetaMask, Trust Wallet and SafePal remains vendor-controlled and is not proven by Chainlist publication.
