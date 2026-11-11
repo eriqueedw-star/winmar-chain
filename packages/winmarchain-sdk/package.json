@@ -1,0 +1,17 @@
+{
+  "name": "@winmarchain/sdk",
+  "version": "0.1.0-testnet",
+  "private": true,
+  "description": "Reference TypeScript SDK for the Winmar Chain Financial API",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": ["dist"],
+  "engines": { "node": ">=22" },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "check": "tsc -p tsconfig.json --noEmit"
+  },
+  "dependencies": { "ethers": "6.15.0" },
+  "devDependencies": { "typescript": "5.9.3" }
+}
