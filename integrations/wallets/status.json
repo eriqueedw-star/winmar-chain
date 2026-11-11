@@ -1,0 +1,67 @@
+{
+  "schemaVersion": 1,
+  "checkedAt": "2026-11-07",
+  "chain": {
+    "name": "Winmar Chain",
+    "chainId": 12142816,
+    "chainIdHex": "0xB948E0",
+    "nativeCurrency": {
+      "name": "Winmar Coin",
+      "symbol": "WMC",
+      "decimals": 18
+    },
+    "rpc": "https://rpc.winmarchain.io",
+    "explorer": "https://scan.winmarchain.io",
+    "website": "https://winmarchain.io",
+    "networkLogo": "https://winmarchain.io/assets/winmar-logo.png",
+    "nativeCoinLogo": "https://winmarchain.io/logo/wmc.png"
+  },
+  "registries": {
+    "defiLlamaChainlist": {
+      "status": "MERGED",
+      "pr": "https://github.com/DefiLlama/chainlist/pull/3209",
+      "mergedAt": "2026-10-21",
+      "chainSlug": "winmar",
+      "iconSlug": "winmar"
+    },
+    "defiLlamaIcons": {
+      "status": "MERGED",
+      "pr": "https://github.com/DefiLlama/icons/pull/2523",
+      "mergedAt": "2026-10-21"
+    },
+    "ethereumLists": {
+      "status": "OPEN_MERGEABLE_CLEAN",
+      "pr": "https://github.com/ethereum-lists/chains/pull/8740",
+      "note": "Remaining upstream Ethereum Lists metadata/icon update. Formal reviewer request is currently blocked by GitHub App upstream permissions; CI remains green and PR is mergeable."
+    }
+  },
+  "wallets": {
+    "metamask": {
+      "customNetwork": "SUPPORTED",
+      "nativeNetworkLogo": "VENDOR_CONTROLLED_NOT_VERIFIED",
+      "nativeWmcLogo": "VENDOR_CONTROLLED_NOT_VERIFIED"
+    },
+    "trustWallet": {
+      "customEvmNetwork": "SUPPORTED",
+      "nativeChainIntegration": "PENDING_VENDOR_REVIEW",
+      "nativeWmcLogo": "PENDING_VENDOR_REVIEW"
+    },
+    "safePal": {
+      "customEvmNetwork": "SUPPORTED",
+      "officialNativeListing": "PENDING_VENDOR_REVIEW",
+      "nativeWmcLogo": "PENDING_VENDOR_REVIEW"
+    },
+    "reownWalletConnect": {
+      "chainDiscoveryRequest": "SUBMITTED",
+      "issue": "https://github.com/WalletConnect/walletconnect-monorepo/issues/7390",
+      "namespace": "eip155",
+      "caip2": "eip155:12142816",
+      "vendorNativeSupport": "NOT_VERIFIED"
+    }
+  },
+  "rules": [
+    "Network logo and WMC native coin logo are separate assets and must never be substituted for each other.",
+    "WMC is the native gas currency and has no token contract address.",
+    "Chainlist publication does not imply vendor-native wallet logo support."
+  ]
+}

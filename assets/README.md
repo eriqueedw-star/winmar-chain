@@ -26,6 +26,19 @@ Current result:
 
 The automated check is implemented in `scripts/audit-publication.py` and runs in repository CI. The check is intentionally limited to these PNG text and EXIF metadata classes and should not be interpreted as a forensic examination of every possible binary encoding technique.
 
+## WMC native coin artwork — canonical
+
+The **native coin WMC** uses a different logo from the **Winmar Chain network** icon above.
+
+- Public canonical WMC logo: https://winmarchain.io/logo/wmc.png
+- Exact repository binary: [`assets/wmc.png`](wmc.png)
+- Owner-approved file: PNG RGBA, 401 × 401, 325,280 bytes
+- SHA-256: `dbbd58c8a18c730825a3931c0bf41f133abca76c140f27d8c4ba0b2f58deafee`
+- Git blob SHA-1: `440a721729635dbbe06fba3247a2421fe8fbbd2c`
+- Other/logo variants and the old IPFS CID are historical or unverified, not production wallet assets.
+
+Never use the Winmar Chain logo in place of WMC on WMC asset pages. Never replace the Chainlist `winmar` **network icon** with this coin logo. Wallet-native icon support still requires vendor approval.
+
 ## Required provenance fields
 
 Before commercial licensing, trademark filing, or external distribution, add the creator's legal name or entity, creation date, source/design files, commissioning agreement or assignment, and permitted uses. Do not assume AI assistance or possession alone establishes exclusive rights.

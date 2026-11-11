@@ -1,0 +1,29 @@
+name: Validator and transaction integrity audit
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  read-only-audit:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Run read-only audit
+        shell: bash
+        run: |
+          set -o pipefail
+          printf 'source_commit=%s\n' "$GITHUB_SHA" | tee validator-transaction-evidence.txt
+          bash scripts/validator-transaction-integrity-audit.sh | tee -a validator-transaction-evidence.txt
+      - name: Upload evidence even on failure
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: validator-transaction-evidence-${{ github.run_id }}
+          path: validator-transaction-evidence.txt
+          if-no-files-found: warn
+          retention-days: 30

@@ -190,3 +190,53 @@ PY
 printf 'rpc_privileged_method_gate=enforced\n'
 check_method_exposure "admin_nodeinfo" "admin_nodeInfo" "[]"
 check_method_exposure "personal_listaccounts" "personal_listAccounts" "[]"
+
+printf 'rpc_syncing_gate=enforced\n'
+sync_response="$(rpc_post '{"jsonrpc":"2.0","method":"eth_syncing","params":[],"id":4}')"
+SYNC_RESPONSE="$sync_response" python3 - <<'PY'
+import json
+import os
+
+try:
+    payload = json.loads(os.environ["SYNC_RESPONSE"])
+    if "error" in payload or "result" not in payload:
+        raise ValueError("missing result or RPC error")
+    value = payload["result"]
+    if value is False:
+        print("rpc_syncing=false")
+        print("rpc_syncing_healthy=true")
+    elif value is True or isinstance(value, dict):
+        print("rpc_syncing=true")
+        print("rpc_syncing_healthy=false")
+        raise SystemExit(1)
+    else:
+        raise ValueError("unexpected eth_syncing result")
+except (ValueError, TypeError, KeyError) as exc:
+    print("rpc_syncing_check=invalid")
+    print(f"rpc_syncing_error={exc}")
+    raise SystemExit(1)
+PY
+
+# Block production sampling is informational to avoid false failures on low-traffic PoA chains.
+printf 'rpc_block_growth_gate=informational_only\n'
+printf 'rpc_block_growth_sample_seconds=30\n'
+sleep 30
+block_later="$(rpc_post '{"jsonrpc":"2.0","method":"eth_blockNumber","params":[],"id":5}')"
+BLOCK_BEFORE="$block_response" BLOCK_AFTER="$block_later" python3 - <<'PY'
+import json
+import os
+
+try:
+    first = int(json.loads(os.environ["BLOCK_BEFORE"])["result"], 16)
+    last = int(json.loads(os.environ["BLOCK_AFTER"])["result"], 16)
+    if first < 0 or last < 0:
+        raise ValueError("negative block height")
+    print(f"rpc_block_growth_first={first}")
+    print(f"rpc_block_growth_last={last}")
+    print(f"rpc_block_growth_delta={last - first}")
+    print(f"rpc_block_growth_observed={'true' if last > first else 'false'}")
+except (ValueError, TypeError, KeyError) as exc:
+    print("rpc_block_growth_check=invalid")
+    print(f"rpc_block_growth_error={exc}")
+    raise SystemExit(1)
+PY

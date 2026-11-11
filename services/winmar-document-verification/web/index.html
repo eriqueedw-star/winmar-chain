@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Winmar Chain Document Verification">
+  <title>Winmar Document Verification</title>
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+  <header class="site-header">
+    <a class="brand" href="./" aria-label="Winmar Chain Document Verification home">
+      <img src="./winmar-chain-logo-framed-v2.png" alt="Winmar Chain logo">
+      <span><strong>WINMAR CHAIN</strong><small>Where the world settles value</small></span>
+    </a>
+    <nav aria-label="Primary navigation">
+      <div class="desktop-nav">
+        <a href="https://winmarchain.io/network.html">Network</a>
+        <a href="https://winmarchain.io/technology.html">Technology</a>
+        <a href="https://winmarchain.io/developers.html">Developers</a>
+        <a href="https://winmarchain.io/governance.html">Governance</a>
+        <a href="https://winmarchain.io/whitepaper.html">Whitepaper</a>
+      </div>
+      <a class="explorer-button" href="https://scan.winmarchain.io/" rel="noreferrer">Explorer ↗</a>
+      <button class="menu-button" id="menu-button" aria-label="Open navigation" aria-expanded="false">☰</button>
+    </nav>
+  </header>
+  <div class="nav-drawer" id="nav-drawer" hidden>
+    <a href="https://winmarchain.io/network.html">Network</a>
+    <a href="https://winmarchain.io/technology.html">Technology</a>
+    <a href="https://winmarchain.io/governance.html">Governance</a>
+    <a href="https://winmarchain.io/whitepaper.html">Whitepaper</a>
+    <a href="https://scan.winmarchain.io/" rel="noreferrer">Primary explorer ↗</a>
+  </div>
+
+  <main>
+    <section class="hero">
+      <div class="eyebrow">WINMAR DOCUMENT VERIFICATION</div>
+      <h1>Make every document<br><span>verifiable on-chain.</span></h1>
+      <p class="lede">No account required for public issuance. Connect your wallet, upload a PDF, pay the WMC fee and receive the official certificate only after its SHA-256 is registered on Winmar Chain.</p>
+      <div class="hero-actions"><a class="button primary" href="#issue">Issue a document</a><a class="button ghost" href="#verify">Verify a document</a></div>
+      <div class="trust-row"><span>SHA-256 fingerprint</span><span>Immutable record</span><span>Explorer-linked QR</span></div>
+    </section>
+
+    <section class="workspace" id="issue">
+      <div class="section-heading"><div><div class="eyebrow">PUBLIC SELF-SERVICE · NO ACCOUNT REQUIRED</div><h2>Issue a verified document on-chain</h2></div><span class="environment rpc-status" id="rpc-status">WINMAR CHAIN</span></div>
+      <div class="panel-grid">
+        <div class="panel upload-panel">
+          <div class="panel-top"><span class="step">01</span><span class="panel-label">SOURCE DOCUMENT</span></div>
+          <label class="dropzone" id="dropzone" for="file-input">
+            <input id="file-input" type="file" accept="application/pdf">
+            <span class="upload-icon">↑</span><strong>Drop a PDF here</strong><span>or choose a file from your device</span><small>PDF only · maximum 10 MB</small>
+          </label>
+          <div id="file-status" class="file-status" aria-live="polite">No document selected</div>
+          <div id="document-preview" class="document-preview" hidden>
+            <div class="preview-heading"><span>DOCUMENT PREVIEW</span><small>Local preview · file is not uploaded yet</small></div>
+            <iframe id="pdf-preview" title="Uploaded PDF preview"></iframe>
+          </div>
+        </div>
+        <div class="panel record-panel">
+          <div class="panel-top"><span class="step">02</span><span class="panel-label">PREVIEW RECORD</span></div>
+          <div class="issuer-fields">
+            <label for="document-subject">Subject</label>
+            <input id="document-subject" type="text" maxlength="160" autocomplete="organization" placeholder="Who or what the document concerns">
+            <label for="document-issuer">Applicant / Organization (optional)</label>
+            <input id="document-issuer" type="text" maxlength="160" autocomplete="organization" placeholder="Optional applicant reference">
+            <small>Applicant text is optional reference metadata, not proof of identity or issuer authorization. The certificate issuer is Winmar Chain; its signer wallet is verified on-chain.</small>
+          </div>
+          <dl class="record-list"><div><dt>DOCUMENT ID</dt><dd id="document-id-value">Waiting for PDF</dd></div><div><dt>SHA-256</dt><dd id="hash-value">Waiting for PDF</dd></div><div><dt>NETWORK</dt><dd>Winmar Chain Mainnet</dd></div><div><dt>CHAIN ID</dt><dd>12142816</dd></div><div><dt>STATUS</dt><dd><span class="status pending" id="status-value">Not issued</span></dd></div></dl>
+          <button class="button primary full" id="issue-button" disabled>Pay 0.0021 WMC &amp; Verify On-chain</button>
+          <div class="issue-progress" id="issue-progress" hidden><span class="spinner" aria-hidden="true"></span><span id="issue-progress-text">Waiting for transaction confirmation…</span></div>
+          <button type="button" class="button primary full certificate-download" id="certificate-download" hidden>Download Verified PDF</button>
+          <p class="fine-print">No platform registration is required. Your wallet pays 0.0021 WMC plus network gas. No official certificate is issued until the separate on-chain document registration is confirmed.</p>
+        </div>
+      </div>
+      <div class="wallet-bar" id="wallet">
+        <div><span class="wallet-label">PAYER WALLET</span><strong id="wallet-address">Not connected</strong><small id="wallet-network">Connect a wallet to read your WMC balance.</small></div>
+        <div class="wallet-balance"><span>WMC BALANCE</span><strong id="wallet-balance">-</strong></div>
+        <button class="button wallet-button" id="connect-wallet">Connect Wallet</button>
+      </div>
+      <p class="wallet-note" id="wallet-note">No account registration required. Connect a wallet to issue documents on-chain. You approve the fee separately in your wallet.</p>
+      <p class="verification-link" id="verification-link" hidden><span>PUBLIC VERIFICATION URL</span><a id="verification-url" target="_blank" rel="noreferrer"></a></p>
+    </section>
+
+    <section class="verify-section" id="verify">
+      <div class="verify-copy"><div class="eyebrow">PUBLIC VERIFICATION</div><h2>Verify by document ID or QR.</h2><p>Scan the QR on a Winmar certificate or enter its document ID. The Explorer compares the source file's SHA-256 with the immutable record.</p></div>
+      <div class="verify-card"><label for="document-id">Document ID</label><div class="verify-input"><input id="document-id" placeholder="0x..." autocomplete="off"><button class="button primary" id="verify-button">Verify</button></div><div class="verify-result" id="verify-result">No verification requested.</div></div>
+    </section>
+
+    <section class="register-section" id="register"><div class="eyebrow">ORGANIZATION API ACCESS</div><h2>Embed verification in your own website.</h2><p>Public wallet issuance above needs no account. Organizations can optionally register, complete approval and receive scoped server-side API access to integrate the same wallet-paid on-chain document verification into their own website or backend. Registration grants API access; it never bypasses the WMC fee or blockchain registration. Private keys stay outside the customer dashboard and browser.</p><a class="button ghost" href="mailto:partnerships@winmarchain.io">Request organization API access</a></section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-brand"><img src="./winmar-chain-logo-framed-v2.png" alt="Winmar Chain logo"><div><strong>WINMAR CHAIN</strong><span>Where the world settles value</span></div></div>
+    <div class="footer-group"><h3>EXPLORE</h3><a href="https://winmarchain.io/network.html">Network</a><a href="https://winmarchain.io/technology.html">Technology</a><a href="https://winmarchain.io/governance.html">Governance</a><a href="https://winmarchain.io/whitepaper.html">Whitepaper</a></div>
+    <div class="footer-group"><h3>BUILD</h3><a href="https://winmarchain.io/developers.html">Developer tools</a><a href="https://winmarchain.io/wmc.html">WMC native coin</a><a href="https://winmarchain.io/wint.html">WINT</a></div>
+    <div class="footer-group"><h3>NETWORK</h3><a href="https://scan.winmarchain.io/" rel="noreferrer">Primary explorer ↗</a><a href="https://scan.winmarchain.com/" rel="noreferrer">Backup explorer ↗</a><a href="https://winmarchain.io/privacy.html">Privacy policy</a></div>
+    <div class="footer-bottom"><span>© 2026 Winmar Chain</span><strong>Capital · Technology · Intelligence</strong></div>
+  </footer>
+  <script src="./vendor/qrcode.min.js"></script>
+  <script src="./vendor/pdf-lib-1.17.1.min.js"></script>
+  <script src="./verification-proof.js"></script>
+  <script src="./certificate-renderer.js"></script>
+  <script src="./pdf-assembler.js"></script>
+  <script src="./app.js"></script>
+</body>
+</html>

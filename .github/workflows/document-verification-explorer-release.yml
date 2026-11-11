@@ -1,0 +1,70 @@
+name: Package Winmar Explorer Document Verification UI
+
+on:
+  pull_request:
+    paths:
+      - 'services/winmar-document-verification/web/verify.html'
+      - 'services/winmar-document-verification/web/verify.css'
+      - 'services/winmar-document-verification/web/verify.js'
+      - 'services/winmar-document-verification/web/verification-proof.js'
+      - 'services/winmar-document-verification/web/certificate-renderer.js'
+      - 'services/winmar-document-verification/web/winmar-chain-logo-framed-v2.png'
+      - 'services/winmar-document-verification/web/winmar-verification-certificate-master.png'
+      - 'services/winmar-document-verification/web/vendor/qrcode.min.js'
+      - 'services/winmar-document-verification/web/vendor/pdf-lib-1.17.1.min.js'
+      - 'scripts/build-document-verification-explorer.py'
+      - 'scripts/stage-document-verification-explorer.sh'
+      - 'scripts/probe-document-verification-explorer.mjs'
+      - 'tests/test_document_verification_explorer_release.py'
+      - '.github/workflows/document-verification-explorer-release.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: winmar-explorer-verify-package-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  package:
+    name: Verify and package public Explorer route (NO DEPLOY)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 8
+    steps:
+      - name: Checkout reviewed source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Validate standalone viewer package and safety invariants
+        run: |
+          set -euo pipefail
+          python3 -m unittest discover -s tests -p 'test_document_verification_explorer_release.py' -v
+          node --check services/winmar-document-verification/web/verify.js
+          node --check services/winmar-document-verification/web/verification-proof.js
+          node --check scripts/probe-document-verification-explorer.mjs
+          bash -n scripts/stage-document-verification-explorer.sh
+      - name: Assemble static-only deployment bundle
+        run: |
+          set -euo pipefail
+          python3 scripts/build-document-verification-explorer.py --output build/document-verification-explorer
+          cd build/document-verification-explorer
+          sha256sum --check SHA256SUMS
+          grep -q '"status": "review-only-not-deployed"' manifest.json
+      - name: Rehearse immutable staging without a live symlink or Nginx changes
+        env:
+          REVIEW_SHA: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+          bash scripts/stage-document-verification-explorer.sh \
+            build/document-verification-explorer \
+            "$RUNNER_TEMP/winmar-explorer-verify-releases" \
+            "$REVIEW_SHA"
+          test -f "$RUNNER_TEMP/winmar-explorer-verify-releases/$REVIEW_SHA/site/verify.html"
+          test ! -e "$RUNNER_TEMP/winmar-explorer-verify-releases/current"
+
+      - name: Publish review artifact (not the production site)
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: winmar-explorer-verification-static-${{ github.run_id }}
+          path: build/document-verification-explorer/
+          if-no-files-found: error
+          retention-days: 30

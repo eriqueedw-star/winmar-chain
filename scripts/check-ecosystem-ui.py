@@ -10,6 +10,16 @@ ROOT = pathlib.Path(__file__).resolve().parent.parent
 conf = json.loads((ROOT / "config/developer-tools.json").read_text(encoding="utf-8"))
 assert conf["network"]["chainId"] == 12142816
 assert conf["network"]["rpc"] == "https://rpc.winmarchain.io"
+auth = conf["developerAuth"]
+assert auth["provider"] == "amazon-cognito"
+assert auth["enabled"] is True, "Developer email auth must remain enabled after the reviewed AWS deployment"
+assert auth["region"] == "eu-north-1"
+assert auth["userPoolId"] == "eu-north-1_ph3o7VEeZ"
+assert auth["clientId"] == "jshhsqetnl2k2kn11me8o4r4v"
+assert auth["hostedUiDomain"] == "https://eu-north-1ph3o7veez.auth.eu-north-1.amazoncognito.com"
+assert auth["redirectUri"] == "https://winmarchain.io/developers.html"
+assert re.fullmatch(r"https://[a-z0-9]+\.execute-api\.eu-north-1\.amazonaws\.com", auth["apiUrl"])
+assert auth["chainId"] == conf["network"]["chainId"]
 assert conf["faucet"]["configured"] is True
 assert conf["faucet"]["deploymentStatus"] == "deployed-paused"
 assert re.fullmatch(r"0x[0-9a-fA-F]{40}", conf["faucet"]["contractAddress"])
@@ -40,9 +50,59 @@ assert "function getRecord(address issuer,bytes32 sha256)" in html
 assert "document.getElementById" in html
 assert "WMC-20 Token Creator" in html
 assert "ERC-20 compatible" in html
+assert "beginEmailSignIn" in html and "code_challenge_method:'S256'" in html
+assert "Verify creator wallet" in html and "wallet.signMessage(challenge.message)" in html
+assert "deployToken" in html and "Verify this creator wallet" in html
+assert "is not active yet" in html
+assert "PRE-RELEASE · ON-CHAIN ACTIONS DISABLED UNTIL REVIEW" not in html
+assert 'class="site-header-v3"' in html and 'class="site-footer-v3"' in html
+assert 'href="/developers.html" aria-current="page"' in html
+assert 'id="site-mobile-nav"' in html and "classList.toggle('open')" in html
+assert "body.developer-page{color-scheme:light" in html
+assert "body.developer-page .card{color:#11121a;background:#fff" in html
+lambda_source = (ROOT / "infra/developer-auth/function/index.mjs").read_text(encoding="utf-8")
+assert "TransactWriteCommand" in lambda_source and "EIP1271_MAGIC" in lambda_source
+assert "ConditionExpression: \"attribute_not_exists(pk)\"" in lambda_source
 with tempfile.TemporaryDirectory() as folder:
     p = pathlib.Path(folder) / "suite.js"
     p.write_text(scripts[0], encoding="utf-8")
     subprocess.run(["node", "--check", str(p)], check=True)
 
 print("PASS: four-module UI syntax and current feature configuration")
+
+
+integration_html = (ROOT / "apps/developer-tools/integrations.html").read_text(encoding="utf-8")
+assert "Winmar Chain — Integration Hub" in integration_html
+assert "12142816" in integration_html and "0xB948E0" in integration_html
+assert "https://rpc.winmarchain.io" in integration_html
+assert "https://scan.winmarchain.io" in integration_html
+assert "https://winmarchain.io/assets/winmar-logo.png" in integration_html
+assert "https://winmarchain.io/logo/wmc.png" in integration_html
+assert "wallet_addEthereumChain" in integration_html
+assert "0xB948E0" in integration_html
+assert ("rpc.winmar" + "chain.org") not in integration_html
+assert ("scan.winmar" + "chain.org") not in integration_html
+
+
+# Discovery Pack v1 guards
+chain_meta = json.loads((ROOT / "discovery/chain.json").read_text(encoding="utf-8"))
+wallet_meta = json.loads((ROOT / "discovery/wallet-metadata.json").read_text(encoding="utf-8"))
+eip3085 = json.loads((ROOT / "discovery/eip3085.json").read_text(encoding="utf-8"))
+logo_manifest = json.loads((ROOT / "discovery/logo-manifest.json").read_text(encoding="utf-8"))
+security_txt = (ROOT / "discovery/security.txt").read_text(encoding="utf-8")
+assert chain_meta["chainId"] == 12142816 and chain_meta["chainIdHex"] == "0xB948E0"
+assert chain_meta["rpc"] == ["https://rpc.winmarchain.io"]
+assert chain_meta["explorers"][0]["url"] == "https://scan.winmarchain.io"
+assert chain_meta["networkLogo"] == "https://winmarchain.io/assets/winmar-logo.png"
+assert chain_meta["nativeCoinLogo"] == "https://winmarchain.io/logo/wmc.png"
+assert chain_meta["nativeCurrency"]["contractAddress"] is None
+assert wallet_meta["eip155"] == "eip155:12142816"
+assert wallet_meta["rules"]["nativeCoinHasTokenContract"] is False
+assert eip3085["chainId"] == "0xB948E0"
+assert eip3085["rpcUrls"] == ["https://rpc.winmarchain.io"]
+assert eip3085["blockExplorerUrls"] == ["https://scan.winmarchain.io"]
+assert logo_manifest["assets"]["networkLogo"]["sha256"] == "749366b21175ddafa7cac5774c2e1ec8973883728c2717e49674ff1f893f4b23"
+assert logo_manifest["assets"]["nativeCoinLogo"]["sha256"] == "dbbd58c8a18c730825a3931c0bf41f133abca76c140f27d8c4ba0b2f58deafee"
+assert "Contact: mailto:admin@winmarchain.io" in security_txt
+assert ("winmar" + "chain.org") not in json.dumps(chain_meta).lower()
+assert ("winmar" + "chain.org") not in json.dumps(wallet_meta).lower()

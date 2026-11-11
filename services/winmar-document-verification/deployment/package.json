@@ -1,0 +1,18 @@
+{
+  "name": "@winmar/document-fee-deployment",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "engines": { "node": ">=22" },
+  "scripts": {
+    "compile": "node compile-artifacts.mjs",
+    "deploy:dry-run": "node deploy-document-fee-payment.mjs --dry-run",
+    "deploy:staging": "node deploy-document-fee-payment.mjs --environment staging",
+    "deploy:production": "node deploy-document-fee-payment.mjs --environment production --confirm-mainnet"
+    ,"deploy:verification:staging": "node deploy-document-verification.mjs --environment staging"
+    ,"deploy:verification:production": "node deploy-document-verification.mjs --environment production --confirm-mainnet"
+    ,"authorize:issuer": "node authorize-issuer.mjs"
+    ,"receipt-worker": "node receipt-worker.mjs"
+  },
+  "dependencies": { "@openzeppelin/contracts": "^5.4.0", "ethers": "^6.15.0", "solc": "^0.8.30" }
+}

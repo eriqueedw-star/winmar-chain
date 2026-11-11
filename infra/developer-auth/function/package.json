@@ -1,0 +1,16 @@
+{
+  "name": "winmar-developer-wallet-api",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=22"
+  },
+  "dependencies": {
+    "@aws-sdk/client-dynamodb": "3.1152.0",
+    "@aws-sdk/lib-dynamodb": "3.1152.0",
+    "ethers": "6.15.0"
+  },
+  "devDependencies": {
+    "esbuild": "0.28.2"
+  }
+}

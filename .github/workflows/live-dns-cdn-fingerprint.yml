@@ -1,0 +1,29 @@
+name: Live DNS TLS and CDN fingerprint
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  public-infrastructure:
+    name: Collect public infrastructure evidence
+    runs-on: ubuntu-24.04
+    timeout-minutes: 8
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Collect public DNS TLS HTTP observations
+        shell: bash
+        run: |
+          set -o pipefail
+          python3 scripts/live-dns-cdn-fingerprint.py | tee live-infrastructure-evidence.json
+      - name: Upload evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: live-infrastructure-evidence-${{ github.run_id }}
+          path: live-infrastructure-evidence.json
+          if-no-files-found: warn
+          retention-days: 30

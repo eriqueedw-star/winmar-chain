@@ -1,0 +1,186 @@
+openapi: 3.0.3
+info:
+  title: Winmar Document Verification API
+  version: 1.0.0
+  description: Official API for SHA-256 document anchoring and Explorer verification.
+servers:
+  - url: https://api.winmarchain.io/v1
+    description: Production
+  - url: https://staging-api.winmarchain.io/v1
+    description: Staging
+security:
+  - bearerAuth: []
+paths:
+  /organizations:
+    post:
+      security: []
+      summary: Submit customer organization registration
+      responses:
+        '201':
+          description: Registration submitted
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Organization' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+  /api-keys:
+    post:
+      summary: Issue a customer API key after organization approval
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name, environment, scopes]
+              properties:
+                name: { type: string, maxLength: 80 }
+                environment: { type: string, enum: [staging, production] }
+                scopes:
+                  type: array
+                  items: { type: string, enum: [documents:read, documents:write, documents:revoke] }
+      responses:
+        '201':
+          description: Key returned once only
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [id, apiKey, prefix]
+                properties:
+                  id: { type: string }
+                  apiKey: { type: string, description: Store server-side. Never expose in browser code. }
+                  prefix: { type: string }
+        '403': { $ref: '#/components/responses/Forbidden' }
+  /documents:
+    post:
+      summary: Register a PDF and create the verified certificate PDF
+      security:
+        - bearerAuth: [documents:write]
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [file]
+              properties:
+                file: { type: string, format: binary, description: Original PDF only }
+                documentType: { type: string, maxLength: 80 }
+                metadata: { type: object, additionalProperties: { type: string } }
+      responses:
+        '202':
+          description: Issuance job accepted
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/DocumentJob' }
+        '413': { $ref: '#/components/responses/PayloadTooLarge' }
+        '429': { $ref: '#/components/responses/RateLimited' }
+  /documents/{documentId}:
+    parameters:
+      - $ref: '#/components/parameters/DocumentId'
+    get:
+      summary: Read document verification metadata
+      security:
+        - bearerAuth: [documents:read]
+      responses:
+        '200':
+          description: Document metadata
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/DocumentRecord' }
+        '404': { $ref: '#/components/responses/NotFound' }
+  /documents/{documentId}/verify:
+    parameters:
+      - $ref: '#/components/parameters/DocumentId'
+    post:
+      summary: Verify a local PDF hash against the on-chain record
+      security:
+        - bearerAuth: [documents:read]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [sha256]
+              properties:
+                sha256: { type: string, pattern: '^[a-fA-F0-9]{64}$' }
+      responses:
+        '200':
+          description: Verification result
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [verified, status]
+                properties:
+                  verified: { type: boolean }
+                  status: { type: string, enum: [active, revoked, hash_mismatch, not_found] }
+                  record: { $ref: '#/components/schemas/DocumentRecord' }
+  /documents/{documentId}/revoke:
+    parameters:
+      - $ref: '#/components/parameters/DocumentId'
+    post:
+      summary: Revoke an issued document
+      security:
+        - bearerAuth: [documents:revoke]
+      responses:
+        '202': { description: Revocation submitted for confirmation }
+        '403': { $ref: '#/components/responses/Forbidden' }
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: WinmarApiKey
+  parameters:
+    IdempotencyKey:
+      name: Idempotency-Key
+      in: header
+      required: true
+      schema: { type: string, format: uuid }
+    DocumentId:
+      name: documentId
+      in: path
+      required: true
+      schema: { type: string, pattern: '^0x[a-fA-F0-9]{64}$' }
+  schemas:
+    Organization:
+      type: object
+      required: [id, status]
+      properties:
+        id: { type: string }
+        status: { type: string, enum: [pending, active, suspended, revoked] }
+    DocumentJob:
+      type: object
+      required: [jobId, documentId, status]
+      properties:
+        jobId: { type: string }
+        documentId: { type: string }
+        status: { type: string, enum: [queued, signing, confirming, complete, failed] }
+    DocumentRecord:
+      type: object
+      required: [documentId, sha256, issuer, status, verificationUrl]
+      properties:
+        documentId: { type: string }
+        sha256: { type: string, pattern: '^[a-fA-F0-9]{64}$' }
+        issuer: { type: string }
+        status: { type: string, enum: [active, revoked] }
+        transactionHash: { type: string }
+        blockNumber: { type: string }
+        issuedAt: { type: string, format: date-time }
+        verificationUrl: { type: string, format: uri }
+        downloadUrl: { type: string, format: uri }
+  responses:
+    BadRequest:
+      description: Invalid request
+    Forbidden:
+      description: Customer or scope is not authorized
+    NotFound:
+      description: Document not found
+    PayloadTooLarge:
+      description: PDF exceeds upload limit
+    RateLimited:
+      description: Rate limit exceeded

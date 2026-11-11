@@ -9,6 +9,7 @@ mkdir -p "$OUT_DIR"
 npx --yes solc@0.8.19 \
   --base-path . \
   --include-path contracts \
+  --optimize \
   --bin --abi \
   contracts/WinmarTokenFactory.sol contracts/WinmarFaucet.sol \
   -o "$OUT_DIR"

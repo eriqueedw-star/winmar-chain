@@ -1,0 +1,15 @@
+{
+  "name": "Winmar Chain",
+  "chainId": 12142816,
+  "rpc": "https://rpc.winmarchain.io",
+  "nativeCurrency": {
+    "name": "Winmar Coin",
+    "symbol": "WMC",
+    "decimals": 18
+  },
+  "explorer": "https://scan.winmarchain.io",
+  "website": "https://winmarchain.io",
+  "nativeCoinLogo": "https://winmarchain.io/logo/wmc.png",
+  "networkLogo": "https://winmarchain.io/assets/winmar-logo.png",
+  "officialThirdwebListing": "not_verified"
+}

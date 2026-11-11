@@ -1,0 +1,29 @@
+name: QBFT and transaction receipt evidence
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  audit:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Collect read-only evidence
+        shell: bash
+        run: |
+          set -o pipefail
+          printf 'source_commit=%s\n' "$GITHUB_SHA" | tee qbft-receipt-evidence.txt
+          python3 scripts/qbft-receipt-evidence.py | tee -a qbft-receipt-evidence.txt
+      - name: Upload evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: qbft-receipt-evidence-${{ github.run_id }}
+          path: qbft-receipt-evidence.txt
+          if-no-files-found: warn
+          retention-days: 30

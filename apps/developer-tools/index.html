@@ -10,9 +10,9 @@
 *{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at 12% 0%,#16345c,#070f1c 45%);min-height:100vh}
 main{max-width:1180px;padding:26px 20px 70px;margin:auto}
 a{color:#88baff;text-decoration:none}a:hover{text-decoration:underline}
-header{display:flex;align-items:center;justify-content:space-between;gap:18px;flex-wrap:wrap;border-bottom:1px solid #283a50;padding:12px 0 23px}
-.brand{display:flex;align-items:center;gap:14px}.brand img{width:57px;height:57px;border:1px solid #314f71;border-radius:12px;background:#13243a;object-fit:cover}
-.brand b{font-size:21px;letter-spacing:2px}.muted{color:#a3b5cc;font-size:13px;line-height:1.7}
+.console-header{display:flex;align-items:center;justify-content:space-between;gap:18px;flex-wrap:wrap;border-bottom:1px solid #283a50;padding:12px 0 23px}
+.console-brand{display:flex;align-items:center;gap:14px}.console-brand img{width:57px;height:57px;border:1px solid #314f71;border-radius:12px;background:#13243a;object-fit:cover}
+.console-brand b{font-size:21px;letter-spacing:2px}.muted{color:#a3b5cc;font-size:13px;line-height:1.7}
 .small{font-size:11px;letter-spacing:1px;color:#a2bbd5;display:block;margin-top:6px}
 h1{font-size:clamp(30px,5vw,54px);line-height:1.06;margin:12px 0 14px;letter-spacing:-1.6px}
 h2{margin:0 0 12px;font-size:23px}h3{margin:0 0 14px;font-size:16px}
@@ -20,6 +20,8 @@ h2{margin:0 0 12px;font-size:23px}h3{margin:0 0 14px;font-size:16px}
 .pill{display:inline-block;border:1px solid #876732;border-radius:25px;background:#342714;color:#ffda91;font-weight:700;padding:7px 12px;font-size:11px;margin-top:8px}
 button{cursor:pointer;color:#fff;background:#256dd4;border:1px solid #3385dc;border-radius:9px;padding:12px 15px;font-weight:700;font-size:13px}
 button.secondary{background:#17253a;border-color:#344d67}button:disabled{opacity:.4;cursor:not-allowed}
+.auth-controls{display:flex;align-items:center;justify-content:flex-end;gap:8px;flex-wrap:wrap}.auth-controls .small{margin:0;max-width:210px}
+.auth-state{border:1px solid #304761;background:#0a1727;border-radius:10px;padding:14px;margin:14px 0}.auth-state strong{color:#e8f0fa}.auth-state .muted{margin:6px 0 0}
 .tabs{display:grid;grid-template-columns:repeat(4,1fr);gap:9px;margin:15px 0 19px}
 .tabs button{text-align:left;background:#102033;border-color:#284159;font-size:14px;padding:17px}
 .tabs button[aria-selected=true]{background:#1c3860;border-color:#5c9df2;box-shadow:inset 0 0 0 1px #527bb7}
@@ -38,30 +40,87 @@ input[type=checkbox]{width:auto;accent-color:#3c8de0}.checks{display:flex;flex-w
 .health{margin-top:18px}.health .kv span:last-child{font-variant-numeric:tabular-nums}.ok{color:#7ee2aa!important}.warn{color:#ffcf70!important}.bad{color:#ff9696!important}
 .kv span:first-child{color:#a1b7ce}.kv span:last-child{text-align:right;overflow-wrap:anywhere}
 .links{margin-top:22px;display:flex;gap:14px;flex-wrap:wrap;font-size:12px}
-footer{border-top:1px solid #293e58;margin-top:30px;padding-top:20px;font-size:12px;color:#8eabc9;line-height:1.7}
+.console-disclaimer{border-top:1px solid #293e58;margin-top:30px;padding-top:20px;font-size:12px;color:#8eabc9;line-height:1.7}
+.launchpad-intro{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(240px,.65fr);gap:16px;margin:18px 0 22px}.launchpad-banner{padding:22px;border:1px solid #cfd9ee;border-radius:16px;background:linear-gradient(135deg,#f5f7ff,#fff)}.launchpad-banner h3{font-size:21px;letter-spacing:-.02em;margin-bottom:8px}.launchpad-banner p{margin:0}.launchpad-status{display:grid;gap:10px;padding:18px;border:1px solid #dfe3ef;border-radius:16px;background:#f8f9ff}.launchpad-status .kv{padding:7px 0}.launchpad-steps{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:0 0 22px}.launchpad-step{padding:14px;border:1px solid #dfe3ef;border-radius:13px;background:#fff}.launchpad-step b{display:block;margin-bottom:5px;color:#1e3db8}.launchpad-step span{display:block;color:#697184;font-size:12px;line-height:1.5}.token-preview{display:flex;align-items:center;gap:14px;margin:18px 0;padding:14px;border:1px solid #dfe3ef;border-radius:13px;background:#fafbff}.token-preview-mark{display:grid;place-items:center;width:48px;height:48px;border-radius:14px;background:linear-gradient(135deg,#3155ff,#7b5cff);color:#fff;font-size:18px;font-weight:850}.token-preview strong{display:block}.token-preview small{color:#697184}.launchpad-lock{display:inline-flex;align-items:center;gap:8px;margin:0 0 14px;padding:8px 11px;border:1px solid #ecd9a9;border-radius:999px;background:#fff8e8;color:#795719;font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase}
 @media(max-width:840px){.layout{grid-template-columns:1fr}}
-@media(max-width:600px){.tabs{grid-template-columns:repeat(2,1fr)}.cols{grid-template-columns:1fr}.card{padding:18px}.brand b{font-size:16px}.brand img{width:48px;height:48px}main{padding:14px}}
+@media(max-width:760px){.launchpad-intro{grid-template-columns:1fr}.launchpad-steps{grid-template-columns:1fr}.market-grid{grid-template-columns:1fr}.market-row{grid-template-columns:1fr auto}.market-row .market-action{grid-column:1/-1;width:100%}}
+@media(max-width:600px){.tabs{grid-template-columns:repeat(2,1fr)}.cols{grid-template-columns:1fr}.card{padding:18px}.console-brand b{font-size:16px}.console-brand img{width:48px;height:48px}main{padding:14px}}
+
+/* Homepage-standard shell. Developer Console content below intentionally keeps its blue theme. */
+.site-header-v3{position:sticky;top:0;z-index:50;border-bottom:1px solid rgba(209,214,233,.8);background:rgba(255,255,255,.94);backdrop-filter:blur(18px);color:#11121a}
+.site-header-inner{width:min(100% - 40px,1280px);min-height:82px;margin:auto;display:flex;align-items:center;justify-content:space-between;gap:28px}
+.site-header-v3 .brand-lockup,.site-footer-v3 .brand-lockup{display:flex;align-items:center;gap:10px;color:#11121a;text-decoration:none}
+.site-header-v3 .brand-mark-img,.site-footer-v3 .brand-mark-img{display:block;flex:0 0 64px;width:64px;height:64px;object-fit:contain;border:0;background:transparent;border-radius:0}
+.brand-wordmark{display:grid;gap:3px;line-height:1.15;white-space:nowrap}.brand-wordmark strong{font-size:15px;font-weight:850;letter-spacing:-.035em}.brand-wordmark small{color:#737b8e;font-size:9px;font-weight:750;letter-spacing:.04em}
+.site-header-v3 .navlinks{display:flex;align-items:center;gap:clamp(16px,2.3vw,34px);font-size:13px;font-weight:700;color:#33394a}.site-header-v3 .navlinks a{color:inherit;text-decoration:none}.site-header-v3 .navlinks a:hover,.site-header-v3 .navlinks a[aria-current="page"]{color:#3155ff}.site-header-v3 .navlinks a[aria-current="page"]{text-decoration:underline;text-decoration-thickness:2px;text-underline-offset:8px}
+.site-header-v3 .actions{display:flex;align-items:center;gap:12px}.explorer-link{display:inline-flex;align-items:center;min-height:44px;padding:0 18px;border:1px solid #e1e3ed;border-radius:14px;background:#fff;color:#11121a!important;text-decoration:none!important;font-weight:750}.site-menu,.site-mobile-nav{display:none}
+.site-footer-v3{padding:48px 0 18px;border-top:1px solid #e5e7f0;background:linear-gradient(180deg,#fff,#f6f7ff);color:#62697b;font-family:Inter,system-ui,-apple-system,sans-serif}.site-footer-grid{width:min(100% - 40px,1180px);margin:auto;display:grid;grid-template-columns:1.6fr 1fr 1fr 1fr;gap:36px}.site-footer-v3 h2{margin:0 0 12px;font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:#747b8d}.site-footer-v3 nav{display:grid;gap:9px;font-size:14px;font-weight:650}.site-footer-v3 nav a{color:#3155ff;text-decoration:none}.footer-bottom{width:min(1180px,calc(100% - 40px));margin:22px auto 0;padding:16px 0 4px;border-top:1px solid #e5e7f0;display:flex;justify-content:space-between;gap:20px;font-size:15px;color:#8790a3}.footer-bottom span:last-child{color:#535d73;font-weight:650}
+@media(max-width:760px){.site-header-inner{width:calc(100% - 28px);min-height:72px}.site-header-v3 .navlinks{display:none}.site-menu{display:inline-flex;min-width:44px;min-height:44px;align-items:center;justify-content:center;border:1px solid #e1e3ed;border-radius:12px;background:#fff;color:#11121a;font-size:21px}.site-mobile-nav.open{display:grid;gap:4px;width:calc(100% - 32px);margin:auto;padding:10px 0 14px}.site-mobile-nav a{padding:10px 12px;border-radius:10px;color:#33394a;text-decoration:none;font-weight:700}.site-mobile-nav a[aria-current="page"]{background:#f1f3ff;color:#3155ff}.site-footer-grid{grid-template-columns:1fr 1fr;gap:28px 22px}.footer-bottom{width:calc(100% - 32px);flex-direction:column;gap:5px}}
+@media(max-width:600px){.site-header-v3 .brand-mark-img,.site-footer-v3 .brand-mark-img{width:44px;height:44px;flex-basis:44px}.explorer-link{display:none}.site-footer-grid{grid-template-columns:1fr}}
+
+/* Homepage-standard light theme for the complete Developer Console. */
+body.developer-page{color-scheme:light;color:#11121a;background:#fbfbff}
+body.developer-page main{background:radial-gradient(ellipse at 90% 0,#ece8ff,transparent 55%)}
+body.developer-page a{color:#3155ff}
+body.developer-page .console-header{border-color:#e1e4ef}
+body.developer-page .console-brand img{border-color:#dfe3f0;background:#fff}
+body.developer-page .console-brand b,body.developer-page h1,body.developer-page h2,body.developer-page h3{color:#11121a}
+body.developer-page .muted{color:#656a78}
+body.developer-page .small{color:#737b8e}
+body.developer-page .eyebrow{color:#3155ff}
+body.developer-page button{color:#fff;background:#3155ff;border-color:#3155ff}
+body.developer-page button.secondary{color:#11121a;background:#fff;border-color:#dfe3ef}
+body.developer-page button:disabled{opacity:.42}
+body.developer-page .auth-state{border-color:#dfe3ef;background:#f7f8ff}
+body.developer-page .auth-state strong{color:#11121a}
+body.developer-page .tabs button{color:#11121a;background:#fff;border-color:#dfe3ef}
+body.developer-page .tabs button[aria-selected=true]{color:#1e3db8;background:#eef1ff;border-color:#7890ff;box-shadow:inset 0 0 0 1px #afbbff}
+body.developer-page .no{color:#6d7484}
+body.developer-page .card{color:#11121a;background:#fff;border-color:#e1e4ef;box-shadow:0 18px 52px rgba(30,38,76,.07)}
+body.developer-page label{color:#343a49}
+body.developer-page input,body.developer-page select{color:#11121a;background:#fff;border-color:#cfd5e4}
+body.developer-page .note{color:#334867;background:#eef5ff;border-left-color:#5b86ef}
+body.developer-page .risk{color:#6c4c19;background:#fff7e8;border-left-color:#c9953f}
+body.developer-page .result{color:#334867;background:#f7f8fc;border-color:#dfe3ef}
+body.developer-page .kv{border-color:#e7e9f1}
+body.developer-page .kv span:first-child{color:#697184}
+body.developer-page .flag{color:#8a5b12}
+body.developer-page .console-disclaimer{color:#737b8e;border-color:#e1e4ef}
+body.developer-page .ok{color:#16784a!important}body.developer-page .warn{color:#996000!important}body.developer-page .bad{color:#b52d3a!important}
+ .market-grid{display:grid;grid-template-columns:1.25fr .75fr;gap:16px;margin:18px 0}.market-panel{padding:18px;border:1px solid #dfe3ef;border-radius:16px;background:linear-gradient(145deg,#fff,#f8f9ff)}.market-panel h3{margin-bottom:8px}.market-list{display:grid;gap:9px;margin-top:14px}.market-row{display:grid;grid-template-columns:1fr auto auto;align-items:center;gap:12px;padding:13px;border:1px solid #e5e8f2;border-radius:12px;background:#fff}.market-row strong{display:block}.market-row small{color:#737b8e}.market-badge{padding:5px 8px;border-radius:999px;background:#fff4d8;color:#795719;font-size:10px;font-weight:800;letter-spacing:.05em}.market-action{min-height:36px;padding:0 10px;font-size:11px}.market-metric{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px}.market-metric .kv{display:block;padding:12px;border:1px solid #e5e8f2;border-radius:12px}.market-metric .kv span{display:block;text-align:left!important}.market-metric .kv span:last-child{margin-top:4px;font-weight:800;color:#11121a}.market-lock{padding:14px;border-radius:13px;background:#fff8e8;border:1px solid #ecd9a9;color:#795719;font-size:12px;line-height:1.6}
 </style>
 </head>
-<body>
-<main>
-<header>
-  <div class="brand"><img alt="Winmar Chain logo" src="https://raw.githubusercontent.com/eriqueedw-star/winmar-chain/main/winmar-chain-logo-framed-v2.png">
-    <div><b>WINMAR CHAIN</b><span class="small">INSTITUTIONAL BLOCKCHAIN INFRASTRUCTURE</span></div></div>
-  <div class="muted">MAINNET · ID 12142816 · <a href="/wmc.html">WMC</a> · <a href="/wint.html">WINT</a><br><a href="https://scan.winmarchain.io" target="_blank" rel="noopener noreferrer">EXPLORER ↗</a> &nbsp; <a href="https://winmarchain.io" target="_blank" rel="noopener noreferrer">OFFICIAL WEBSITE ↗</a></div>
-  <button id="connect" type="button">Connect Wallet</button>
+<body class="developer-page">
+<header class="site-header-v3">
+  <div class="site-header-inner">
+    <a class="brand-lockup" href="/" aria-label="Winmar Chain home"><img class="brand-mark-img" src="/assets/winmar-logo.png" alt=""><span class="brand-wordmark"><strong>WINMAR CHAIN</strong><small>Where the world settles value</small></span></a>
+    <nav class="navlinks" aria-label="Main navigation"><a href="/network.html">Network</a><a href="/technology.html">Technology</a><a href="/developers.html" aria-current="page">Developers</a><a href="/integrations.html">Integrations</a><a href="/governance.html">Governance</a><a href="/whitepaper.html">Whitepaper</a></nav>
+    <div class="actions"><a class="explorer-link" href="https://scan.winmarchain.io/" target="_blank" rel="noopener noreferrer">Explorer ↗</a><button class="site-menu" type="button" id="site-menu-v3" aria-label="Open navigation" aria-expanded="false" aria-controls="site-mobile-nav">☰</button></div>
+  </div>
+  <nav class="site-mobile-nav" id="site-mobile-nav" aria-label="Mobile navigation"><a href="/network.html">Network</a><a href="/technology.html">Technology</a><a href="/developers.html" aria-current="page">Developers</a><a href="/integrations.html">Integrations</a><a href="/governance.html">Governance</a><a href="/whitepaper.html">Whitepaper</a><a href="https://scan.winmarchain.io/" target="_blank" rel="noopener noreferrer">Explorer ↗</a></nav>
 </header>
+<main>
+<div class="console-header">
+  <div class="muted">MAINNET · ID 12142816 · <a href="/wmc.html">WMC</a> · <a href="/wint.html">WINT</a><br><a href="https://scan.winmarchain.io" target="_blank" rel="noopener noreferrer">EXPLORER ↗</a> &nbsp; <a href="https://winmarchain.io" target="_blank" rel="noopener noreferrer">OFFICIAL WEBSITE ↗</a></div>
+  <div class="auth-controls">
+    <span id="developer-account-status" class="small">Developer account not signed in</span>
+    <button id="email-auth" type="button" class="secondary" disabled>Email sign-in setup pending</button>
+    <button id="connect" type="button">Connect Wallet</button>
+    <button id="link-wallet" type="button" class="secondary" disabled>Verify creator wallet</button>
+    <button id="email-signout" type="button" class="secondary" hidden>Sign out</button>
+  </div>
+</div>
 <div class="hero">
   <p class="eyebrow">Winmar Chain / Developer Infrastructure</p>
   <h1>Build. Bridge. Verify.</h1>
   <p class="muted">Developer gas access, transparent token issuance, wrapped-asset discovery and SHA-256 document attestation on Winmar Chain.</p>
-  <span class="pill">PRE-RELEASE · ON-CHAIN ACTIONS DISABLED UNTIL REVIEW</span>
 </div>
 <div class="tabs" role="tablist" aria-label="Developer tools">
   <button type="button" id="t-faucet" aria-selected="true"><span class="no">01 / GAS</span>Faucet</button>
   <button type="button" id="t-creator" aria-selected="false"><span class="no">02 / ASSET ISSUANCE</span>WMC-20 Creator</button>
   <button type="button" id="t-bridge" aria-selected="false"><span class="no">03 / INTEROPERABILITY</span>Wrapped Assets</button>
   <button type="button" id="t-documents" aria-selected="false"><span class="no">04 / INTEGRITY</span>Document Verify</button>
+  <button type="button" id="t-market" aria-selected="false"><span class="no">05 / MARKET</span>WMC-20 Central</button>
 </div>
 <div class="layout">
   <div>
@@ -73,8 +132,20 @@ footer{border-top:1px solid #293e58;margin-top:30px;padding-top:20px;font-size:1
     <div id="faucet-result" class="result" role="status">Waiting for verified deployment and separate treasury funding.</div>
   </section>
   <section id="p-creator" class="card" hidden>
-    <span class="flag" id="creator-state">FACTORY LIVE · TOKEN CREATION REQUIRES WALLET CONFIRMATION</span><h2>WMC-20 Token Creator</h2>
-    <p class="muted">Create a WMC-20 fungible token native to Winmar Chain. ERC-20 compatible for EVM wallets and tools. Gas is paid in native WMC; issuer powers are disclosed before deployment.</p>
+    <!-- WMC-20 Token Creator launchpad -->
+    <span class="flag" id="creator-state">LAUNCHPAD UI · ACTIVATION PENDING REVIEW</span><h2>WMC-20 Token Launchpad <span class="muted">/ Creator</span></h2>
+    <p class="muted">Prepare a native WMC-20 token on Winmar Chain. The launchpad guides the creator through configuration, ownership powers and final wallet confirmation before any transaction is sent.</p>
+    <div class="launchpad-intro">
+      <div class="launchpad-banner"><h3>Launch with clear control</h3><p class="muted">Configure the token identity, preview the supply and disclose optional owner powers. This screen is a preparation UI only; token creation remains locked until the factory and review gates are activated.</p></div>
+      <div class="launchpad-status"><div class="kv"><span>Network</span><span>Winmar Chain</span></div><div class="kv"><span>Chain ID</span><span>12142816</span></div><div class="kv"><span>Launch status</span><span class="warn">UI READY · PAUSED</span></div></div>
+    </div>
+    <div class="launchpad-steps" aria-label="Token launch steps"><div class="launchpad-step"><b>01 · Configure</b><span>Set name, symbol, supply and token powers.</span></div><div class="launchpad-step"><b>02 · Review</b><span>Preview ownership and deployment details.</span></div><div class="launchpad-step"><b>03 · Confirm</b><span>Wallet confirmation will be enabled later.</span></div></div>
+    <div class="launchpad-lock">🔒 Token deployment is paused</div>
+    <div class="auth-state" aria-live="polite">
+      <strong>Developer account &amp; creator wallet</strong>
+      <p id="developer-auth-message" class="muted">Sign in with a verified email, connect your creator wallet, then verify ownership with a non-transaction signature.</p>
+      <p id="linked-wallet-status" class="muted">No creator wallet linked in this account.</p>
+    </div>
     <div class="cols">
       <div class="field"><label for="token-name">Token name</label><input id="token-name" maxlength="80" value="Example Winmar Token"></div>
       <div class="field"><label for="token-symbol">Symbol</label><input id="token-symbol" maxlength="18" value="EWT"></div>
@@ -88,8 +159,10 @@ footer{border-top:1px solid #293e58;margin-top:30px;padding-top:20px;font-size:1
       <label><input id="burnable" type="checkbox" checked> Burnable</label>
       <label><input id="pausable" type="checkbox"> Pausable</label>
     </div>
+    <div class="token-preview"><div class="token-preview-mark" id="token-preview-mark">ET</div><div><strong id="token-preview-name">Example Winmar Token</strong><small id="token-preview-meta">EWT · 1,000,000 initial supply · 18 decimals</small></div></div>
     <div class="risk">If <strong>Mintable</strong> or <strong>Pausable</strong> is enabled, the token creator retains owner authority. Creating a token does not make it endorsed or listed by Winmar Chain.</div>
     <button type="button" id="deploy" disabled>Deploy WMC-20 Token</button>
+    <p class="muted">Email access protects this portal workflow only. The factory is public on-chain; a wallet can interact with it directly outside this page.</p>
     <div class="result" id="token-result" role="status">Connect a wallet to create a token through the live Winmar Token Factory.</div>
   </section>
   <section id="p-bridge" class="card" hidden>
@@ -102,6 +175,15 @@ footer{border-top:1px solid #293e58;margin-top:30px;padding-top:20px;font-size:1
     <div class="kv"><span>Staging route</span><span>BSC NEXS → Winmar · PAUSED</span></div>
     <div class="links"><a href="https://bridge.winmarchain.io" target="_blank" rel="noopener noreferrer">Existing Bridge Interface ↗</a><a href="https://github.com/eriqueedw-star/winmar-chain/blob/main/docs/BRIDGE_TRUST_MODEL.md" target="_blank" rel="noopener noreferrer">Bridge Trust Model ↗</a></div>
     <div id="bridge-result" class="result" role="status">Routes pending verification. No asset representation is endorsed by this prototype.</div>
+  </section>
+  <section id="p-market" class="card" hidden>
+    <span class="flag">CENTRAL MARKET · ALL FEATURES LOCKED</span><h2>WMC-20 Central Market</h2>
+    <p class="muted">A central, non-custodial home for discovering WMC-20 tokens and connecting to approved trading venues across the ecosystem.</p>
+    <div class="launchpad-intro"><div class="launchpad-banner"><h3>Discover first. Trade later.</h3><p class="muted">Tokens can appear here even when liquidity is hosted elsewhere. The central page will show verified contract details, market links and risk disclosures before trading is enabled.</p></div><div class="launchpad-status"><div class="kv"><span>Network</span><span>Winmar Chain</span></div><div class="kv"><span>Market status</span><span class="warn">UI READY · PAUSED</span></div><div class="kv"><span>Custody</span><span>Non-custodial</span></div></div></div>
+    <div class="market-lock">🔒 Trading, liquidity, listings and wallet actions are locked. This is a UI preview only; no funds move and no contract is called.</div>
+    <div class="market-grid"><div class="market-panel"><h3>Featured WMC-20 tokens</h3><p class="muted">Verified listings will appear after token and market review.</p><div class="market-list"><div class="market-row"><div><strong>Example Winmar Token</strong><small>EWT · Contract pending verification</small></div><span class="market-badge">PREVIEW</span><button class="market-action secondary" type="button" disabled>Trade locked</button></div><div class="market-row"><div><strong>Winmar USD</strong><small>WUSD · Contract pending verification</small></div><span class="market-badge">PREVIEW</span><button class="market-action secondary" type="button" disabled>Trade locked</button></div></div></div><div class="market-panel"><h3>Market overview</h3><div class="market-metric"><div class="kv"><span>Listed tokens</span><span>0 verified</span></div><div class="kv"><span>Trading venues</span><span>0 enabled</span></div><div class="kv"><span>Liquidity routes</span><span>Paused</span></div><div class="kv"><span>Wallet connection</span><span>Locked</span></div></div><div class="links"><button class="secondary" type="button" disabled>Connect wallet</button><button class="secondary" type="button" disabled>Manage liquidity</button></div></div></div>
+    <div class="note"><strong>Planned flow</strong><br>Connect wallet → browse verified WMC-20 listings → review contract and venue → approve a wallet transaction → trade through the selected non-custodial route. Central Market will not hold user funds.</div>
+    <div class="result" role="status">Central Market preparation UI loaded. Trading activation requires a reviewed router, verified token registry, liquidity policy and security sign-off.</div>
   </section>
   <section id="p-documents" class="card" hidden>
     <span class="flag">SELF-ATTESTATION · NOT CERTIFICATION</span><h2>Document Integrity Verify</h2>
@@ -149,13 +231,22 @@ footer{border-top:1px solid #293e58;margin-top:30px;padding-top:20px;font-size:1
     </div>
   </aside>
 </div>
-<footer>WINMAR CHAIN · WHERE THE WORLD SETTLES VALUE. &nbsp; | &nbsp; Pre-release developer prototype — not an offer of custody, token listing, verified asset backing or legal-document certification.</footer>
+<div class="console-disclaimer">Pre-release developer prototype — not an offer of custody, token listing, verified asset backing or legal-document certification.</div>
 </main>
+<footer class="site-footer-v3"><div class="site-footer-grid"><div><a class="brand-lockup" href="/" aria-label="Winmar Chain home"><img class="brand-mark-img" src="/assets/winmar-logo.png" alt=""><span class="brand-wordmark"><strong>WINMAR CHAIN</strong><small>Where the world settles value</small></span></a></div><div><h2>Explore</h2><nav aria-label="Explore"><a href="/network.html">Network</a><a href="/technology.html">Technology</a><a href="/governance.html">Governance</a><a href="/whitepaper.html">Whitepaper</a></nav></div><div><h2>Build</h2><nav aria-label="Build"><a href="/developers.html">Developer tools</a><a href="/wmc.html">WMC native coin</a><a href="/wint.html">WINT</a></nav></div><div><h2>Network</h2><nav aria-label="Network"><a href="https://scan.winmarchain.io/" target="_blank" rel="noopener noreferrer">Primary explorer ↗</a><a href="https://scan.winmarchain.com/" target="_blank" rel="noopener noreferrer">Backup explorer ↗</a><a href="/privacy.html">Privacy policy</a></nav></div></div><div class="footer-bottom"><span>© 2026 Winmar Chain</span><span>Capital · Technology · Intelligence</span></div></footer>
 <script src="https://cdn.jsdelivr.net/npm/ethers@6.15.0/dist/ethers.umd.min.js"></script>
 <script>
 'use strict';
 const CHAIN = 12142816n, CHAIN_HEX = '0xB948E0';
 const RPC = 'https://rpc.winmarchain.io', SCAN = 'https://scan.winmarchain.io';
+const WINMAR_NETWORK = {
+  chainId: CHAIN_HEX,
+  chainName: 'Winmar Chain',
+  nativeCurrency: {name: 'Winmar Coin', symbol: 'WMC', decimals: 18},
+  rpcUrls: [RPC, 'https://rpc.winmarchain.com'],
+  blockExplorerUrls: [SCAN, 'https://scan.winmarchain.com'],
+  iconUrls: ['https://winmarchain.io/logo/wmc.png']
+};
 const FAUCET_ABI = ['function claim()'];
 const FACTORY_ABI = [
   'function createToken((string name,string symbol,uint8 decimals,uint256 initialSupply,address initialHolder,bool mintable,bool burnable,bool pausable) config,bytes32 userSalt) returns (address token)',
@@ -167,10 +258,11 @@ const DOC_ABI = [
   'function getRecord(address issuer,bytes32 sha256) view returns (uint64 anchoredAt,uint64 revokedAt)'
 ];
 const $ = id => document.getElementById(id);
-let conf, provider, signer, account, digest;
-for (const name of ['faucet','creator','bridge','documents']) {
+let conf, provider, signer, account, digest, developerSession;
+let linkedWallets = [];
+for (const name of ['faucet','creator','bridge','documents','market']) {
   $('t-'+name).addEventListener('click',()=>{
-    for(const k of ['faucet','creator','bridge','documents']){
+    for(const k of ['faucet','creator','bridge','documents','market']){
       $('p-'+k).hidden = k !== name;
       $('t-'+k).setAttribute('aria-selected', String(k===name));
     }
@@ -186,7 +278,10 @@ function refresh(){
   const docOk = ready(conf.documentVerifier,'registryAddress');
   $('claim').disabled=!(account&&faucetOk);
   $('faucet-state').textContent=ready(conf.faucet,'contractAddress') ? (conf.faucet.funded ? 'FUNDED · CLAIM GATE STILL REVIEWED' : 'DEPLOYED · PAUSED · NOT FUNDED') : 'NOT DEPLOYED';
-  $('deploy').disabled=!(account&&factoryOk);
+  const linked = !!(developerSession && account && linkedWallets.some(item =>
+    Number(item.chainId) === Number(CHAIN) && String(item.walletAddress).toLowerCase() === account.toLowerCase()));
+  $('deploy').disabled=!(account&&factoryOk&&linked);
+  $('link-wallet').disabled=!(developerSession&&account&&authConfigReady());
   $('creator-state').textContent=factoryOk ? 'FACTORY LIVE · TOKEN CREATION REQUIRES WALLET CONFIRMATION' : 'FACTORY NOT DEPLOYED';
   $('add-network').disabled=!account;
   $('add-wmc20').disabled=!(account&&conf.tokenMaker?.tokenAddress && ethers.isAddress(conf.tokenMaker.tokenAddress));
@@ -195,6 +290,7 @@ function refresh(){
   $('revoke').disabled=!(digest&&account&&docOk);
   $('bridge-state').textContent=conf.bridge?.transfersEnabled ? 'Review required' : 'Transfers locked';
   $('bridge-routes').textContent=String(conf.bridge?.supportedRoutes?.length||0)+' configured';
+  refreshDeveloperAuth();
 }
 async function loadConfig(){
   try {
@@ -203,6 +299,7 @@ async function loadConfig(){
     const x=await response.json();
     if(x.network?.chainId!==12142816 || x.network?.rpc!==RPC)throw new Error('Unexpected network metadata');
     conf=x; msg('config-status','Loaded · factory '+(conf.tokenMaker?.factoryAddress ? conf.tokenMaker.factoryAddress.slice(0,10)+'…' : 'not configured')); refresh();
+    await finishEmailSignIn();
   } catch(e){msg('config-status','Unavailable');msg('document-result','Configuration unavailable: '+eword(e));}
 }
 async function rpcProbe(url){
@@ -220,34 +317,153 @@ async function refreshHealth(){
   try{const x=await rpcProbe('https://rpc.winmarchain.com');backup.textContent='Online · '+x.latency+' ms';backup.className='ok';}
   catch(_){backup.textContent='Unavailable';backup.className='bad';}
 }
-async function connect(){
-  if(!window.ethereum)throw new Error('Install a compatible EVM wallet.');
-  if(!window.ethers)throw new Error('Wallet library unavailable.');
-  const walletProvider=new ethers.BrowserProvider(window.ethereum);
-  await walletProvider.send('eth_requestAccounts',[]);
-  let network=await walletProvider.getNetwork();
-  if(network.chainId!==CHAIN){
-    try{await window.ethereum.request({method:'wallet_switchEthereumChain',params:[{chainId:CHAIN_HEX}]});}
-    catch(e){
-      if(e.code!==4902)throw e;
-      await window.ethereum.request({method:'wallet_addEthereumChain',params:[{
-        chainId:CHAIN_HEX,chainName:'Winmar Chain',
-        nativeCurrency:{name:'Winmar Coin',symbol:'WMC',decimals:18},
-        rpcUrls:[RPC],blockExplorerUrls:[SCAN]
-      }]});
+function injectedWallet(){
+  const primary=window.ethereum;
+  const candidates=[primary,...(Array.isArray(primary?.providers)?primary.providers:[])].filter(Boolean);
+  if(!candidates.length)throw new Error('No browser wallet found. Open this page in Chrome or Edge with MetaMask, Rabby, Coinbase Wallet, or another EVM wallet extension unlocked.');
+  return candidates.find(item=>item.isMetaMask)||candidates.find(item=>item.isRabby)||candidates[0];
+}
+function walletError(error){
+  if(error?.code===4001)return new Error('Wallet request was cancelled. Approve the request in your wallet to continue.');
+  if(error?.code===-32002)return new Error('A wallet request is already open. Check your wallet extension and approve or reject it first.');
+  return error;
+}
+async function ensureWinmarNetwork(wallet){
+  const current=await wallet.request({method:'eth_chainId'});
+  if(BigInt(current)===CHAIN)return;
+  try{
+    await wallet.request({method:'wallet_switchEthereumChain',params:[{chainId:CHAIN_HEX}]});
+  }catch(error){
+    if(error?.code!==4902)throw walletError(error);
+    await wallet.request({method:'wallet_addEthereumChain',params:[WINMAR_NETWORK]});
+    // Not every wallet switches automatically after adding a network.
+    const addedChain=await wallet.request({method:'eth_chainId'});
+    if(BigInt(addedChain)!==CHAIN){
+      await wallet.request({method:'wallet_switchEthereumChain',params:[{chainId:CHAIN_HEX}]});
     }
   }
-  provider=new ethers.BrowserProvider(window.ethereum);
+  const selected=await wallet.request({method:'eth_chainId'});
+  if(BigInt(selected)!==CHAIN)throw new Error('Winmar Chain was not selected. Switch to Winmar Chain in your wallet, then try again.');
+}
+async function connect(){
+  const wallet=injectedWallet();
+  if(!window.ethers)throw new Error('Wallet library unavailable.');
+  const walletProvider=new ethers.BrowserProvider(wallet);
+  await walletProvider.send('eth_requestAccounts',[]);
+  await ensureWinmarNetwork(wallet);
+  provider=new ethers.BrowserProvider(wallet);
   if((await provider.getNetwork()).chainId!==CHAIN)throw new Error('Wrong wallet network.');
   signer=await provider.getSigner(); account=await signer.getAddress();
   $('token-holder').value=account;$('issuer').value=account;
-  msg('wallet-status',account.slice(0,7)+'…'+account.slice(-5));
-  $('connect').textContent='Connected';refresh();
+  msg('wallet-status','Connected: '+account);
+  $('connect').textContent=account.slice(0,7)+'…'+account.slice(-5);
+  $('connect').setAttribute('aria-label','Connected wallet '+account);
+  msg('wallet-config-result','Wallet connected on Winmar Chain: '+account);
+  refresh();
+  if(developerSession) await loadLinkedWallets();
+}
+
+function authConfigReady(){
+  const auth=conf?.developerAuth;
+  return !!(auth?.enabled===true && auth.provider==='amazon-cognito' && auth.region && auth.userPoolId &&
+    auth.clientId && auth.hostedUiDomain && auth.redirectUri && auth.apiUrl);
+}
+function refreshDeveloperAuth(){
+  const enabled=authConfigReady();
+  $('email-auth').disabled=!enabled;
+  $('email-auth').textContent=developerSession ? (developerSession.email||'Signed in') :
+    (enabled?'Sign in / Create account':'Email sign-in setup pending');
+  $('email-signout').hidden=!developerSession;
+  $('developer-account-status').textContent=developerSession ?
+    `Signed in · ${developerSession.email||'verified email'}` : 'Developer account not signed in';
+  if(!enabled){
+    $('developer-auth-message').textContent='Email sign-in is not active yet. Cognito must be deployed and its public settings configured before developer accounts can be used.';
+  } else if(!developerSession){
+    $('developer-auth-message').textContent='Sign in with your verified email, connect your creator wallet, then verify ownership with a non-transaction signature.';
+  } else if(!account){
+    $('developer-auth-message').textContent='Email verified. Connect the creator wallet you want to associate with this account.';
+  } else {
+    $('developer-auth-message').textContent=`Email verified. Connected creator wallet: ${account.slice(0,7)}…${account.slice(-5)}.`;
+  }
+  const matching=account&&linkedWallets.find(item=>Number(item.chainId)===Number(CHAIN)&&String(item.walletAddress).toLowerCase()===account.toLowerCase());
+  $('linked-wallet-status').textContent=matching ? `Verified creator wallet · Winmar Chain · ${matching.walletAddress}` :
+    (linkedWallets.length ? `${linkedWallets.length} wallet(s) linked to this account; connect one to continue.` : 'No creator wallet linked in this account.');
+}
+function base64Url(bytes){return btoa(String.fromCharCode(...new Uint8Array(bytes))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');}
+function decodeJwtPayload(token){
+  const part=token.split('.')[1];if(!part)throw new Error('Cognito returned an invalid identity token.');
+  return JSON.parse(decodeURIComponent(Array.from(atob(part.replace(/-/g,'+').replace(/_/g,'/')),c=>'%'+c.charCodeAt(0).toString(16).padStart(2,'0')).join('')));
+}
+async function beginEmailSignIn(){
+  if(!authConfigReady())throw new Error('Email sign-in is not configured yet.');
+  const auth=conf.developerAuth;
+  const random=new Uint8Array(32);crypto.getRandomValues(random);
+  const state=base64Url(random);
+  const verifier=state+'.'+base64Url(crypto.getRandomValues(new Uint8Array(32)));
+  const oidcNonce=base64Url(crypto.getRandomValues(new Uint8Array(24)));
+  const challenge=base64Url(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(verifier)));
+  sessionStorage.setItem('winmar.oauth.state',state);
+  sessionStorage.setItem('winmar.oauth.verifier',verifier);
+  sessionStorage.setItem('winmar.oauth.nonce',oidcNonce);
+  const url=new URL('/oauth2/authorize',auth.hostedUiDomain);
+  url.search=new URLSearchParams({client_id:auth.clientId,response_type:'code',scope:'openid email',redirect_uri:auth.redirectUri,state,nonce:oidcNonce,code_challenge:challenge,code_challenge_method:'S256'}).toString();
+  location.assign(url.toString());
+}
+async function finishEmailSignIn(){
+  const query=new URLSearchParams(location.search), code=query.get('code'), returnedState=query.get('state');
+  if(!code && !query.has('error'))return;
+  const expectedState=sessionStorage.getItem('winmar.oauth.state');
+  const verifier=sessionStorage.getItem('winmar.oauth.verifier');
+  const expectedNonce=sessionStorage.getItem('winmar.oauth.nonce');
+  sessionStorage.removeItem('winmar.oauth.state');sessionStorage.removeItem('winmar.oauth.verifier');sessionStorage.removeItem('winmar.oauth.nonce');
+  try{
+    if(query.has('error'))throw new Error(query.get('error_description')||query.get('error'));
+    if(!code||!expectedState||returnedState!==expectedState||!verifier)throw new Error('Sign-in response failed the security check. Please try again.');
+    const auth=conf.developerAuth;
+    const response=await fetch(new URL('/oauth2/token',auth.hostedUiDomain),{method:'POST',headers:{'content-type':'application/x-www-form-urlencoded'},body:new URLSearchParams({grant_type:'authorization_code',client_id:auth.clientId,code,redirect_uri:auth.redirectUri,code_verifier:verifier})});
+    const tokens=await response.json();if(!response.ok||!tokens.id_token)throw new Error(tokens.error_description||tokens.error||'Cognito sign-in failed.');
+    const claims=decodeJwtPayload(tokens.id_token);
+    if(claims.nonce!==expectedNonce||claims.email_verified!==true&&claims.email_verified!=='true')throw new Error('Email verification could not be confirmed.');
+    developerSession={idToken:tokens.id_token,email:claims.email||'',sub:claims.sub,expiresAt:Date.now()+Number(tokens.expires_in||3600)*1000};
+    history.replaceState(null,'',location.pathname+location.hash);
+    refresh();await loadLinkedWallets();
+  }catch(error){
+    history.replaceState(null,'',location.pathname+location.hash);
+    msg('developer-auth-message','Sign-in not completed: '+eword(error));
+  }
+}
+async function authApi(path,body){
+  if(!developerSession||developerSession.expiresAt<=Date.now())throw new Error('Developer session expired. Sign in again.');
+  const auth=conf.developerAuth;
+  const response=await fetch(new URL(path,auth.apiUrl),{method:body?'POST':'GET',headers:{authorization:`Bearer ${developerSession.idToken}`,...(body?{'content-type':'application/json'}:{})},body:body?JSON.stringify(body):undefined,cache:'no-store'});
+  const result=await response.json().catch(()=>({}));if(!response.ok)throw new Error(result.error||`Developer account API returned HTTP ${response.status}.`);return result;
+}
+async function loadLinkedWallets(){
+  if(!developerSession||!authConfigReady())return;
+  try{const result=await authApi('/v1/wallets');linkedWallets=Array.isArray(result.wallets)?result.wallets:[];refresh();}
+  catch(error){msg('linked-wallet-status','Could not load verified wallet links: '+eword(error));}
+}
+async function verifyCreatorWallet(){
+  if(!developerSession)throw new Error('Sign in with your verified developer email first.');
+  const wallet=withSigner(), chain=await provider.getNetwork();if(chain.chainId!==CHAIN)throw new Error('Switch to Winmar Chain before verifying this wallet.');
+  const address=await wallet.getAddress();
+  const challenge=await authApi('/v1/wallet/challenge',{walletAddress:address,chainId:Number(CHAIN)});
+  const signature=await wallet.signMessage(challenge.message);
+  const result=await authApi('/v1/wallet/link',{nonce:challenge.nonce,signature});
+  if(!result.linked)throw new Error('Wallet link could not be confirmed.');
+  await loadLinkedWallets();
+  msg('linked-wallet-status',`Verified creator wallet · Winmar Chain · ${result.walletAddress}`);
+}
+function signOutDeveloper(){
+  const auth=conf?.developerAuth;
+  developerSession=null;linkedWallets=[];refresh();
+  if(!authConfigReady())return;
+  const url=new URL('/logout',auth.hostedUiDomain);url.search=new URLSearchParams({client_id:auth.clientId,logout_uri:auth.redirectUri}).toString();location.assign(url.toString());
 }
 async function addWmcNetwork(){
-  if(!window.ethereum)throw new Error('Install a compatible EVM wallet.');
-  await window.ethereum.request({method:'wallet_addEthereumChain',params:[{chainId:CHAIN_HEX,chainName:'Winmar Chain',nativeCurrency:{name:'Winmar Coin',symbol:'WMC',decimals:18},rpcUrls:[RPC,'https://rpc.winmarchain.com'],blockExplorerUrls:[SCAN,'https://scan.winmarchain.com'],iconUrls:['https://winmarchain.io/logo/wmc.png']} ]});
-  msg('wallet-config-result','Winmar Chain network request sent to wallet.');
+  const wallet=injectedWallet();
+  await ensureWinmarNetwork(wallet);
+  msg('wallet-config-result','Winmar Chain was added and selected in your wallet.');
 }
 async function addWmc20(){
   const address=conf?.tokenMaker?.tokenAddress;
@@ -276,6 +492,9 @@ function tokenInputs(){
 }
 async function deployToken(){
   if(!ready(conf?.tokenMaker,'factoryAddress'))throw new Error('Factory not deployed.');
+  if(!developerSession)throw new Error('Sign in with your verified developer email first.');
+  if(!linkedWallets.some(item=>Number(item.chainId)===Number(CHAIN)&&String(item.walletAddress).toLowerCase()===String(account).toLowerCase()))
+    throw new Error('Verify this creator wallet with your signed email account first.');
   const [params,salt]=tokenInputs();
   const factory=new ethers.Contract(conf.tokenMaker.factoryAddress,FACTORY_ABI,withSigner());
   const tx=await factory.createToken(params,salt);
@@ -318,16 +537,37 @@ async function changeDocument(action){
   msg('document-result','Submitted: '+SCAN+'/tx/'+tx.hash+'\nWaiting for confirmation…');
   await tx.wait();msg('document-result','Confirmed: '+SCAN+'/tx/'+tx.hash+'\nIssuer: '+account+'\nAction: '+action);
 }
-$('connect').onclick=()=>connect().catch(e=>msg('wallet-status',eword(e)));
+$('connect').onclick=()=>connect().catch(e=>{
+  msg('wallet-status','Not connected');
+  msg('wallet-config-result',eword(e));
+});
+$('email-auth').onclick=()=>beginEmailSignIn().catch(e=>msg('developer-auth-message',eword(e)));
+$('email-signout').onclick=()=>signOutDeveloper();
+$('link-wallet').onclick=()=>verifyCreatorWallet().catch(e=>msg('linked-wallet-status',eword(e)));
 $('add-network').onclick=()=>addWmcNetwork().catch(e=>msg('wallet-config-result',eword(e)));
 $('add-wmc20').onclick=()=>addWmc20().catch(e=>msg('wallet-config-result',eword(e)));
 $('claim').onclick=()=>claim().catch(e=>msg('faucet-result',eword(e)));
 $('deploy').onclick=()=>deployToken().catch(e=>msg('token-result',eword(e)));
+function updateTokenPreview(){
+  const name=$('token-name').value.trim()||'Untitled Winmar Token';
+  const symbol=($('token-symbol').value.trim()||'TKN').toUpperCase();
+  const supply=$('token-supply').value.trim()||'0';
+  const decimals=$('token-decimals').value||'18';
+  $('token-preview-mark').textContent=symbol.slice(0,2);
+  $('token-preview-name').textContent=name;
+  $('token-preview-meta').textContent=`${symbol} · ${supply} initial supply · ${decimals} decimals`;
+}
+['token-name','token-symbol','token-supply','token-decimals'].forEach(id=>$(id).addEventListener('input',updateTokenPreview));
+updateTokenPreview();
 $('hash').onclick=()=>sha256().catch(e=>msg('hash-result',eword(e)));
 $('verify').onclick=()=>verify().catch(e=>msg('document-result',eword(e)));
 $('anchor').onclick=()=>changeDocument('anchor').catch(e=>msg('document-result',eword(e)));
 $('revoke').onclick=()=>changeDocument('revoke').catch(e=>msg('document-result',eword(e)));
 $('health-refresh').onclick=()=>refreshHealth();
+$('site-menu-v3').onclick=()=>{
+  const nav=$('site-mobile-nav'), open=nav.classList.toggle('open');
+  $('site-menu-v3').setAttribute('aria-expanded',String(open));
+};
 $('doc-file').addEventListener('change',()=>{digest=null;msg('hash-result','File changed; calculate new hash.');refresh();});
 if(window.ethereum) {
   window.ethereum.on?.('accountsChanged',()=>{account=null;signer=null;provider=null;msg('wallet-status','Reconnect wallet');refresh();});

@@ -13,6 +13,8 @@ import "./WinmarToken.sol";
  * admin minting authority over created tokens and charges no protocol fee.
  */
 contract WinmarTokenFactory {
+    uint256 public constant PROTOCOL_FEE = 0.01 ether;
+    address public immutable feeRecipient;
     struct TokenConfig {
         string name;
         string symbol;
@@ -42,15 +44,26 @@ contract WinmarTokenFactory {
 
     error SaltAlreadyUsed();
     error ZeroAddress();
+    error IncorrectProtocolFee();
+    error FeeTransferFailed();
+
+    constructor(address recipient) {
+        if (recipient == address(0)) revert ZeroAddress();
+        feeRecipient = recipient;
+    }
 
     function createToken(
         TokenConfig calldata config,
         bytes32 userSalt
-    ) external returns (address token) {
+    ) external payable returns (address token) {
         if (config.initialHolder == address(0)) revert ZeroAddress();
+        if (msg.value != PROTOCOL_FEE) revert IncorrectProtocolFee();
 
         bytes32 salt = keccak256(abi.encode(msg.sender, userSalt));
         if (tokenBySalt[salt] != address(0)) revert SaltAlreadyUsed();
+
+        (bool sent,) = feeRecipient.call{value: msg.value}("");
+        if (!sent) revert FeeTransferFailed();
 
         token = address(new WinmarToken(
             config.name,
@@ -67,6 +80,14 @@ contract WinmarTokenFactory {
         tokenBySalt[salt] = token;
         tokensByCreator[msg.sender].push(token);
 
+        _emitTokenCreated(token, config, salt);
+    }
+
+    function _emitTokenCreated(
+        address token,
+        TokenConfig calldata config,
+        bytes32 salt
+    ) internal {
         emit TokenCreated(
             token,
             msg.sender,

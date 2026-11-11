@@ -1,0 +1,6 @@
+Contact: mailto:admin@winmarchain.io
+Expires: 2027-11-07T00:00:00.000Z
+Preferred-Languages: en
+Canonical: https://eriqueedw-star.github.io/winmar-chain/.well-known/security.txt
+Policy: https://github.com/eriqueedw-star/winmar-chain/blob/main/SECURITY.md
+Hiring: https://winmarchain.io

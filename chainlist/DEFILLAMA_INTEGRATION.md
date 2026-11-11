@@ -21,19 +21,20 @@ The authoritative checked-in metadata is
 
 ## Upstream publication tracking
 
-Checked on 2026-10-10:
+Checked on 2026-11-07:
 
 1. [Ethereum Lists PR #8740](https://github.com/ethereum-lists/chains/pull/8740)
    is open and proposes the canonical .io URLs and chain icon metadata.
 2. [DefiLlama Chainlist PR #3209](https://github.com/DefiLlama/chainlist/pull/3209)
-   is open and proposes the Winmar Chain override, .io RPC/explorer,
-   website, `chainSlug: "winmar"`, and network ID 12142816.
+   **merged on 2026-10-21** and publishes Winmar Chain with the canonical
+   `.io` RPC/explorer, website, `chainSlug: "winmar"`, `icon: "winmar"`,
+   and network ID 12142816.
 3. [DefiLlama Icons PR #2523](https://github.com/DefiLlama/icons/pull/2523)
-   is open and proposes the Winmar Chain logo.
+   **merged on 2026-10-21** and publishes the Winmar Chain icon asset.
 
-These pull requests are **not merged**. A live registry listing does not
-prove that its published metadata already matches the proposed changes.
-Final publication is controlled by upstream maintainers.
+The remaining upstream blocker is Ethereum Lists PR #8740. Wallet-native
+network and WMC logo support remain vendor-controlled and must not be inferred
+from Chainlist publication alone.
 
 ## Local publication artifacts
 

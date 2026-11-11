@@ -22,6 +22,15 @@ The machine-readable public metadata lives in [`config/network.json`](config/net
 
 The **WMC-20** fungible-token standard is defined in [`docs/standards/WMC-20.md`](docs/standards/WMC-20.md). WMC-20 describes contract tokens issued on Winmar Chain; **WMC** remains the native gas asset.
 
+## RPC privacy transparency
+
+The public HTTPS RPC `https://rpc.winmarchain.io` is subject to a specific **privacy evidence review**, distinct from RPC uptime/security checks. Until the production edge, proxy, blockchain node, rate limiting, and telemetry logging settings are reviewed, its ChainList `tracking` classification remains **unspecified**, not `none`.
+
+- [Public provisional RPC privacy notice](docs/RPC_PRIVACY_DISCLOSURE.md)
+- [Operator verification checklist](docs/RPC_PRIVACY_AUDIT.md)
+
+These documents do not certify zero logging or personal-data retention limits. Do not mark ChainList RPC privacy as no-tracking without operator-verified infrastructure evidence.
+
 ## Repository map
 
 - `config/` — canonical public chain metadata.

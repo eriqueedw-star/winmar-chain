@@ -9,12 +9,14 @@ const rpcUrl = process.env.WINMAR_DEPLOY_RPC_URL;
 const rpcBackupUrl = process.env.WINMAR_DEPLOY_RPC_BACKUP_URL || '';
 const expectedChainId = BigInt(process.env.WINMAR_DEPLOY_CHAIN_ID || '0');
 const privateKey = process.env.WINMAR_DEPLOY_PRIVATE_KEY;
+const feeRecipient = process.env.WINMAR_PROTOCOL_FEE_RECIPIENT;
 const artifactDir = process.env.WINMAR_ARTIFACT_DIR || 'build/developer-tools';
 const outputFile = process.env.WINMAR_DEPLOYMENT_OUTPUT || 'deployments/developer-tools.json';
 
 if (!rpcUrl || !privateKey || expectedChainId === 0n) {
   throw new Error('WINMAR_DEPLOY_RPC_URL, WINMAR_DEPLOY_CHAIN_ID, and WINMAR_DEPLOY_PRIVATE_KEY are required.');
 }
+if (!feeRecipient) throw new Error('WINMAR_PROTOCOL_FEE_RECIPIENT is required.');
 
 if (target !== 'mainnet') {
   throw new Error('This deployment workflow is mainnet-only.');
@@ -56,7 +58,7 @@ const faucetArtifact = component === 'all'
 
 console.log(`Deploying to Winmar Chain mainnet ${MAINNET_CHAIN_ID} from ${deployer}`);
 
-const factory = await new ContractFactory(factoryArtifact.abi, factoryArtifact.bytecode, wallet).deploy();
+const factory = await new ContractFactory(factoryArtifact.abi, factoryArtifact.bytecode, wallet).deploy(feeRecipient);
 await factory.waitForDeployment();
 const factoryAddress = await factory.getAddress();
 
@@ -85,7 +87,7 @@ if (component === 'all') {
 const result = {
   network: { name: 'Winmar Chain', chainId: expectedChainId.toString(), rpcUrl, rpcBackupUrl },
   deployer,
-  tokenFactory: { address: factoryAddress, transactionHash: factory.deploymentTransaction()?.hash || null },
+  tokenFactory: { address: factoryAddress, transactionHash: factory.deploymentTransaction()?.hash || null, protocolFee: '0.01 WMC', feeRecipient },
   component,
   faucet: faucetResult,
   generatedAt: new Date().toISOString(),
