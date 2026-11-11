@@ -8,6 +8,10 @@ on:
     paths:
       - "contracts/**"
       - "tests/contracts.test.cjs"
+      - "tests/wmusd.test.cjs"
+      - "tests/wmusd-deployment.test.cjs"
+      - "artifacts/WMUSD.json"
+      - "services/winmar-document-verification/deployment/**"
       - ".github/workflows/ecosystem-contract-tests.yml"
   workflow_dispatch:
 
@@ -32,13 +36,13 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          npm install --no-save --ignore-scripts --no-audit --no-fund --package-lock=false ethers@6.15.0 solc@0.8.30 ganache@7.9.2
+          npm install --no-save --ignore-scripts --no-audit --no-fund --package-lock=false ethers@6.17.0 solc@0.8.37 ganache@7.9.2 @openzeppelin/contracts@5.6.1
 
       - name: Run in-memory EVM transaction tests
         shell: bash
         run: |
           set -euo pipefail
-          node --test tests/contracts.test.cjs
+          node --test tests/contracts.test.cjs tests/wmusd.test.cjs tests/wmusd-deployment.test.cjs
 
       - name: Verify offline test mode
         run: echo "Only in-memory Ganache was used; no mainnet signing keys or on-chain transactions."

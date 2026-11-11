@@ -10,6 +10,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import re
 import shutil
 from pathlib import Path
 
@@ -57,6 +58,9 @@ def assemble(destination: Path) -> dict[str, object]:
     # <base> directs JS/CSS/logo to /document-verification/, a separate static
     # alias that does not replace Blockscout's main / route.
     html = (assets / "verify.html").read_text(encoding="utf-8")
+    # Main now adds numeric cache versions; validate the same local asset paths
+    # while retaining the original HTML bytes in the release above.
+    checked_html = re.sub(r'(\./(?:certificate-renderer|verification-proof|verify)\.js)\?v=[0-9-]+(?=")', r'\1', html)
     for phrase in ('<base href="/document-verification/">',
                    'src="./certificate-renderer.js"',
                    'src="./verification-proof.js"',
@@ -64,7 +68,7 @@ def assemble(destination: Path) -> dict[str, object]:
                    'href="./verify.css"',
                    'src="./vendor/qrcode.min.js"',
                    'src="./vendor/pdf-lib-1.17.1.min.js"'):
-        if phrase not in html:
+        if phrase not in checked_html:
             raise ValueError(f"Verifier asset path is inconsistent: {phrase}")
 
     js = (assets / "verify.js").read_text(encoding="utf-8")
