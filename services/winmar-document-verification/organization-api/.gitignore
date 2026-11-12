@@ -1,0 +1,11 @@
+# Never commit running instance data, original PDFs or credentials.
+.env
+.env.*
+!.env.example
+state/
+*.lock
+*.tmp
+*.pdf
+*.key
+*.pem
+node_modules/
