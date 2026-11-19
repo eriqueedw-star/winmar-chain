@@ -49,6 +49,7 @@ contract ScheduledPayment {
         require(registry.isActive(msg.sender) && registry.isActive(beneficiary), "Schedule: unverified");
         require(msg.sender != beneficiary, "Schedule: same party");
         require(token.code.length > 0 && amount > 0, "Schedule: invalid payment");
+        require(registry.isTokenApproved(token), "Schedule: unapproved token");
         require(uint256(validFrom) >= block.timestamp && expiresAt > validFrom, "Schedule: invalid window");
 
         id = ++nextInstructionId;
@@ -78,6 +79,7 @@ contract ScheduledPayment {
         require(p.payer != address(0) && !p.executed && !p.cancelled, "Schedule: inactive");
         require(block.timestamp >= p.validFrom && block.timestamp <= p.expiresAt, "Schedule: outside window");
         require(registry.isActive(p.payer) && registry.isActive(p.beneficiary), "Schedule: unverified");
+        require(registry.isTokenApproved(p.token), "Schedule: unapproved token");
         p.executed = true;
         require(
             ISettlementERC20(p.token).transferFrom(p.payer, p.beneficiary, p.amount),
