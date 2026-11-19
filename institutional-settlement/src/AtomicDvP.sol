@@ -58,6 +58,7 @@ contract AtomicDvP {
         require(registry.isActive(msg.sender) && registry.isActive(buyer), "DvP: unverified party");
         require(msg.sender != buyer, "DvP: same party");
         require(assetToken != paymentToken, "DvP: same token");
+        require(registry.isTokenApproved(assetToken) && registry.isTokenApproved(paymentToken), "DvP: unapproved token");
         require(assetToken.code.length > 0 && paymentToken.code.length > 0, "DvP: invalid token");
         require(assetAmount > 0 && paymentAmount > 0, "DvP: zero amount");
         require(uint256(deadline) > block.timestamp, "DvP: invalid deadline");
@@ -104,6 +105,7 @@ contract AtomicDvP {
         require(!t.cancelled && !t.completed, "DvP: inactive trade");
         require(block.timestamp <= t.deadline, "DvP: expired");
         require(registry.isActive(t.seller) && registry.isActive(t.buyer), "DvP: unverified party");
+        require(registry.isTokenApproved(t.assetToken) && registry.isTokenApproved(t.paymentToken), "DvP: unapproved token");
         t.completed = true; // effects before interactions; revert restores state and balances
 
         require(
