@@ -87,6 +87,8 @@ contract SettlementTest {
         asset = new PermissionedToken("Winmar Demo RWA Unit", "dRWA-W", 0, address(registry), address(this));
         payment.mint(address(buyer), 1000 * ONE_SGD_DEMO);
         asset.mint(address(seller), 10);
+        registry.setApprovedToken(address(payment), true);
+        registry.setApprovedToken(address(asset), true);
         buyer.approve(payment, address(dvp), 1000 * ONE_SGD_DEMO);
         seller.approve(asset, address(dvp), 10);
         buyer.approve(payment, address(scheduler), 1000 * ONE_SGD_DEMO);
@@ -141,6 +143,26 @@ contract SettlementTest {
             revert("settled with revoked buyer");
         } catch {}
         require(asset.balanceOf(address(seller)) == 10, "asset moved for revoked participant");
+    }
+
+    function testUnapprovedAssetCannotBeProposed() public {
+        PermissionedToken unknown = new PermissionedToken("Unapproved test", "dUNK", 0, address(registry), address(this));
+        try seller.propose(
+            dvp, address(buyer), address(unknown), address(payment), 1, ONE_SGD_DEMO,
+            uint64(block.timestamp + 1 days)
+        ) {
+            revert("unapproved token proposed");
+        } catch {}
+    }
+
+    function testRevokedTokenBlocksSettlement() public {
+        uint256 id = proposeDefault();
+        buyer.accept(dvp, id);
+        registry.setApprovedToken(address(asset), false);
+        try dvp.settle(id) {
+            revert("revoked token settled");
+        } catch {}
+        require(asset.balanceOf(address(seller)) == 10, "asset moved after token revoked");
     }
 
     function testCancelledTradeCannotSettle() public {
