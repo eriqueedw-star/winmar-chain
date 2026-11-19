@@ -15,12 +15,13 @@ production issuance.** No financial or regulatory permission is implied.
 
 | Contract | Purpose |
 | --- | --- |
-| `InstitutionRegistry.sol` | Admin-controlled demo participant eligibility registry |
+| `InstitutionRegistry.sol` | Admin-controlled participant and approved-token registry |
 | `PermissionedToken.sol` | Issuer-controlled, six-decimal optional demo settlement token and generic WMC-20/ ERC-20 asset |
 | `AtomicDvP.sol` | Two-party accepted trade; pay and deliver in one atomic EVM transaction |
 | `ScheduledPayment.sol` | Execute a previously instructed token payment in a specified time window |
 
 Sample demo token names in tests:
+
 - `dSGD-W` — Winmar simulated SGD accounting unit (**not SGD**, not redeemable, not MAS-issued).
 - `dRWA-W` — simulated tokenised asset.
 
@@ -30,7 +31,7 @@ WMC-20 format, not the native WMC coin.
 
 ## How atomic settlement works
 
-1. Registry admin marks institutional test wallets active. This does **not** verify KYC.
+1. Registry admin marks institutional test wallets active and allowlists reviewed demo token contracts. This does **not** verify KYC.
 2. Prototype issuer mints simulated assets and payment units to registered wallets.
 3. Seller proposes a trade with immutable terms and an expiry.
 4. Buyer explicitly accepts on-chain.
@@ -76,7 +77,7 @@ an explicitly approved deployment plan are complete.
 
 ## Follow-on roadmap
 
-- Governance/multisig and issuer lifecycle, allowlisted token addresses.
+- Governance/multisig, issuer lifecycle and formal token codehash/audit verification.
 - Institutional onboarding and off-chain KYC/AML evidence with privacy controls.
 - Payment-versus-payment (PvP), escrow, liquidity/reserve reconciliation.
 - Cross-ledger messaging standards and optional secure interoperability adapter.
