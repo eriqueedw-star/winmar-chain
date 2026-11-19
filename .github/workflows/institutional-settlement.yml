@@ -1,0 +1,36 @@
+name: Institutional settlement sandbox
+
+on:
+  pull_request:
+    paths:
+      - 'institutional-settlement/**'
+      - '.github/workflows/institutional-settlement.yml'
+  push:
+    branches:
+      - feature/institutional-settlement-sandbox
+    paths:
+      - 'institutional-settlement/**'
+      - '.github/workflows/institutional-settlement.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  foundry-tests:
+    name: Foundry compile and tests (no deployment)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: institutional-settlement
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - name: Install Foundry
+        uses: foundry-rs/foundry-toolchain@dba66c27052e63476d886f22216e119ba7e615bf # v1
+        with:
+          version: stable
+      - name: Compile
+        run: forge build
+      - name: Run unit tests
+        run: forge test -vv
