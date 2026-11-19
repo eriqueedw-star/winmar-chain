@@ -5,14 +5,17 @@ pragma solidity ^0.8.24;
 /// @dev This does not confer banking status, MAS approval, or legal KYC certification.
 interface IInstitutionRegistry {
     function isActive(address account) external view returns (bool);
+    function isTokenApproved(address token) external view returns (bool);
 }
 
 contract InstitutionRegistry is IInstitutionRegistry {
     address public admin;
     address public pendingAdmin;
     mapping(address => bool) public override isActive;
+    mapping(address => bool) public override isTokenApproved;
 
     event InstitutionUpdated(address indexed institution, bool active);
+    event TokenApprovalUpdated(address indexed token, bool approved);
     event AdminTransferStarted(address indexed previousAdmin, address indexed proposedAdmin);
     event AdminTransferred(address indexed previousAdmin, address indexed newAdmin);
 
@@ -30,6 +33,13 @@ contract InstitutionRegistry is IInstitutionRegistry {
         require(account != address(0), "Registry: zero institution");
         isActive[account] = active;
         emit InstitutionUpdated(account, active);
+    }
+
+    /// @notice Allow only reviewed demonstration-token contracts into the settlement sandbox.
+    function setApprovedToken(address token, bool approved) external onlyAdmin {
+        require(token.code.length > 0, "Registry: invalid token");
+        isTokenApproved[token] = approved;
+        emit TokenApprovalUpdated(token, approved);
     }
 
     function nominateAdmin(address nextAdmin) external onlyAdmin {
