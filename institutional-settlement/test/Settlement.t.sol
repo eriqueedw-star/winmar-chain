@@ -12,6 +12,10 @@ interface Vm {
 
 /// @dev Actor contracts exercise distinct msg.sender roles without external libraries.
 contract Participant {
+    function attemptMint(PermissionedToken token, address to, uint256 amount) external {
+        token.mint(to, amount);
+    }
+
     function approve(PermissionedToken token, address spender, uint256 amount) external {
         require(token.approve(spender, amount), "test approval failed");
     }
@@ -174,11 +178,20 @@ contract SettlementTest {
     }
 
     function testTokenRejectsUnauthorizedMinting() public {
-        // Calling directly from a new participant ensures msg.sender != issuer.
-        // No mint wrapper is required: address(stranger).call checks revert.
-        (bool ok,) = address(stranger).call("");
-        require(!ok, "test actor unexpectedly accepted ether-less fallback");
+        try stranger.attemptMint(payment, address(stranger), ONE_SGD_DEMO) {
+            revert("unauthorized issuer minted");
+        } catch {}
         require(payment.totalSupply() == 1000 * ONE_SGD_DEMO, "supply changed");
+    }
+
+    function testPausedTokenRejectsTransfers() public {
+        payment.setPaused(true);
+        try buyer.transfer(payment, address(seller), ONE_SGD_DEMO) {
+            revert("transferred while paused");
+        } catch {}
+        payment.setPaused(false);
+        buyer.transfer(payment, address(seller), ONE_SGD_DEMO);
+        require(payment.balanceOf(address(seller)) == ONE_SGD_DEMO, "unpaused transfer failed");
     }
 
     function testScheduledPaymentExecutesInWindow() public {
